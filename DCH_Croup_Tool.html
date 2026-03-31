@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Croup — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo}=React;
+const C={primary:"#065f46",pLight:"#ecfdf5",pBorder:"#6ee7b7",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+  overview:{title:"Croup Overview",content:"Croup (laryngotracheobronchitis) is a viral infection of the upper airway causing subglottic edema with a characteristic barky cough, hoarseness, and inspiratory stridor. It is the most common cause of acute upper airway obstruction in children ages 6 months to 3 years. Parainfluenza virus accounts for ~75% of cases. Symptoms typically worsen at night and peak on days 2–3 of illness. The cornerstone of treatment is dexamethasone for all severities and racemic epinephrine for moderate-severe presentations with stridor at rest."},
+  dexamethasone:{title:"Why Dexamethasone for All Severities?",content:"A single dose of oral dexamethasone is indicated in ALL children diagnosed with croup — including those with only a barky cough and no other signs of respiratory distress (Gates et al., Cochrane 2018). Dex is rapidly absorbed orally with less than 5% vomiting the medication. Use the parenteral formulation orally to minimize volume. Onset of benefit is within 2–4 hours with a duration lasting up to 72 hours. Only administer IM/IV if the child cannot safely tolerate PO (e.g., severe distress, vomiting)."},
+  racemicEpi:{title:"Racemic Epinephrine",content:"Nebulized racemic epinephrine 2.25% (0.5 mL in 2.5 mL NS) causes local vasoconstriction and reduces subglottic edema. Onset is within 10–30 minutes with a duration of ~2 hours. It is indicated for stridor at rest with distress. A second dose may be given if the first is ineffective. If a 3rd dose is needed, reconsider the differential diagnosis and plan for admission. Children must be observed for a minimum of 2 hours after epinephrine administration before discharge (rebound effect)."},
+  heliox:{title:"Heliox for Refractory Stridor",content:"Heliox (70% helium / 30% oxygen) reduces turbulent airflow resistance through a narrowed subglottic airway due to helium's lower density compared to nitrogen. Consider heliox for stridor refractory to racemic epinephrine. Limitation: only useful in patients not requiring >30% FiO₂. Heliox is a temporizing measure — it does not treat the underlying inflammation."},
+  diagnostics:{title:"Diagnostics Are Rarely Needed",content:"Lab and radiological assessments are NOT necessary to diagnose croup — the diagnosis is clinical, based on presentation, history, and physical exam. Viral cultures and rapid antigen tests do not aid in routine management and add unnecessary noxious stimuli. Imaging (CXR, soft tissue neck) may be helpful to rule out foreign body, bacterial tracheitis, or retropharyngeal abscess in moderate-severe presentations that do not respond to standard treatment or present with high fever without infectious symptoms."},
+  minimize:{title:"Minimize Noxious Stimuli",content:"Agitation worsens dynamic airway obstruction in croup by increasing turbulent airflow. For moderate and severe presentations: minimize interventions, keep the child on the parent's lap, position for comfort, and avoid unnecessary procedures. The distress from an IV start or forced nebulizer mask can worsen stridor. Mist therapy (cool mist, saline nebs) is NOT recommended — there is no evidence of benefit and it may increase agitation."},
+  differential:{title:"Croup Mimics to Consider",content:"If the patient does not respond to standard therapy, consider: bacterial tracheitis (high fever, toxic appearance, poor response to epi), epiglottitis (drooling, tripod positioning, muffled voice — rare post-Hib vaccine), foreign body aspiration (sudden onset, unilateral findings), retropharyngeal abscess (neck stiffness, drooling, fever), hereditary angioedema, laryngo/tracheomalacia, and vascular rings/slings. Imaging is appropriate when the differential is in question."},
+  observation:{title:"The 2-Hour Rule",content:"Children must NOT be discharged with less than 2 hours of observation following epinephrine administration. The vasoconstrictive effect of racemic epi wears off at approximately 2 hours, and rebound edema with worsening stridor can occur. If stridor recurs during observation, repeat epinephrine and extend the observation period. If the patient requires ≥2 doses of epi and continues to have recurrent stridor, admission is indicated."},
+  admission:{title:"Admission Criteria",content:"Consider admission if: recurrent stridor after 2 hours of observation requiring ≥2 doses of epinephrine, steroid administered >4 hours ago with continued moderate respiratory distress, or persistent stridor at rest with retractions without agitation/lethargy. Consult PICU for severe croup unresponsive to standard therapy. Ward admission is appropriate for moderate croup requiring ongoing observation."},
+};
+
+function calcDoses(w){const wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,dex:Math.min(Math.round(wt*0.6*10)/10,16)};}
+
+// Primitives
+function Header({teaching,onToggleTeach}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:22,fontWeight:700,marginTop:4,lineHeight:1.2}}>Croup</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · February 2021</div></div><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:`1.5px solid ${teaching?"#fff":"#ffffff40"}`,color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 ON":"📖 Teach"}</button></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:`1px solid ${C.rule}`,overflowX:"auto"}}>{tabs.map(t=>{const act=t.key===current;return(<button key={t.key} onClick={()=>onChange(t.key)} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?`2.5px solid ${C.primary}`:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>);})}</div>);}
+function Pad({children}){return<div style={{padding:"20px"}}>{children}</div>;}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>);}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:`1.5px solid ${border}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>);}
+function Sec({title,color,children}){return(<div style={{marginBottom:14}}><div style={{fontSize:13,fontWeight:700,color,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:6,paddingBottom:4,borderBottom:`2px solid ${color}`}}>{title}</div>{children}</div>);}
+function DoseRow({label,value,unit=""}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:`1px dashed ${C.rule}`}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit}</span></div>);}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;const t=TEACH[id];return(<div style={{background:C.tealBg,border:`1.5px solid ${C.tealBorder}`,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:`4px solid ${C.teal}`}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink}}>{t.content}</div></div>);}
+function Card({title,color,children,defaultOpen=true}){const[open,setOpen]=useState(defaultOpen);return(<div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={()=>setOpen(o=>!o)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:`1px solid ${C.rule}`}}>{children}</div>}</div>);}
+
+function App(){
+  const[tab,setTab]=useState("triage");
+  const[teaching,setTeaching]=useState(false);
+  const[weightKg,setWeightKg]=useState("");
+  const doses=useMemo(()=>calcDoses(weightKg),[weightKg]);
+
+  const tabs=[
+    {key:"triage",label:"Triage"},
+    {key:"severity",label:"Severity"},
+    {key:"decision",label:"Decisions"},
+    {key:"special",label:"Dispo & Refs"},
+  ];
+
+  return(
+    <div style={{maxWidth:520,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh"}}>
+      <Header teaching={teaching} onToggleTeach={()=>setTeaching(t=>!t)}/>
+      <TabBar current={tab} tabs={tabs} onChange={setTab}/>
+
+      <div style={{background:C.white,borderBottom:`1px solid ${C.rule}`,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}>
+          <label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label>
+          <input type="number" inputMode="decimal" value={weightKg} onChange={e=>setWeightKg(e.target.value)} placeholder="12" style={{display:"block",width:"100%",padding:"6px 8px",border:`1.5px solid ${C.rule}`,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}} onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.rule}/>
+        </div>
+        {doses&&<div style={{fontSize:12,color:C.primary,fontWeight:600,alignSelf:"flex-end",paddingBottom:8,whiteSpace:"nowrap",fontFamily:"'IBM Plex Mono',monospace"}}>Dex {doses.dex} mg</div>}
+      </div>
+
+      {/* ── TRIAGE ── */}
+      {tab==="triage"&&(
+        <Pad>
+          <Q text="Triage & Initial Interventions" sub="Pediatric patient with barky cough, stridor, and/or respiratory distress"/>
+          <TeachBox id="overview" teaching={teaching}/>
+
+          <Card title="Initiate on Arrival" color={C.primary}>
+            <div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>
+              <strong>Isolation:</strong> Droplet + Contact<br/>
+              Full vitals<br/>
+              <strong style={{color:C.red}}>Minimize noxious stimuli</strong> for moderate/severe<br/>
+              Determine severity (see Severity tab)<br/>
+              SpO₂: continuous for moderate/severe · spot check for mild<br/>
+              <strong>Oral dexamethasone for ALL severities</strong> {doses?<span style={{fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{doses.dex} mg</span>:"0.6 mg/kg (max 16 mg)"}<br/>
+              O₂ if cyanosis or SpO₂ &lt;93%<br/>
+              <strong style={{color:C.red}}>Racemic epi for stridor at rest</strong> — alert LIP immediately<br/>
+              <span style={{color:C.red,fontSize:12,fontWeight:600}}>Mist therapy (saline nebs) NOT recommended</span>
+            </div>
+            <TeachBox id="minimize" teaching={teaching}/>
+          </Card>
+
+          <Card title="Nursing Documentation" color={C.blue} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Chief complaint · Onset · Alleviating/contributing factors · Appearance · Lung sounds · WOB · Retractions · Pulses · Skin temp/fever · <strong>Assess for foreign body possibility</strong>
+            </div>
+          </Card>
+
+          <Card title="Diagnostics" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Not routinely needed.</strong> Diagnosis is clinical.<br/>
+              Consider CXR or soft tissue neck XR only if: no response to treatment, high fever, absence of infectious symptoms, or concern for alternate diagnosis.
+            </div>
+            <TeachBox id="diagnostics" teaching={teaching}/>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ── SEVERITY ── */}
+      {tab==="severity"&&(
+        <Pad>
+          <Q text="Croup Severity Assessment" sub="Assess on arrival and after each intervention"/>
+
+          {[
+            {title:"Mild",color:C.greenMid,bg:C.greenBg,border:C.greenBorder,items:["Occasional barky cough","No audible stridor at rest","No to mild suprasternal and/or intercostal retractions"]},
+            {title:"Moderate",color:C.amberMid,bg:C.amberBg,border:C.amberBorder,items:["Frequent barky cough","Easily audible stridor at rest","Suprasternal and sternal wall retraction at rest","Little or no distress or agitation"]},
+            {title:"Severe",color:C.red,bg:C.redBg,border:C.redBorder,items:["Frequent barky cough","Prominent inspiratory (± expiratory) stridor","Marked sternal retractions","Significant distress and agitation"]},
+            {title:"Impending Respiratory Failure",color:C.red,bg:C.redBg,border:C.redBorder,items:["Change in mental status","Fatigue / listlessness","Pallor / dusky appearance","Decreased retractions","Decreased breath sounds with decreasing stridor"]},
+          ].map((sev,i)=>(
+            <div key={i} style={{background:sev.bg,border:`1.5px solid ${sev.border}`,borderRadius:10,padding:"12px 14px",marginBottom:10}}>
+              <div style={{fontSize:15,fontWeight:700,color:sev.color,marginBottom:6}}>{sev.title}</div>
+              {sev.items.map((item,j)=>(
+                <div key={j} style={{fontSize:13,lineHeight:1.6,paddingLeft:12,position:"relative"}}>
+                  <span style={{position:"absolute",left:0,color:sev.color}}>›</span>{item}
+                </div>
+              ))}
+            </div>
+          ))}
+        </Pad>
+      )}
+
+      {/* ── DECISIONS ── */}
+      {tab==="decision"&&(
+        <Pad>
+          <Q text="Treatment by Severity"/>
+
+          <Card title="Mild — Discharge" color={C.greenMid}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Dexamethasone</strong> {doses?<span style={{fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{doses.dex} mg</span>:"0.6 mg/kg"} PO (max 16 mg)<br/>
+              Spot check SpO₂<br/>
+              Encourage oral hydration<br/><br/>
+              <strong style={{color:C.greenMid}}>→ Discharge home</strong> with parent education:<br/>
+              • Anticipated illness course (2–3 days, worse at night)<br/>
+              • Signs of respiratory distress<br/>
+              • When to return
+            </div>
+            <TeachBox id="dexamethasone" teaching={teaching}/>
+          </Card>
+
+          <Card title="Moderate — Dex + Racemic Epi → Observe" color={C.amberMid}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Minimize interventions</strong> · Child on parent's lap · Position for comfort<br/>
+              Continuous SpO₂<br/>
+              <strong>Dexamethasone</strong> {doses?<span style={{fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{doses.dex} mg</span>:"0.6 mg/kg"} PO<br/>
+              <strong>Racemic epinephrine 2.25%</strong> (0.5 mL in 2.5 mL NS)
+            </div>
+            <TeachBox id="racemicEpi" teaching={teaching}/>
+
+            <div style={{fontSize:14,fontWeight:700,color:C.ink,marginTop:12,marginBottom:6}}>After Epinephrine</div>
+
+            <div style={{display:"flex",gap:6,marginBottom:8}}>
+              <div style={{flex:1,background:C.greenBg,border:`1.5px solid ${C.greenBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.greenMid}}>Good response</div>
+                <div style={{fontSize:11,marginTop:4}}>Observe 2 hours · If no recurrent stridor at rest → discharge with education</div>
+              </div>
+              <div style={{flex:1,background:C.amberBg,border:`1.5px solid ${C.amberBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.amberMid}}>No/minimal improvement</div>
+                <div style={{fontSize:11,marginTop:4}}>Repeat racemic epi · Reconsider differential · Consider admission</div>
+              </div>
+            </div>
+
+            <div style={{background:C.redBg,border:`1.5px solid ${C.redBorder}`,borderRadius:8,padding:"8px 12px",fontSize:12,marginBottom:6}}>
+              <strong style={{color:C.red}}>During 2h observation — recurrence of moderate/severe distress:</strong> repeat epi · if good response continue to observe · consider admission if steroid &gt;4h ago and continued moderate distress
+            </div>
+            <TeachBox id="observation" teaching={teaching}/>
+          </Card>
+
+          <Card title="Severe — Epi + IM Dex + Consider Heliox" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Minimize interventions</strong> · Provide O₂ · Position for comfort<br/>
+              Continuous SpO₂<br/>
+              <strong>Racemic epinephrine 2.25%</strong> (0.5 mL in 2.5 mL NS) via mask<br/>
+              <strong>Dexamethasone</strong> {doses?<span style={{fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{doses.dex} mg</span>:"0.6 mg/kg"} <strong>IM</strong> (parenteral if unable to tolerate PO)<br/>
+              <strong>Consider Heliox</strong> (70/30)
+            </div>
+            <TeachBox id="heliox" teaching={teaching}/>
+
+            <div style={{fontSize:14,fontWeight:700,color:C.ink,marginTop:12,marginBottom:6}}>After Epinephrine</div>
+            <div style={{display:"flex",gap:6}}>
+              <div style={{flex:1,background:C.amberBg,border:`1.5px solid ${C.amberBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.amberMid}}>Good response</div>
+                <div style={{fontSize:11,marginTop:4}}>Observe 2h · May improve to moderate pathway</div>
+              </div>
+              <div style={{flex:1,background:C.redBg,border:`1.5px solid ${C.redBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.red}}>No/poor response</div>
+                <div style={{fontSize:11,marginTop:4}}>Repeat epi · Consider heliox · <strong>Consult PICU</strong></div>
+              </div>
+            </div>
+          </Card>
+
+          <Card title="3rd Dose of Epi Needed?" color={C.red} defaultOpen={false}>
+            <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⚠" title="Reconsider Differential">
+              If a 3rd dose of racemic epinephrine is required → reconsider the diagnosis and plan for admission.
+            </Alert>
+            <TeachBox id="differential" teaching={teaching}/>
+          </Card>
+
+          <Card title="Partial Differential Diagnosis" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Bacterial tracheitis · Epiglottitis · Foreign body · Retropharyngeal abscess · Hereditary angioedema · Laryngo/tracheomalacia · Vascular rings/slings
+            </div>
+            <TeachBox id="differential" teaching={teaching}/>
+          </Card>
+
+          {/* ── FLOWCHART ── */}
+          {(()=>{
+            const gC="#16a34a",gBg="#f0fdf4",gBd="#86efac";
+            const aC="#d97706",aBg="#fffbeb",aBd="#fcd34d";
+            const rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5";
+            const bC="#065f46",bBg="#ecfdf5",bBd="#6ee7b7";
+            const mC="#6b7280";
+            const Arrow=({x1,y1,x2,y2,color="#94a3b8"})=>(<g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5}/><polygon points={`${x2},${y2} ${x2-3.5},${y2-6} ${x2+3.5},${y2-6}`} fill={color}/></g>);
+            const Box=({x,y,w,h,fill,stroke,sw=1,radius=6,children})=>(<g><rect x={x} y={y} width={w} height={h} rx={radius} fill={fill} stroke={stroke} strokeWidth={sw}/>{children}</g>);
+            const T=({x,y,size=9,weight=600,color="#1a1d21",anchor="middle",children})=>(<text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={color} fontFamily="'IBM Plex Sans',sans-serif">{children}</text>);
+
+            return(
+              <div style={{marginTop:20}}>
+                <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Pathway Overview</div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:6}}>All severities get dexamethasone · Epi for stridor at rest</div>
+                <div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,padding:6,overflow:"hidden"}}>
+                  <svg viewBox="0 0 480 340" style={{width:"100%",display:"block"}}>
+                    <rect width={480} height={340} fill="#fafaf8" rx={6}/>
+
+                    <Box x={115} y={6} w={250} h={28} fill={bBg} stroke={bBd} sw={1.5} radius={14}>
+                      <T x={240} y={18} size={9} weight={700} color={bC}>CROUP — ASSESS SEVERITY</T>
+                      <T x={240} y={28} size={6} color={mC}>Isolation · Vitals · Minimize stimuli · Dex ALL patients</T>
+                    </Box>
+                    <Arrow x1={240} y1={34} x2={240} y2={48}/>
+
+                    <g transform="translate(240,62)">
+                      <polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+                      <T x={0} y={1} size={7} weight={700}>Severity?</T>
+                    </g>
+
+                    <line x1={185} y1={62} x2={72} y2={62} stroke="#94a3b8" strokeWidth={1}/>
+                    <Arrow x1={72} y1={62} x2={72} y2={86} color={gC}/>
+                    <Arrow x1={240} y1={76} x2={240} y2={86} color={aC}/>
+                    <line x1={295} y1={62} x2={408} y2={62} stroke="#94a3b8" strokeWidth={1}/>
+                    <Arrow x1={408} y1={62} x2={408} y2={86} color={rC}/>
+
+                    {/* MILD */}
+                    <Box x={12} y={86} w={120} h={22} fill={gBg} stroke={gBd} sw={1.5}>
+                      <T x={72} y={95} size={8} weight={700} color={gC}>MILD</T>
+                      <T x={72} y={104} size={6} color={mC}>No stridor at rest</T>
+                    </Box>
+                    <Arrow x1={72} y1={108} x2={72} y2={118} color={gC}/>
+                    <Box x={12} y={118} w={120} h={34} fill={C.white} stroke={gBd}>
+                      <T x={72} y={129} size={7} weight={600} color={gC}>Dex 0.6 mg/kg PO</T>
+                      <T x={72} y={139} size={7}>Spot SpO₂ · PO fluids</T>
+                      <T x={72} y={148} size={6} color={mC}>Parent education</T>
+                    </Box>
+                    <Arrow x1={72} y1={152} x2={72} y2={162} color={gC}/>
+                    <Box x={12} y={162} w={120} h={20} fill={gBg} stroke={gBd} sw={1.5}>
+                      <T x={72} y={175} size={8} weight={700} color={gC}>DISCHARGE</T>
+                    </Box>
+
+                    {/* MODERATE */}
+                    <Box x={155} y={86} w={170} h={22} fill={aBg} stroke={aBd} sw={1.5}>
+                      <T x={240} y={95} size={8} weight={700} color={aC}>MODERATE</T>
+                      <T x={240} y={104} size={6} color={mC}>Stridor at rest, no agitation</T>
+                    </Box>
+                    <Arrow x1={240} y1={108} x2={240} y2={118} color={aC}/>
+                    <Box x={155} y={118} w={170} h={34} fill={C.white} stroke={aBd}>
+                      <T x={240} y={129} size={7} weight={600} color={aC}>Dex PO + Racemic Epi</T>
+                      <T x={240} y={139} size={7}>Minimize stimuli · Cont SpO₂</T>
+                      <T x={240} y={148} size={6} color={mC}>Child on parent's lap</T>
+                    </Box>
+                    <Arrow x1={240} y1={152} x2={240} y2={164} color={aC}/>
+
+                    <g transform="translate(240,176)">
+                      <polygon points="0,-12 45,0 0,12 -45,0" fill={aBg} stroke={aBd} strokeWidth={1}/>
+                      <T x={0} y={1} size={6} weight={700} color={aC}>Improved?</T>
+                    </g>
+
+                    <Arrow x1={205} y1={180} x2={155} y2={198} color={gC}/>
+                    <Arrow x1={275} y1={180} x2={320} y2={198} color={rC}/>
+
+                    <Box x={110} y={198} w={90} h={28} fill={gBg} stroke={gBd}>
+                      <T x={155} y={209} size={7} weight={700} color={gC}>YES</T>
+                      <T x={155} y={219} size={6}>Observe 2h</T>
+                    </Box>
+                    <Arrow x1={155} y1={226} x2={155} y2={238} color={gC}/>
+                    <Box x={110} y={238} w={90} h={18} fill={gBg} stroke={gBd} sw={1.5}>
+                      <T x={155} y={250} size={7} weight={700} color={gC}>D/C if stable</T>
+                    </Box>
+
+                    <Box x={280} y={198} w={90} h={28} fill={rBg} stroke={rBd}>
+                      <T x={325} y={209} size={7} weight={700} color={rC}>NO</T>
+                      <T x={325} y={219} size={6}>Repeat epi</T>
+                    </Box>
+                    <Arrow x1={325} y1={226} x2={325} y2={240} color={rC}/>
+                    <Box x={280} y={240} w={90} h={18} fill={rBg} stroke={rBd} sw={1.5}>
+                      <T x={325} y={252} size={7} weight={700} color={rC}>ADMIT</T>
+                    </Box>
+
+                    {/* SEVERE */}
+                    <Box x={348} y={86} w={120} h={22} fill={rBg} stroke={rBd} sw={1.5}>
+                      <T x={408} y={95} size={8} weight={700} color={rC}>SEVERE</T>
+                      <T x={408} y={104} size={6} color={mC}>Marked distress</T>
+                    </Box>
+                    <Arrow x1={408} y1={108} x2={408} y2={118} color={rC}/>
+                    <Box x={348} y={118} w={120} h={38} fill={C.white} stroke={rBd}>
+                      <T x={408} y={129} size={7} weight={600} color={rC}>Racemic Epi</T>
+                      <T x={408} y={139} size={7} weight={600} color={rC}>Dex IM</T>
+                      <T x={408} y={149} size={7}>O₂ · Consider Heliox</T>
+                    </Box>
+                    <Arrow x1={408} y1={156} x2={408} y2={168} color={rC}/>
+
+                    <g transform="translate(408,180)">
+                      <polygon points="0,-12 45,0 0,12 -45,0" fill={rBg} stroke={rBd} strokeWidth={1}/>
+                      <T x={0} y={1} size={6} weight={700} color={rC}>Response?</T>
+                    </g>
+
+                    <Arrow x1={408} y1={192} x2={408} y2={206} color={rC}/>
+                    <Box x={363} y={206} w={90} h={28} fill={rBg} stroke={rBd}>
+                      <T x={408} y={217} size={7}>Repeat epi · Heliox</T>
+                      <T x={408} y={227} size={7} weight={700} color={rC}>PICU consult</T>
+                    </Box>
+
+                    {/* Bottom rule */}
+                    <Box x={60} y={280} w={360} h={28} fill="#f1f5f9" stroke="#e2e8f0" radius={8}>
+                      <T x={240} y={291} size={7} weight={700} color={rC}>⚠ 3RD DOSE EPI → RECONSIDER DIFFERENTIAL → PLAN ADMISSION</T>
+                      <T x={240} y={302} size={6} color={mC}>2h observation required post-epi before any discharge</T>
+                    </Box>
+                  </svg>
+                </div>
+              </div>
+            );
+          })()}
+        </Pad>
+      )}
+
+      {/* ── DISPO & REFS ── */}
+      {tab==="special"&&(
+        <Pad>
+          <Q text="Disposition & References"/>
+
+          <Card title="Discharge Criteria" color={C.greenMid}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              ✓ Mild croup after dexamethasone<br/>
+              ✓ Moderate croup with good response to epi AND no recurrent stridor at rest after 2 hours observation<br/>
+              ✓ Parent education provided: illness course, respiratory distress signs, when to return
+            </div>
+          </Card>
+
+          <Card title="Admission Criteria" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              • Recurrent stridor after 2h observation requiring ≥2 doses of epi<br/>
+              • Steroid given &gt;4h ago with continued moderate distress (stridor at rest + retractions)<br/>
+              • Severe croup not responding to epi → PICU consult<br/>
+              • Need for 3rd dose of epi → reconsider diagnosis + admit
+            </div>
+            <TeachBox id="admission" teaching={teaching}/>
+          </Card>
+
+          <Card title="Medications Summary" color={C.primary}>
+            <div style={{marginTop:8}}>
+              <DoseRow label="Dexamethasone (0.6 mg/kg) PO/IM/IV" value={doses?doses.dex:"—"} unit={doses?"mg (max 16)":""}/>
+              <div style={{fontSize:12,color:C.muted,marginTop:4}}>Use parenteral formulation orally to minimize volume</div>
+              <div style={{marginTop:8}}/>
+              <DoseRow label="Racemic Epi 2.25%" value="0.5 mL" unit="in 2.5 mL NS"/>
+              <div style={{fontSize:12,color:C.muted,marginTop:4}}>May repeat ×1 · If 3rd dose needed → reconsider dx + admit</div>
+              <div style={{marginTop:8}}/>
+              <DoseRow label="Heliox" value="70/30" unit="He/O₂"/>
+              <div style={{fontSize:12,color:C.muted,marginTop:4}}>For stridor refractory to racemic epi</div>
+            </div>
+          </Card>
+
+          <Card title="References" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>
+              1. Westley CR et al. Nebulized racemic epinephrine by IPPB for treatment of croup: a double-blind study. <em>Am J Dis Child</em> 1978; 132:484.<br/>
+              2. Gates A et al. Glucocorticoids for croup in children. <em>Cochrane Database Syst Rev</em> 2018; 8:CD001955.<br/>
+              3. Clarke M, Allaire J. An evidence-based approach to evaluation and treatment of croup in children. <em>Pediatr Emerg Med Pract</em> 2012; 9:1.<br/>
+              4. Bjornson C et al. Nebulized epinephrine for croup in children. <em>Cochrane Database Syst Rev</em> 2013; CD006619.
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:`1px solid ${C.rule}`}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Croup Clinical Pathway · February 2021
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
