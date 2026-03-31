@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sepsis ≥60 Days — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useMemo}=React;
+const C={primary:"#7f1d1d",pLight:"#fef2f2",pBorder:"#fca5a5",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+  overview:{title:"Sepsis Definitions",content:"Sepsis: ≥2 SIRS criteria (abnormal temperature, HR, RR, WBC) AND suspected/confirmed infection. Severe Sepsis: sepsis AND cardiovascular dysfunction (hypotension or ≥2 of: metabolic acidosis, elevated lactate, oliguria, prolonged cap refill), ARDS, or ≥2 end-organ dysfunction criteria. Septic Shock: severe sepsis AND hypotension or tissue hypoperfusion (cap refill <1s or ≥3s, lactate ≥4). Hypotension is a LATE sign — not required for shock diagnosis."},
+  recognition:{title:"Clinical Considerations",content:"Temperature dysregulation (fever or hypothermia), mental status changes (restless, agitated, lethargic), skin findings (petechiae below nipple line, purpura, macular rash with mucosal changes), cardiovascular dysfunction (tachycardia persisting after temp normalization, abnormal pulses, prolonged or flash cap refill, hypotension as a late sign), respiratory (tachypnea, grunting even without pulmonary disease due to metabolic acidosis), and high-risk medical conditions (immunocompromise may present with subtle derangements)."},
+  fluids:{title:"Fluid Resuscitation",content:"Administer crystalloid in 10–20 mL/kg boluses up to 40–60 mL/kg in the first hour until perfusion normalizes or signs of fluid overload develop. LR is preferable, NS is acceptable. Reassess after EACH bolus. Signs of fluid overload: rales, gallop rhythm, hepatomegaly. Fluid refractory shock (no improvement after 60 mL/kg) → initiate vasoactives. Many observational studies show improved outcomes with aggressive fluid resuscitation."},
+  antibiotics:{title:"Antibiotic Timing",content:"Surviving Sepsis Guidelines for Children recommend: antibiotics within 1 HOUR for septic shock, within 3 HOURS for sepsis with organ dysfunction but without shock. Combination therapy does not appear superior to extended-spectrum monotherapy for patients without a specific suspected source. Always obtain blood culture BEFORE antibiotics if possible — but do NOT delay antibiotics if blood culture is difficult to obtain."},
+  vasoactives:{title:"Vasoactive Selection",content:"Epinephrine is first-line for cold shock (cold extremities, prolonged cap refill, faint pulses, narrow pulse pressure). Norepinephrine is first-line for warm shock (warm extremities, flash cap refill, bounding pulses, wide pulse pressure). Dopamine is second-line for cold shock. Limited pediatric evidence suggests epinephrine is superior to dopamine. Adult data extrapolation also favors norepinephrine over dopamine."},
+  corticosteroids:{title:"Corticosteroids",content:"Hydrocortisone 1–2 mg/kg (max 100 mg) IV for catecholamine-refractory shock. No high-quality studies demonstrate clear benefit in children, but should be used in those known or suspected to be adrenally insufficient. Consider stress-dose steroids if the patient is on chronic corticosteroids or has a history of adrenal insufficiency."},
+  intubation:{title:"Intubation Considerations",content:"Consider intubation for fluid-refractory, catecholamine-resistant septic shock. Avoid etomidate — it causes adrenal insufficiency. Ketamine is the preferred induction agent for sepsis. No RCTs exist to support this practice, but it is based on expert consensus and physiologic rationale."},
+  lactate:{title:"Lactate in Pediatric Sepsis",content:"Lactate is specific but not sensitive for cardiovascular dysfunction in sepsis. Thresholds of 2 and 4 mmol/L have been used in children. An elevated lactate should prompt aggressive resuscitation even in the absence of hypotension. Serial lactate measurements can be used to track response to treatment."},
+  riskScore:{title:"Sepsis Risk Score",content:"The 8-parameter risk score (max 15) uses: high-risk condition (2), abnormal temperature (2), tachycardia (2), tachypnea (2), systolic hypotension (3), capillary refill abnormality (2), peripheral pulse abnormality (1), skin exam abnormality (1). A score ≥6 triggers the sepsis protocol with immediate fluid resuscitation and antibiotic administration. A score <6 with clinical concern still warrants an MD/RN huddle."},
+};
+
+const RISK_PARAMS=[
+  {name:"High-Risk Condition*",pts:2},
+  {name:"Abnormal Temperature",pts:2},
+  {name:"Tachycardia",pts:2},
+  {name:"Tachypnea",pts:2},
+  {name:"Systolic Hypotension",pts:3},
+  {name:"Capillary Refill Abnormality",pts:2},
+  {name:"Peripheral Pulse Abnormality",pts:1},
+  {name:"Skin Exam Abnormality",pts:1},
+];
+
+function useResponsive(){const[w,setW]=useState(typeof window!=='undefined'?window.innerWidth:520);useEffect(()=>{const h=()=>setW(window.innerWidth);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);return{maxW:w>=640?800:520};}
+
+function calcDoses(w){const wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,bolus20:Math.round(wt*20),bolus60:Math.round(wt*60),ceftri50:Math.min(Math.round(wt*50),2000),ceftri100:Math.min(Math.round(wt*100),2000),cefep:Math.min(Math.round(wt*50),2000),vanco15:Math.min(Math.round(wt*15),2000),vanco20:Math.min(Math.round(wt*20),2000),metro:Math.min(Math.round(wt*10),1500),pipTaz:Math.round(wt*100),clinda:Math.round(wt*10),caGluc:Math.round(wt*50),d10:Math.round(wt*5),hydroLo:Math.min(Math.round(wt*1),100),hydroHi:Math.min(Math.round(wt*2),100),apapPO:Math.round(wt*12.5*10)/10,apapPR:Math.round(wt*15)};}
+
+function Header({teaching,onToggleTeach}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Sepsis / Septic Shock ≥60 Days</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · March 2021</div></div><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:`1.5px solid ${teaching?"#fff":"#ffffff40"}`,color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 ON":"📖 Teach"}</button></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:`1px solid ${C.rule}`,overflowX:"auto"}}>{tabs.map(t=>{const act=t.key===current;return(<button key={t.key} onClick={()=>onChange(t.key)} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?`2.5px solid ${C.primary}`:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>);})}</div>);}
+function Pad({children}){return<div style={{padding:"20px"}}>{children}</div>;}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>);}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:`1.5px solid ${border}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>);}
+function DoseRow({label,value,unit=""}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:`1px dashed ${C.rule}`}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit}</span></div>);}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;const t=TEACH[id];return(<div style={{background:C.tealBg,border:`1.5px solid ${C.tealBorder}`,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:`4px solid ${C.teal}`}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink}}>{t.content}</div></div>);}
+function Card({title,color,children,defaultOpen=true}){const[open,setOpen]=useState(defaultOpen);return(<div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={()=>setOpen(o=>!o)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:`1px solid ${C.rule}`}}>{children}</div>}</div>);}
+
+function App(){
+  const[tab,setTab]=useState("triage");
+  const[teaching,setTeaching]=useState(false);
+  const[weightKg,setWeightKg]=useState("");
+  const[riskChecks,setRiskChecks]=useState(RISK_PARAMS.map(()=>false));
+  const{maxW}=useResponsive();
+  const doses=useMemo(()=>calcDoses(weightKg),[weightKg]);
+
+  const riskTotal=useMemo(()=>riskChecks.reduce((s,c,i)=>s+(c?RISK_PARAMS[i].pts:0),0),[riskChecks]);
+  const riskTriggered=riskTotal>=6;
+
+  const tabs=[
+    {key:"triage",label:"Triage"},
+    {key:"score",label:"Risk Score"},
+    {key:"decision",label:"Decisions"},
+    {key:"meds",label:"Abx & Meds"},
+    {key:"special",label:"Dispo & Refs"},
+  ];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={()=>setTeaching(t=>!t)}/>
+      <TabBar current={tab} tabs={tabs} onChange={setTab}/>
+
+      <div style={{background:C.white,borderBottom:`1px solid ${C.rule}`,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1,maxWidth:200}}>
+          <label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label>
+          <input type="number" inputMode="decimal" value={weightKg} onChange={e=>setWeightKg(e.target.value)} placeholder="15" style={{display:"block",width:"100%",padding:"6px 8px",border:`1.5px solid ${C.rule}`,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}} onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.rule}/>
+        </div>
+        {riskChecks.some(c=>c)&&<div style={{fontSize:10,fontWeight:700,color:riskTriggered?C.red:C.amberMid,alignSelf:"flex-end",paddingBottom:8}}>Risk {riskTotal}{riskTriggered?" ≥6":""}  </div>}
+      </div>
+
+      {/* ── TRIAGE ── */}
+      {tab==="triage"&&(
+        <Pad>
+          <Q text="Triage & Initial Assessment" sub="Patients ≥60 days with suspected sepsis or septic shock"/>
+          <TeachBox id="overview" teaching={teaching}/>
+          <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⏱" title="Antibiotic Goals">
+            <strong>Septic shock:</strong> within 1 HOUR<br/><strong>Sepsis with organ dysfunction:</strong> within 3 HOURS
+          </Alert>
+          <Card title="Initiate on Arrival" color={C.primary}>
+            <div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>
+              <strong>ESI Level II</strong><br/>
+              Full vitals including <strong>core temperature</strong><br/>
+              Cardiac monitor + continuous SpO₂<br/>
+              <strong>IV access (2 if possible, largest appropriate)</strong><br/>
+              <span style={{fontSize:12,color:C.red,fontWeight:600}}>IO if cannot obtain IV in 3 attempts or 90 seconds</span><br/>
+              Bedside CBG · Oxygen · Warming devices if applicable<br/>
+              <strong>Calculate Sepsis Risk Score</strong> (see Risk Score tab)
+            </div>
+          </Card>
+          <Card title="Diagnostics" color={C.blue}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Blood culture</strong> (each CVC lumen if present) — prior to abx<br/>
+              CBC with diff · CMP · Mg · Phos · Ca<br/>
+              POC Chem8 · Cap blood glucose<br/>
+              Coags · Type &amp; Screen<br/>
+              <strong>POC blood gas with lactate</strong><br/>
+              Catheter UA + mandatory culture<br/>
+              Consider: CXR ± 2-view abdomen · LP if hemodynamically stable · Flu/RSV/COVID
+            </div>
+          </Card>
+          <Card title="High-Risk Conditions" color={C.red} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Asplenia · Transplant (BMT or organ) · Malignancy · Central line present · Technology dependent (trach, VP shunt) · Other immunocompromise
+            </div>
+            <TeachBox id="recognition" teaching={teaching}/>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ── RISK SCORE ── */}
+      {tab==="score"&&(
+        <Pad>
+          <Q text="Sepsis Risk Score" sub="Score ≥6 triggers sepsis protocol"/>
+          <TeachBox id="riskScore" teaching={teaching}/>
+          {RISK_PARAMS.map((p,i)=>(
+            <button key={i} onClick={()=>setRiskChecks(prev=>{const n=[...prev];n[i]=!n[i];return n;})} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"10px 14px",borderRadius:10,border:`1.5px solid ${riskChecks[i]?C.red:C.rule}`,background:riskChecks[i]?C.redBg:C.white,cursor:"pointer",textAlign:"left",marginBottom:5}}>
+              <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${riskChecks[i]?C.red:C.rule}`,background:riskChecks[i]?C.red:C.white,display:"flex",alignItems:"center",justifyContent:"center",color:C.white,fontSize:13,fontWeight:700,flexShrink:0}}>{riskChecks[i]?"✓":""}</div>
+              <div style={{flex:1,fontSize:13,fontWeight:riskChecks[i]?700:500}}>{p.name}</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:16,fontWeight:700,color:riskChecks[i]?C.red:C.muted}}>+{p.pts}</div>
+            </button>
+          ))}
+          <div style={{fontSize:11,color:C.muted,marginTop:4}}>*Asplenia · Transplant · Malignancy · CVC · Technology dependent · Immunocompromise</div>
+
+          <div style={{background:riskTriggered?C.redBg:riskChecks.some(c=>c)?C.amberBg:C.pLight,border:`1.5px solid ${riskTriggered?C.redBorder:riskChecks.some(c=>c)?C.amberBorder:C.pBorder}`,borderRadius:10,padding:"14px",marginTop:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:11,fontWeight:600,color:C.muted,textTransform:"uppercase"}}>Risk Score</div><div style={{fontSize:32,fontWeight:700,color:riskTriggered?C.red:C.amberMid,fontFamily:"'IBM Plex Mono',monospace"}}>{riskTotal}</div></div>
+            <div style={{textAlign:"right"}}>
+              {riskTriggered?<div style={{background:C.red,color:C.white,padding:"6px 14px",borderRadius:8,fontSize:13,fontWeight:700}}>≥6 — SEPSIS PROTOCOL</div>:<div style={{background:C.amberBg,border:`1px solid ${C.amberBorder}`,padding:"6px 14px",borderRadius:8,fontSize:13,fontWeight:700,color:C.amberMid}}>&lt;6 — MD/RN Huddle</div>}
+            </div>
+          </div>
+          <button onClick={()=>setRiskChecks(RISK_PARAMS.map(()=>false))} style={{marginTop:12,width:"100%",padding:"10px",borderRadius:8,border:`1.5px solid ${C.rule}`,background:C.white,color:C.muted,fontSize:12,fontWeight:600,cursor:"pointer"}}>Reset Score</button>
+        </Pad>
+      )}
+
+      {/* ── DECISIONS ── */}
+      {tab==="decision"&&(
+        <Pad>
+          <Q text="Time-Based Resuscitation" sub="0–5 min → 5–15 min → 15–60 min"/>
+
+          <Card title="0–5 Minutes — Immediate Actions" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              O₂ · Pulse ox / cardiac monitor<br/>
+              IV/IO access · Blood culture · Urine culture<br/>
+              Cap glucose · Chem8 · POC blood gas/lactate<br/>
+              <strong>Fluid bolus {doses?<span style={{fontFamily:"'IBM Plex Mono',monospace"}}>{doses.bolus20} mL</span>:"20 mL/kg"} over 5–10 minutes</strong>
+            </div>
+          </Card>
+
+          <Card title="5–15 Minutes — Reassess Perfusion" color={C.amberMid}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Perfusion normalized?</strong> (normal mental status, warm extremities, cap refill &lt;2s, normal HR/BP, UOP &gt;1 mL/kg/hr)
+            </div>
+            <div style={{display:"flex",gap:6,marginTop:8}}>
+              <div style={{flex:1,background:C.greenBg,border:`1.5px solid ${C.greenBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.greenMid}}>YES — Perfusion Normalized</div>
+                <div style={{fontSize:11,marginTop:4}}>Antibiotics by suspected source<br/>Correct hypoglycemia/coagulopathy/hypocalcemia<br/><strong>Admit for observation</strong> (PICU Tier 2 vs ward)</div>
+              </div>
+              <div style={{flex:1,background:C.redBg,border:`1.5px solid ${C.redBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.red}}>NO — Repeat bolus</div>
+                <div style={{fontSize:11,marginTop:4}}>Repeat {doses?<span style={{fontFamily:"'IBM Plex Mono',monospace"}}>{doses.bolus20} mL</span>:"20 mL/kg"} bolus<br/>Reassess vitals + perfusion<br/>Check for fluid overload (rales, gallop, hepatomegaly)</div>
+              </div>
+            </div>
+            <TeachBox id="fluids" teaching={teaching}/>
+          </Card>
+
+          <Card title="15–60 Minutes — Up to 60 mL/kg" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Continue boluses up to <strong>{doses?<span style={{fontFamily:"'IBM Plex Mono',monospace"}}>{doses.bolus60} mL</span>:"60 mL/kg"} total in first hour</strong><br/>
+              Reassess after each bolus for perfusion normalization OR fluid overload<br/>
+              Administer antibiotics · Correct hypoglycemia · Correct coagulopathy · Correct hypocalcemia
+            </div>
+          </Card>
+
+          <Card title="Fluid Refractory Shock" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Completed 60 mL/kg or signs of fluid overload WITHOUT perfusion normalization?</strong>
+            </div>
+            <div style={{display:"flex",gap:6,marginTop:8}}>
+              <div style={{flex:1,background:C.blueBg,border:`1.5px solid ${C.blueBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.blue}}>Cold Shock</div>
+                <div style={{fontSize:11,marginTop:4}}>Cold extremities · Prolonged cap refill · Faint pulses · Narrow pulse pressure</div>
+                <div style={{fontSize:12,fontWeight:700,color:C.blue,marginTop:4}}>→ Epinephrine 0.05–1 mcg/kg/min</div>
+              </div>
+              <div style={{flex:1,background:C.amberBg,border:`1.5px solid ${C.amberBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.amberMid}}>Warm Shock</div>
+                <div style={{fontSize:11,marginTop:4}}>Warm extremities · Flash cap refill · Bounding pulses · Wide pulse pressure</div>
+                <div style={{fontSize:12,fontWeight:700,color:C.amberMid,marginTop:4}}>→ Norepi 0.05–1 mcg/kg/min</div>
+              </div>
+            </div>
+            <div style={{fontSize:12,color:C.muted,marginTop:8}}>If catecholamine-refractory → Hydrocortisone {doses?<span style={{fontFamily:"'IBM Plex Mono',monospace"}}>{doses.hydroLo}–{doses.hydroHi} mg</span>:"1–2 mg/kg (max 100)"} IV</div>
+            <div style={{fontSize:12,color:C.red,fontWeight:600,marginTop:4}}>Fluid refractory shock → PICU Tier 1 · Contact PICU early</div>
+            <TeachBox id="vasoactives" teaching={teaching}/>
+            <TeachBox id="corticosteroids" teaching={teaching}/>
+          </Card>
+
+          <Card title="Signs of Normal Perfusion" color={C.greenMid} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              ✓ Normal mental status · ✓ Warm extremities · ✓ Cap refill &lt;2 seconds · ✓ Normal HR and BP for age · ✓ UOP &gt;1 mL/kg/hr
+            </div>
+          </Card>
+
+          <Card title="Signs of Fluid Overload" color={C.amberMid} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Rales · Gallop rhythm · Hepatomegaly
+            </div>
+          </Card>
+
+          {/* ── FLOWCHART ── */}
+          {(()=>{
+            const rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5";
+            const aC="#d97706",aBg="#fffbeb",aBd="#fcd34d";
+            const gC="#16a34a",gBg="#f0fdf4",gBd="#86efac";
+            const bC="#7f1d1d",bBg="#fef2f2",bBd="#fca5a5";
+            const blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd";
+            const mC="#6b7280";
+            const Arrow=({x1,y1,x2,y2,color="#94a3b8"})=>(<g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5}/><polygon points={`${x2},${y2} ${x2-3.5},${y2-6} ${x2+3.5},${y2-6}`} fill={color}/></g>);
+            const Box=({x,y,w,h,fill,stroke,sw=1,radius=6,children})=>(<g><rect x={x} y={y} width={w} height={h} rx={radius} fill={fill} stroke={stroke} strokeWidth={sw}/>{children}</g>);
+            const T=({x,y,size=9,weight=600,color="#1a1d21",anchor="middle",children})=>(<text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={color} fontFamily="'IBM Plex Sans',sans-serif">{children}</text>);
+            return(
+              <div style={{marginTop:20}}>
+                <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Pathway Overview</div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Risk score → Fluids → Reassess → Vasoactives if refractory</div>
+                <div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,padding:6,overflow:"hidden"}}>
+                  <svg viewBox="0 0 480 340" style={{width:"100%",display:"block"}}>
+                    <rect width={480} height={340} fill="#fafaf8" rx={6}/>
+                    <Box x={100} y={6} w={280} h={24} fill={bBg} stroke={bBd} sw={1.5} radius={12}><T x={240} y={17} size={9} weight={700} color={bC}>SEPSIS RISK SCORE ≥6</T><T x={240} y={26} size={5} color={mC}>O₂ · Monitor · IV/IO · Cultures · CBG · Lactate</T></Box>
+                    <Arrow x1={240} y1={30} x2={240} y2={44}/>
+                    <Box x={100} y={44} w={280} h={18} fill={rBg} stroke={rBd} sw={2}><T x={240} y={55} size={8} weight={700} color={rC}>0–5 MIN: NS 20 mL/kg over 5–10 min</T></Box>
+                    <Arrow x1={240} y1={62} x2={240} y2={76}/>
+                    <g transform="translate(240,88)"><polygon points="0,-12 60,0 0,12 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-1} size={6} weight={700}>Perfusion normalized?</T></g>
+                    <Arrow x1={300} y1={88} x2={400} y2={88} color={gC}/>
+                    <Arrow x1={400} y1={88} x2={400} y2={106} color={gC}/>
+                    <Box x={340} y={106} w={120} h={24} fill={gBg} stroke={gBd}><T x={400} y={116} size={6} weight={700} color={gC}>PERFUSION OK</T><T x={400} y={126} size={5}>Abx · Admit obs</T></Box>
+                    <Arrow x1={240} y1={100} x2={240} y2={114}/>
+                    <Box x={100} y={114} w={280} h={18} fill={aBg} stroke={aBd}><T x={240} y={125} size={7} weight={700} color={aC}>5–15 MIN: Repeat 20 mL/kg · Reassess · Abx</T></Box>
+                    <Arrow x1={240} y1={132} x2={240} y2={146}/>
+                    <g transform="translate(240,158)"><polygon points="0,-12 55,0 0,12 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-1} size={6} weight={700}>60 mL/kg or overload?</T></g>
+                    <Arrow x1={240} y1={170} x2={240} y2={184}/>
+                    <Box x={100} y={184} w={280} h={18} fill={rBg} stroke={rBd} sw={2}><T x={240} y={195} size={8} weight={700} color={rC}>FLUID REFRACTORY SHOCK</T></Box>
+                    <Arrow x1={180} y1={202} x2={120} y2={220} color={blC}/>
+                    <Arrow x1={300} y1={202} x2={360} y2={220} color={aC}/>
+                    <Box x={50} y={220} w={140} h={28} fill={blBg} stroke={blBd}><T x={120} y={231} size={7} weight={700} color={blC}>COLD SHOCK</T><T x={120} y={243} size={6}>Epi 0.05–1 mcg/kg/min</T></Box>
+                    <Box x={290} y={220} w={140} h={28} fill={aBg} stroke={aBd}><T x={360} y={231} size={7} weight={700} color={aC}>WARM SHOCK</T><T x={360} y={243} size={6}>Norepi 0.05–1 mcg/kg/min</T></Box>
+                    <Arrow x1={240} y1={248} x2={240} y2={264}/>
+                    <Box x={120} y={264} w={240} h={18} fill={rBg} stroke={rBd}><T x={240} y={275} size={7} weight={700} color={rC}>CATECHOL REFRACTORY → Hydrocortisone</T></Box>
+                    <Box x={60} y={296} w={360} h={22} fill={rBg} stroke={rBd} sw={2} radius={8}><T x={240} y={305} size={7} weight={700} color={rC}>FLUID REFRACTORY = PICU TIER 1</T><T x={240} y={315} size={5} color={mC}>Abx: Shock ≤1h · Sepsis w/organ dysfunction ≤3h</T></Box>
+                  </svg>
+                </div>
+              </div>
+            );
+          })()}
+        </Pad>
+      )}
+
+      {/* ── ABX & MEDS ── */}
+      {tab==="meds"&&(
+        <Pad>
+          <Q text="Antibiotics & Medications" sub={doses?`Calculated for ${doses.w} kg`:"Enter weight for calculations"}/>
+          {!doses&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight above.</Alert>)}
+          <TeachBox id="antibiotics" teaching={teaching}/>
+
+          {[
+            {title:"Suspected Sepsis (resp, GU, no clear source)",color:C.primary,rows:[["Ceftriaxone (50 mg/kg)",doses?doses.ceftri50:"—","mg (max 2g)"]],alt:"If toxic: consider adding Vancomycin 15 mg/kg"},
+            {title:"Immunocompromised",color:C.purple,rows:[["Cefepime (50 mg/kg)",doses?doses.cefep:"—","mg (max 2g)"]],alt:"If toxic: add Vancomycin 15 mg/kg"},
+            {title:"CVC / Skin-Soft Tissue / MRSA Concern",color:C.red,rows:[["Vancomycin (15 mg/kg)",doses?doses.vanco15:"—","mg (max 2g)"]],alt:"If toxic shock syndrome concern: add Clindamycin 10 mg/kg"},
+            {title:"Meningitis",color:C.red,rows:[["Ceftriaxone (100 mg/kg)",doses?Math.round(doses.ceftri100/2):"—","mg q12h (max 2g)"],["Vancomycin (20 mg/kg)",doses?doses.vanco20:"—","mg (max 2g)"]],alt:null},
+            {title:"Abdominal Infection",color:C.amberMid,rows:[["Ceftriaxone (50 mg/kg)",doses?doses.ceftri50:"—","mg (max 2g)"],["Metronidazole (10 mg/kg)",doses?doses.metro:"—","mg (max 1.5g)"]],alt:"Alternative: Piperacillin-tazobactam 100 mg/kg"},
+          ].map((abx,i)=>(
+            <Card key={i} title={abx.title} color={abx.color} defaultOpen={i<2}>
+              <div style={{marginTop:8}}>
+                {abx.rows.map((r,j)=>(<DoseRow key={j} label={r[0]} value={r[1]} unit={r[2]}/>))}
+                {abx.alt&&<div style={{fontSize:11,color:C.muted,marginTop:6}}>{abx.alt}</div>}
+              </div>
+            </Card>
+          ))}
+
+          <Card title="Vasoactives" color={C.red} defaultOpen={false}>
+            <div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+              <strong>Cold shock:</strong> Epinephrine 0.05–1 mcg/kg/min (1st line) · Dopamine 5–20 mcg/kg/min (2nd line)<br/>
+              <strong>Warm shock:</strong> Norepinephrine 0.05–1 mcg/kg/min
+            </div>
+          </Card>
+
+          <Card title="Corrections & Supportive" color={C.primary} defaultOpen={false}>
+            <div style={{marginTop:8}}>
+              <DoseRow label="Ca Gluconate 10% (50 mg/kg) IV over 5 min — iCa <1.1" value={doses?doses.caGluc:"—"} unit={doses?"mg":""}/>
+              <DoseRow label="D10W (5 mL/kg) for CBG <60" value={doses?doses.d10:"—"} unit={doses?"mL":""}/>
+              <DoseRow label="Hydrocortisone (1–2 mg/kg, max 100) — catechol refractory" value={doses?`${doses.hydroLo}–${doses.hydroHi}`:"—"} unit={doses?"mg":""}/>
+              <DoseRow label="Acetaminophen PO (12.5 mg/kg)" value={doses?doses.apapPO:"—"} unit={doses?"mg":""}/>
+              <DoseRow label="Acetaminophen PR (15 mg/kg)" value={doses?doses.apapPR:"—"} unit={doses?"mg":""}/>
+            </div>
+          </Card>
+
+          <Card title="Intubation — If Needed" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Consider for fluid-refractory, catecholamine-resistant septic shock<br/>
+              <strong style={{color:C.greenMid}}>Ketamine</strong> is the preferred induction agent<br/>
+              <strong style={{color:C.red}}>Avoid etomidate</strong> — causes adrenal insufficiency
+            </div>
+            <TeachBox id="intubation" teaching={teaching}/>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ── DISPO & REFS ── */}
+      {tab==="special"&&(
+        <Pad>
+          <Q text="Disposition & References"/>
+          <Card title="Disposition" color={C.primary}>
+            <div style={{marginTop:8}}>
+              <div style={{background:C.redBg,border:`1.5px solid ${C.redBorder}`,borderRadius:8,padding:"10px 12px",marginBottom:6}}>
+                <div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU Tier 1</div>
+                <div style={{fontSize:12}}>Fluid refractory shock · Requiring vasoactives · Catecholamine refractory</div>
+              </div>
+              <div style={{background:C.amberBg,border:`1.5px solid ${C.amberBorder}`,borderRadius:8,padding:"10px 12px",marginBottom:6}}>
+                <div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>PICU Tier 2</div>
+                <div style={{fontSize:12}}>Perfusion normalized after fluids but ongoing concern</div>
+              </div>
+              <div style={{background:C.greenBg,border:`1.5px solid ${C.greenBorder}`,borderRadius:8,padding:"10px 12px"}}>
+                <div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>Ward</div>
+                <div style={{fontSize:12}}>Perfusion normalized, stable after antibiotics, low-risk</div>
+              </div>
+            </div>
+            <div style={{fontSize:12,color:C.red,fontWeight:600,marginTop:8}}>Contact PICU early if ICU admission anticipated</div>
+          </Card>
+          <Card title="References" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>
+              1. Goldstein B et al. International pediatric sepsis consensus conference: definitions for sepsis and organ dysfunction in pediatrics. <em>Pediatr Crit Care Med</em> 2005; 6:2.<br/>
+              2. Davis AL et al. ACCM clinical practice parameters for hemodynamic support of pediatric and neonatal septic shock. <em>Crit Care Med</em> 2017; 45:1061.<br/>
+              3. Weiss SL et al. Surviving Sepsis Campaign international guidelines for management of septic shock and sepsis-associated organ dysfunction in children. <em>Pediatr Crit Care Med</em> 2020; 21:e52.
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:`1px solid ${C.rule}`}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Sepsis ≥60 Days Clinical Pathway · March 2021
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
