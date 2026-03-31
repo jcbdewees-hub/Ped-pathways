@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreign Body Ingestion — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#78350f",pLight:"#fffbeb",pBorder:"#fcd34d",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+  overview:{title:"Pathway Rationale",content:"Foreign body ingestion is common in children, with coins being the most frequently ingested object. This pathway streamlines interdisciplinary evaluation by rapidly determining whether the FB requires removal and stratifying urgency. The critical distinction is between button batteries (which can cause serious esophageal burns within 2 hours) and all other foreign bodies, which have more time for systematic evaluation."},
+  buttonBattery:{title:"Button Battery Emergency",content:"Serious esophageal burns can occur within 2 hours of ingestion. Complications include tracheoesophageal fistula, vocal cord paralysis, subglottic/tracheal stenosis, esophageal perforation or stenosis, mediastinitis, aortic arch perforation, and GI hemorrhage/perforation. Risk factors for complication and death: battery diameter ≥20mm, age <4 years, >1 battery ingested, delayed removal, unknown ingestion time, and co-ingestion of a magnet. The most commonly ingested button battery is the 20mm lithium coin cell."},
+  sucralfate:{title:"Sucralfate / Honey for Esophageal Button Battery",content:"Anfang et al. (2019) demonstrated that both honey and sucralfate significantly prevent battery-induced pH increase and depth of esophageal injury compared to other solutions, both in vitro and in vivo. These are pH-neutralizing agents that mitigate ongoing caustic injury while awaiting OR. Give sucralfate 10 mL q10min ×3 doses, OR honey 10 mL q10min ×6 doses (honey only if age >1 year due to botulism risk). These are bridge therapies — they do NOT replace emergent removal."},
+  imaging:{title:"Imaging Approach",content:"AP and lateral views are essential to locate the FB and differentiate alimentary from respiratory tract. Only 64% of ingested foreign bodies are radiopaque in children, so a high index of suspicion should be maintained even with negative imaging. If outside imaging has already confirmed an esophageal button battery, do NOT repeat imaging — go directly to OR. For suspected button batteries, the 'double ring' or 'halo' sign on AP and 'step-off' sign on lateral distinguish batteries from coins."},
+  coinVsBattery:{title:"Coin vs Button Battery on XR",content:"Radiographic features suggesting a button battery include the 'double ring' or 'halo' sign on AP films and the 'step-off' sign on lateral, reflecting the bilevel contour of batteries. Size alone cannot reliably distinguish them — radiographic magnification overestimates size. Reference: penny 19mm, nickel 21mm, dime 18mm, quarter 24mm. The most common button battery (20mm lithium cell) is similar in size to a penny or nickel."},
+  esophageal:{title:"Esophageal Foreign Bodies",content:"Duration of lodgment is one of the strongest predictors of complication, including mucosal injury, bleeding, stricture, and obstruction. FBs present >24 hours warrant more urgent removal. Respiratory symptoms, drooling, or prolonged lodgment (>24h) → ENT or Surgery consult for emergent endoscopy. Coins in the esophagus may be observed briefly for spontaneous passage, but if still present on repeat imaging, require endoscopic removal."},
+  sharp:{title:"Sharp or Long Objects",content:"Sharp objects (needles, pins, glass) and long objects (>2.5 cm in children <5 years, >5 cm in school-age children) in the stomach or beyond carry higher perforation risk and generally warrant surgical consultation. Multiple magnets are also high-risk — if magnets are in different loops of bowel, they can attract through the intestinal wall causing pressure necrosis, fistula, or perforation."},
+  glucagon:{title:"Glucagon & Enzymes — NOT Recommended",content:"Proteolytic enzymes have been associated with hypernatremia, erosion, esophageal perforation, and aspiration pneumonitis. Glucagon has not been shown to be efficacious for esophageal FB and commonly causes nausea and vomiting. Neither should be used."},
+  consults:{title:"Consult Routing by Location",content:"Above thoracic inlet and/or respiratory symptoms → Peds ENT. Below thoracic inlet but above stomach (esophageal) → Peds Surgery. In stomach or intestines WITH symptoms → Peds Surgery (or GI). In stomach or intestines WITHOUT symptoms → Peds GI. Esophageal button battery → Button Battery Paging Group (GI + Surgery + CT Surgery + Interventional Cardiology)."},
+};
+
+// Responsive hook
+function useResponsive(){const[w,setW]=useState(typeof window!=='undefined'?window.innerWidth:520);useEffect(()=>{const h=()=>setW(window.innerWidth);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);return{isDesktop:w>=640,maxW:w>=640?800:520};}
+
+// Primitives with responsive
+function Header({teaching,onToggleTeach}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:22,fontWeight:700,marginTop:4,lineHeight:1.2}}>Foreign Body Ingestion</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · Age &lt;18 · July 2022</div></div><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:`1.5px solid ${teaching?"#fff":"#ffffff40"}`,color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 ON":"📖 Teach"}</button></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:`1px solid ${C.rule}`,overflowX:"auto"}}>{tabs.map(t=>{const act=t.key===current;return(<button key={t.key} onClick={()=>onChange(t.key)} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?`2.5px solid ${C.primary}`:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>);})}</div>);}
+function Pad({children}){return<div style={{padding:"20px"}}>{children}</div>;}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>);}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:`1.5px solid ${border}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>);}
+function Sec({title,color,children}){return(<div style={{marginBottom:14}}><div style={{fontSize:13,fontWeight:700,color,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:6,paddingBottom:4,borderBottom:`2px solid ${color}`}}>{title}</div>{children}</div>);}
+function DoseRow({label,value,unit=""}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:`1px dashed ${C.rule}`}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit}</span></div>);}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;const t=TEACH[id];return(<div style={{background:C.tealBg,border:`1.5px solid ${C.tealBorder}`,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:`4px solid ${C.teal}`}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink}}>{t.content}</div></div>);}
+function Card({title,color,children,defaultOpen=true}){const[open,setOpen]=useState(defaultOpen);return(<div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={()=>setOpen(o=>!o)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:`1px solid ${C.rule}`}}>{children}</div>}</div>);}
+
+function App(){
+  const[tab,setTab]=useState("triage");
+  const[teaching,setTeaching]=useState(false);
+  const[weightKg,setWeightKg]=useState("");
+  const{maxW}=useResponsive();
+  const wt=parseFloat(weightKg)||0;
+  const bolus=wt>0?Math.round(wt*20):null;
+
+  const tabs=[
+    {key:"triage",label:"Triage"},
+    {key:"battery",label:"Button Battery"},
+    {key:"decision",label:"Other FB"},
+    {key:"special",label:"Dispo & Refs"},
+  ];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={()=>setTeaching(t=>!t)}/>
+      <TabBar current={tab} tabs={tabs} onChange={setTab}/>
+
+      <div style={{background:C.white,borderBottom:`1px solid ${C.rule}`,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}>
+          <label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label>
+          <input type="number" inputMode="decimal" value={weightKg} onChange={e=>setWeightKg(e.target.value)} placeholder="15" style={{display:"block",width:"100%",padding:"6px 8px",border:`1.5px solid ${C.rule}`,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}} onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.rule}/>
+        </div>
+      </div>
+
+      {/* ── TRIAGE ── */}
+      {tab==="triage"&&(
+        <Pad>
+          <Q text="Triage & Initial Assessment" sub="Any patient <18 with suspected or known alimentary tract foreign body"/>
+          <TeachBox id="overview" teaching={teaching}/>
+
+          <Card title="Inclusion / Exclusion" color={C.primary}>
+            <div style={{marginTop:8}}>
+              <Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Age &lt;18 with suspected or known ingestion of an alimentary tract foreign body</Alert>
+              <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Aspirated foreign bodies (→ airway management)</Alert>
+            </div>
+          </Card>
+
+          <Card title="All Patients — Initiate on Arrival" color={C.primary}>
+            <div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>
+              <strong>ESI Level II</strong> · Full vitals<br/>
+              Continuous cardiac monitoring + pulse oximetry<br/>
+              HOB 30 degrees<br/>
+              <strong style={{color:C.red}}>NPO</strong>
+            </div>
+          </Card>
+
+          <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔋" title="Suspected Esophageal Button Battery?">
+            <strong>This is a TIME-CRITICAL emergency.</strong> Go to the <strong>Button Battery</strong> tab immediately. Serious esophageal burns can occur within 2 hours.
+          </Alert>
+          <TeachBox id="buttonBattery" teaching={teaching}/>
+
+          <Card title="Imaging" color={C.blue}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong style={{color:C.red}}>If outside imaging already confirms esophageal button battery → do NOT repeat → go to OR ASAP</strong><br/><br/>
+              <strong>Radiopaque objects</strong> (battery, magnets, coins, metal):<br/>
+              → AP nose-to-rectum radiograph<br/>
+              → Add lateral views of neck, chest, abdomen if esophageal position suspected<br/><br/>
+              <strong>Radiolucent objects</strong> (fish bone, food impaction, small objects) not seen on plain films:<br/>
+              → History of esophageal surgery? → Consult Peds Surgery<br/>
+              → No surgical history? → Consult Peds GI → consider esophagram
+            </div>
+            <TeachBox id="imaging" teaching={teaching}/>
+            <TeachBox id="coinVsBattery" teaching={teaching}/>
+          </Card>
+
+          <Card title="Nursing Documentation" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Chief complaint · Witnessed or suspected object + time of ingestion · Airway/breathing assessment · Drooling? · Diet/last PO · Appetite history or refusal · Wet diapers · Stool (bloody vs non-bloody) · Hydration status · LOC/alertness · Choking/gagging episodes
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ── BUTTON BATTERY ── */}
+      {tab==="battery"&&(
+        <Pad>
+          <Q text="Button Battery Protocol" sub="Time-critical — burns within 2 hours"/>
+          <TeachBox id="buttonBattery" teaching={teaching}/>
+
+          <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Esophageal Button Battery = EMERGENT">
+            Page the <strong>Button Battery Paging Group</strong> immediately:<br/>
+            Gastroenterology + Pediatric Surgery + CT Surgery + Interventional Cardiology
+          </Alert>
+
+          <Card title="Esophageal Button Battery" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>
+              <strong>1.</strong> Page Button Battery Paging Group<br/>
+              <strong>2.</strong> Place 2 large-bore PIVs<br/>
+              <strong>3.</strong> Pre-op labs including <strong>type and cross</strong> for possible transfusion in OR<br/>
+              <strong>4.</strong> Begin pH-neutralizing therapy:<br/>
+              <div style={{paddingLeft:16,marginTop:4,marginBottom:4}}>
+                <strong>Sucralfate</strong> 10 mL q10 min × 3 doses<br/>
+                <strong>OR Honey</strong> 10 mL q10 min × 6 doses <strong style={{color:C.red}}>(ONLY if age &gt;1 year)</strong>
+              </div>
+              <strong>5.</strong> <strong style={{color:C.red}}>Admit to OR ASAP</strong>
+            </div>
+            <TeachBox id="sucralfate" teaching={teaching}/>
+          </Card>
+
+          <Card title="Button Battery in Stomach or Small Bowel" color={C.amberMid}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Consult Peds GI</strong><br/>
+              Place IV<br/>
+              <strong style={{color:C.red}}>NO sucralfate or honey</strong> (only for esophageal location)<br/>
+              Management per GI — may observe for passage or require endoscopic removal
+            </div>
+          </Card>
+
+          <Card title="XR: Coin vs Battery" color={C.blue} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Button battery features:</strong><br/>
+              • AP: "double ring" or "halo" sign (bilevel contour)<br/>
+              • Lateral: "step-off" sign<br/><br/>
+              <strong>Size cannot distinguish them reliably.</strong><br/>
+              Penny 19mm · Nickel 21mm · Dime 18mm · Quarter 24mm<br/>
+              Most common battery: 20mm lithium coin cell (≈ penny/nickel)
+            </div>
+            <TeachBox id="coinVsBattery" teaching={teaching}/>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ── OTHER FB ── */}
+      {tab==="decision"&&(
+        <Pad>
+          <Q text="Non-Battery Foreign Body" sub="Decision by location and object type"/>
+
+          <Card title="Airway Compromise?" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>YES →</strong> Resuscitate · Emergent ENT consult<br/>
+              <strong>NO →</strong> Continue with location-based management below
+            </div>
+          </Card>
+
+          <div style={{fontSize:15,fontWeight:700,color:C.ink,marginTop:16,marginBottom:10}}>By Location on Imaging</div>
+
+          <Card title="Esophagus" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Respiratory symptoms, drooling, or FB present &gt;24 hours?</strong>
+            </div>
+            <div style={{display:"flex",gap:6,marginTop:8}}>
+              <div style={{flex:1,background:C.redBg,border:`1.5px solid ${C.redBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.red}}>YES to any</div>
+                <div style={{fontSize:11,marginTop:4}}>
+                  Respiratory sx or above thoracic inlet → <strong>Peds ENT</strong><br/>
+                  Below thoracic inlet → <strong>Peds Surgery</strong><br/>
+                  NPO · PIV · Admit to OR (emergently if symptomatic)
+                </div>
+              </div>
+              <div style={{flex:1,background:C.greenBg,border:`1.5px solid ${C.greenBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.greenMid}}>NO to all</div>
+                <div style={{fontSize:11,marginTop:4}}>
+                  May PO challenge and repeat imaging after observation period<br/>
+                  If still in esophagus → Consult Peds ENT or Surgery → OR
+                </div>
+              </div>
+            </div>
+            <TeachBox id="esophageal" teaching={teaching}/>
+          </Card>
+
+          <Card title="Stomach" color={C.amberMid}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Symptoms attributable to FB? OR object sharp, long*, or multiple magnets?</strong>
+            </div>
+            <div style={{display:"flex",gap:6,marginTop:8}}>
+              <div style={{flex:1,background:C.redBg,border:`1.5px solid ${C.redBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.red}}>YES — Symptomatic or dangerous object</div>
+                <div style={{fontSize:11,marginTop:4}}>
+                  Consult Peds GI · NPO · PIV<br/>
+                  <strong>Admit to OR urgently for endoscopy</strong>
+                </div>
+              </div>
+              <div style={{flex:1,background:C.greenBg,border:`1.5px solid ${C.greenBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.greenMid}}>NO — Asymptomatic blunt object</div>
+                <div style={{fontSize:11,marginTop:4}}>
+                  Expectant management<br/>
+                  Radiograph in 1 week if no passage in stool<br/>
+                  Consider GI consult for follow-up
+                </div>
+              </div>
+            </div>
+            <div style={{fontSize:11,color:C.muted,marginTop:6}}>*Long = &gt;2.5 cm in &lt;5 years · &gt;5 cm in school-age</div>
+            <TeachBox id="sharp" teaching={teaching}/>
+          </Card>
+
+          <Card title="Beyond Stomach (Intestines)" color={C.blue}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Abdominal tenderness, vomiting, or evidence of obstruction/perforation on XR?</strong>
+            </div>
+            <div style={{display:"flex",gap:6,marginTop:8}}>
+              <div style={{flex:1,background:C.redBg,border:`1.5px solid ${C.redBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.red}}>YES</div>
+                <div style={{fontSize:11,marginTop:4}}>Consult Peds Surgery · NPO · PIV<br/><strong>Admit to Peds Surgery</strong></div>
+              </div>
+              <div style={{flex:1,background:C.greenBg,border:`1.5px solid ${C.greenBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.greenMid}}>NO</div>
+                <div style={{fontSize:11,marginTop:4}}>Consult GI<br/>Admit vs discharge with f/u per GI discretion<br/>Radiograph in 1 week if no passage</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card title="FB Not Visualized on Imaging" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Esophageal FB still strongly suspected or symptoms present?<br/>
+              → History of esophageal surgery? → Consult Peds Surgery<br/>
+              → No surgical history? → Consult Peds GI → consider esophagram<br/><br/>
+              <span style={{fontSize:12,color:C.muted}}>Only 64% of ingested FBs are radiopaque — maintain high index of suspicion</span>
+            </div>
+          </Card>
+
+          <Card title="Glucagon / Enzymes — NOT Recommended" color={C.red} defaultOpen={false}>
+            <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Do Not Use">
+              Proteolytic enzymes → hypernatremia, erosion, perforation, aspiration pneumonitis<br/>
+              Glucagon → not efficacious, causes nausea/vomiting
+            </Alert>
+            <TeachBox id="glucagon" teaching={teaching}/>
+          </Card>
+
+          {/* ── FLOWCHART ── */}
+          {(()=>{
+            const rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5";
+            const aC="#d97706",aBg="#fffbeb",aBd="#fcd34d";
+            const gC="#16a34a",gBg="#f0fdf4",gBd="#86efac";
+            const bC="#78350f",bBg="#fffbeb",bBd="#fcd34d";
+            const blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd";
+            const pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd";
+            const mC="#6b7280";
+            const Arrow=({x1,y1,x2,y2,color="#94a3b8"})=>(<g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5}/><polygon points={`${x2},${y2} ${x2-3.5},${y2-6} ${x2+3.5},${y2-6}`} fill={color}/></g>);
+            const Box=({x,y,w,h,fill,stroke,sw=1,radius=6,children})=>(<g><rect x={x} y={y} width={w} height={h} rx={radius} fill={fill} stroke={stroke} strokeWidth={sw}/>{children}</g>);
+            const T=({x,y,size=9,weight=600,color="#1a1d21",anchor="middle",children})=>(<text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={color} fontFamily="'IBM Plex Sans',sans-serif">{children}</text>);
+            return(
+              <div style={{marginTop:20}}>
+                <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Pathway Overview</div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Suspected FB → Airway → Imaging → Battery? → Location → Management</div>
+                <div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,padding:6,overflow:"hidden"}}>
+                  <svg viewBox="0 0 480 520" style={{width:"100%",display:"block"}}>
+                    <rect width={480} height={520} fill="#fafaf8" rx={6}/>
+
+                    {/* Row 1: Arrival */}
+                    <Box x={100} y={6} w={280} h={24} fill={bBg} stroke={bBd} sw={1.5} radius={12}>
+                      <T x={240} y={17} size={9} weight={700} color={bC}>SUSPECTED FB INGESTION</T>
+                      <T x={240} y={26} size={5} color={mC}>ESI II · Vitals · Monitoring · NPO · HOB 30°</T>
+                    </Box>
+                    <Arrow x1={240} y1={30} x2={240} y2={42}/>
+
+                    {/* Row 2: Airway */}
+                    <g transform="translate(240,54)"><polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={1} size={6} weight={700}>Airway OK?</T></g>
+                    <line x1={290} y1={54} x2={440} y2={54} stroke="#94a3b8" strokeWidth={1}/>
+                    <Arrow x1={440} y1={54} x2={440} y2={68} color={rC}/>
+                    <Box x={400} y={68} w={76} h={18} fill={rBg} stroke={rBd} sw={2}><T x={438} y={79} size={6} weight={700} color={rC}>Emergent ENT</T></Box>
+
+                    <Arrow x1={240} y1={66} x2={240} y2={78}/>
+
+                    {/* Row 3: Existing imaging? */}
+                    <g transform="translate(240,90)"><polygon points="0,-12 55,0 0,12 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Outside imaging</T><T x={0} y={7} size={6} weight={700}>confirms esoph BB?</T></g>
+                    <line x1={295} y1={90} x2={440} y2={90} stroke="#94a3b8" strokeWidth={1}/>
+                    <Arrow x1={440} y1={90} x2={440} y2={104} color={rC}/>
+                    <Box x={400} y={104} w={76} h={18} fill={rBg} stroke={rBd} sw={2}><T x={438} y={115} size={6} weight={700} color={rC}>Skip XR → OR</T></Box>
+
+                    <Arrow x1={240} y1={102} x2={240} y2={114}/>
+
+                    {/* Row 4: Stat imaging */}
+                    <Box x={120} y={114} w={240} h={16} fill={blBg} stroke={blBd}><T x={240} y={124} size={7} weight={700} color={blC}>STAT IMAGING — AP ± Lateral</T></Box>
+                    <Arrow x1={240} y1={130} x2={240} y2={142}/>
+
+                    {/* Row 5: Button battery? */}
+                    <g transform="translate(240,154)"><polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={1} size={6} weight={700}>Button Battery?</T></g>
+
+                    {/* Battery YES → left */}
+                    <Arrow x1={190} y1={154} x2={80} y2={178} color={rC}/>
+                    <Box x={10} y={178} w={140} h={18} fill={rBg} stroke={rBd} sw={2}><T x={80} y={189} size={7} weight={700} color={rC}>🔋 BUTTON BATTERY</T></Box>
+                    <Arrow x1={50} y1={196} x2={50} y2={208} color={rC}/>
+                    <Arrow x1={110} y1={196} x2={110} y2={208} color={aC}/>
+                    <Box x={10} y={208} w={70} h={30} fill={rBg} stroke={rBd}><T x={45} y={219} size={6} weight={700} color={rC}>ESOPHAGUS</T><T x={45} y={228} size={5}>Sucralfate/Honey</T><T x={45} y={236} size={5} weight={700} color={rC}>→ OR ASAP</T></Box>
+                    <Box x={84} y={208} w={70} h={30} fill={aBg} stroke={aBd}><T x={119} y={219} size={6} weight={700} color={aC}>STOMACH/SB</T><T x={119} y={228} size={5}>GI consult · IV</T><T x={119} y={236} size={5}>No sucralfate</T></Box>
+
+                    {/* Non-battery → right */}
+                    <Arrow x1={290} y1={154} x2={340} y2={178} color={bC}/>
+
+                    {/* Row 6: FB visualized? */}
+                    <g transform="translate(340,190)"><polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={1} size={6} weight={700}>FB visualized?</T></g>
+
+                    {/* Not visualized */}
+                    <line x1={390} y1={190} x2={440} y2={190} stroke="#94a3b8" strokeWidth={1}/>
+                    <Arrow x1={440} y1={190} x2={440} y2={206} color={pC}/>
+                    <Box x={400} y={206} w={76} h={28} fill={pBg} stroke={pBd}><T x={438} y={216} size={5} weight={700} color={pC}>NOT SEEN</T><T x={438} y={225} size={5}>Esoph surg hx?</T><T x={438} y={232} size={5} color={mC}>Y:Surg N:GI</T></Box>
+
+                    {/* Visualized → location */}
+                    <Arrow x1={340} y1={202} x2={340} y2={216}/>
+                    <Box x={240} y={216} w={200} h={14} fill={bBg} stroke={bBd}><T x={340} y={226} size={7} weight={700} color={bC}>FB SEEN — LOCATION?</T></Box>
+
+                    <Arrow x1={280} y1={230} x2={240} y2={248} color={rC}/>
+                    <Arrow x1={340} y1={230} x2={340} y2={248} color={aC}/>
+                    <Arrow x1={400} y1={230} x2={420} y2={248} color={gC}/>
+
+                    {/* ESOPHAGUS column */}
+                    <Box x={185} y={248} w={110} h={56} fill={rBg} stroke={rBd}>
+                      <T x={240} y={258} size={7} weight={700} color={rC}>ESOPHAGUS</T>
+                      <T x={240} y={268} size={5}>Resp sx / drool / &gt;24h?</T>
+                      <T x={240} y={278} size={5} color={rC} weight={600}>Y: Above inlet→ENT</T>
+                      <T x={240} y={286} size={5} color={rC} weight={600}>Y: Below inlet→Surg</T>
+                      <T x={240} y={296} size={5} color={gC}>N: PO challenge →</T>
+                      <T x={240} y={302} size={5} color={gC}>repeat XR → if still</T>
+                    </Box>
+                    <Arrow x1={240} y1={304} x2={240} y2={316} color={rC}/>
+                    <Box x={200} y={316} w={80} h={16} fill={rBg} stroke={rBd}><T x={240} y={327} size={6} weight={700} color={rC}>→ OR if persists</T></Box>
+
+                    {/* STOMACH column */}
+                    <Box x={300} y={248} w={90} h={56} fill={aBg} stroke={aBd}>
+                      <T x={345} y={258} size={7} weight={700} color={aC}>STOMACH</T>
+                      <T x={345} y={268} size={5}>Sx or dangerous obj?</T>
+                      <T x={345} y={278} size={5} color={rC} weight={600}>Sx/sharp/long*→</T>
+                      <T x={345} y={286} size={5} color={rC}>GI · NPO · OR urgent</T>
+                      <T x={345} y={296} size={5} color={gC}>Blunt coin → observe</T>
+                      <T x={345} y={302} size={5} color={aC}>Multi magnets→GI f/u</T>
+                    </Box>
+
+                    {/* BEYOND STOMACH column */}
+                    <Box x={395} y={248} w={80} h={46} fill={gBg} stroke={gBd}>
+                      <T x={435} y={258} size={7} weight={700} color={gC}>INTESTINE</T>
+                      <T x={435} y={268} size={5}>Obstruction signs?</T>
+                      <T x={435} y={278} size={5} color={rC} weight={600}>Y: Surg · NPO · Admit</T>
+                      <T x={435} y={288} size={5} color={gC}>N: GI · admit vs D/C</T>
+                    </Box>
+
+                    {/* Long definition */}
+                    <Box x={290} y={310} w={100} h={12} fill={C.white} stroke={aBd} radius={3}>
+                      <T x={340} y={318} size={5} color={mC}>*Long: &gt;2.5cm &lt;5y · &gt;5cm school-age</T>
+                    </Box>
+
+                    {/* Consult routing */}
+                    <Box x={20} y={340} w={440} h={34} fill="#f1f5f9" stroke="#e2e8f0" radius={8}>
+                      <T x={240} y={352} size={6} weight={700} color={bC}>CONSULT ROUTING</T>
+                      <T x={240} y={362} size={5} color={mC}>Above thoracic inlet/resp sx → ENT · Esophageal → Surgery · Gastric+sx → GI/Surg · Gastric no sx → GI</T>
+                      <T x={240} y={370} size={5} color={rC}>Esophageal BB → Button Battery Paging Group (GI + Surg + CTS + IC)</T>
+                    </Box>
+
+                    {/* Prohibited */}
+                    <Box x={100} y={386} w={280} h={16} fill={rBg} stroke={rBd} radius={4}>
+                      <T x={240} y={397} size={6} weight={700} color={rC}>⚠ DO NOT USE: Glucagon or proteolytic enzymes</T>
+                    </Box>
+
+                    {/* XR note */}
+                    <Box x={60} y={412} w={360} h={14} fill={blBg} stroke={blBd} radius={4}>
+                      <T x={240} y={421} size={5} weight={600} color={blC}>Only 64% of ingested FBs are radiopaque — maintain high index of suspicion</T>
+                    </Box>
+
+                    {/* Expectant management note */}
+                    <Box x={60} y={434} w={360} h={14} fill={gBg} stroke={gBd} radius={4}>
+                      <T x={240} y={443} size={5} weight={600} color={gC}>Expectant management: radiograph in 1 week if no passage in stool</T>
+                    </Box>
+                  </svg>
+                </div>
+              </div>
+            );
+          })()}
+        </Pad>
+      )}
+
+      {/* ── DISPO & REFS ── */}
+      {tab==="special"&&(
+        <Pad>
+          <Q text="Disposition, Consults & References"/>
+
+          <Card title="Consult Routing Summary" color={C.primary}>
+            <div style={{marginTop:8}}>
+              {[
+                ["🔋 Esophageal button battery","Button Battery Paging Group","EMERGENT → OR ASAP",C.red],
+                ["Above thoracic inlet / respiratory symptoms","Peds ENT","NPO · PIV · Admit to OR",C.red],
+                ["Esophageal (below thoracic inlet)","Peds Surgery","NPO · PIV · Admit to OR",C.amberMid],
+                ["Stomach/intestines WITH symptoms","Peds Surgery or GI","NPO · PIV · Admit",C.amberMid],
+                ["Stomach/intestines, NO symptoms","Peds GI","Admit vs D/C per GI",C.greenMid],
+              ].map(([loc,consult,action,color],i)=>(
+                <div key={i} style={{padding:"8px 0",borderBottom:`1px dashed ${C.rule}`,display:"flex",flexDirection:"column",gap:2}}>
+                  <div style={{fontSize:13,fontWeight:700,color}}>{loc}</div>
+                  <div style={{fontSize:12}}>Consult: <strong>{consult}</strong> · {action}</div>
+                </div>
+              ))}
+            </div>
+            <TeachBox id="consults" teaching={teaching}/>
+          </Card>
+
+          <Card title="Supportive Care" color={C.primary} defaultOpen={false}>
+            <div style={{marginTop:8}}>
+              <DoseRow label="NS bolus (20 mL/kg)" value={bolus||"—"} unit={bolus?"mL":""}/>
+              <div style={{fontSize:12,color:C.muted,marginTop:4}}>If indicated for resuscitation</div>
+            </div>
+          </Card>
+
+          <Card title="References" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>
+              1. National Capital Poison Center. Button Battery Ingestion and Treatment Guideline. <em>poison.org/battery/guideline</em><br/>
+              2. Kramer RE et al. Management of ingested foreign bodies in children: NASPGHAN Endoscopy Committee clinical report. <em>J Pediatr Gastroenterol Nutr</em> 2015; 60(4):562–74.<br/>
+              3. Anfang RR et al. pH-neutralizing esophageal irrigations as a novel mitigation strategy for button battery injury. <em>Laryngoscope</em> 2019; 129:49–57.<br/>
+              4. Wyllie R. Foreign bodies in the gastrointestinal tract. <em>Curr Opin Pediatr</em> 2006; 18(5):563–4.<br/>
+              5. Lee JH et al. Initial location determines spontaneous passage of foreign bodies from the GI tract in children. <em>Pediatr Emerg Care</em> 2011; 27(4):284–9.
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:`1px solid ${C.rule}`}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Foreign Body Ingestion Clinical Pathway · July 2022
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
