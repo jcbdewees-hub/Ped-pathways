@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acute Scrotal Pain — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useMemo}=React;
+const C={primary:"#1e3a5f",pLight:"#eff6ff",pBorder:"#93c5fd",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+  overview:{title:"Pathway Rationale",content:"Acute scrotal pain is a urologic emergency until testicular torsion is excluded. The TWIST score provides a validated, rapid clinical tool to stratify risk. A score ≥5 has 100% PPV and 100% specificity for torsion — these patients go directly to urology without imaging. A score ≤2 has 100% NPV. Scores 3–4 are indeterminate and require Doppler US. This pathway standardizes the approach, ensures rapid urology referral when appropriate, and improves discharge care for non-torsion diagnoses."},
+  twist:{title:"TWIST Score Validation",content:"Barbosa et al. prospectively validated the TWIST score in 338 patients aged 3 months to 18 years with acute scrotal pain. Score ≤2: NPV 100% (98–100%), sensitivity 100%, specificity 82%. Score ≥5: PPV 100% (89–100%), sensitivity 76%, specificity 100%. The five parameters are: testicular swelling (2 pts), hard testicle (2 pts), absent cremasteric reflex (1 pt), nausea/vomiting (1 pt), high-riding testis (1 pt)."},
+  ultrasound:{title:"Scrotal Doppler Ultrasound",content:"For TWIST scores <5, Doppler US increases diagnostic predictivity. Decreased or absent testicular blood flow has sensitivity 63% and specificity 99% for torsion (Karmazyn et al.). Key findings to evaluate: testicular blood flow (absent/decreased vs normal vs increased), appendix testis/epididymis swelling, peritesticular perfusion, epididymal echogenicity, and scrotal edema. US also identifies appendicular torsion (torsion of the appendix testis), which has a characteristic appearance and can be managed conservatively."},
+  appendicular:{title:"Appendicular Torsion",content:"Torsion of the testicular appendix or appendix epididymis presents with superior-lateral testicular tenderness, sometimes with a visible 'blue dot' sign (ischemic appendix visible through the scrotal skin). Doppler US shows a characteristic swollen appendix with surrounding inflammation but preserved testicular blood flow. This is managed conservatively: NSAIDs, scrotal support, ice. It is self-limited and does not require surgery."},
+  epididymitis:{title:"Epididymo-Orchitis",content:"Suspected when US shows increased blood flow with scrotal swelling, especially with positive UA or fever. In pediatric patients, the etiology is often viral, post-infectious, or reactive rather than bacterial. Only ~15–19% of urine cultures are positive in pediatric epididymitis. Bacterial epididymitis warrants antibiotics and urology consultation. Non-bacterial epididymitis is managed with NSAIDs and supportive care. STI testing (GC/CT PCR) should be obtained only when sexual history is suggestive."},
+  antibiotics:{title:"Antibiotic Selection",content:"Non-STI epididymo-orchitis: ofloxacin 300 mg PO BID ×10 days OR levofloxacin 500 mg PO daily ×10 days. Fluoroquinolones provide excellent tissue penetration to the testis and epididymis. STI epididymo-orchitis: ceftriaxone 250 mg IM ×1 PLUS doxycycline 100 mg PO BID ×10 days. For men who practice insertive anal sex: levofloxacin 500 mg daily ×10 days instead. Based on CDC 2010 guidelines and Pilatz et al. showing >85% fluoroquinolone susceptibility."},
+  discharge:{title:"Discharge Education",content:"All non-torsion scrotal pain patients should receive scrotal pain education materials covering: expected course, activity modification, scrotal support, ice application, NSAID use, and return precautions (worsening pain, new swelling, fever). Patients with epididymo-orchitis should have urology follow-up arranged."},
+};
+
+const TWIST_PARAMS=[
+  {name:"Testicular Swelling",pts:2},
+  {name:"Hard Testicle",pts:2},
+  {name:"Absent Cremasteric Reflex",pts:1},
+  {name:"Nausea / Vomiting",pts:1},
+  {name:"High-Riding Testis",pts:1},
+];
+
+function useResponsive(){const[w,setW]=useState(typeof window!=='undefined'?window.innerWidth:520);useEffect(()=>{const h=()=>setW(window.innerWidth);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);return{maxW:w>=640?800:520};}
+
+function calcDoses(w){const wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,ibu:Math.round(wt*10),apap_lo:Math.round(wt*10),apap_hi:Math.round(wt*15),zofran_lo:Math.round(wt*0.1*10)/10,zofran_hi:Math.min(Math.round(wt*0.2*10)/10,8)};}
+
+function Header({teaching,onToggleTeach}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:22,fontWeight:700,marginTop:4,lineHeight:1.2}}>Acute Scrotal Pain</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · Ages 3 mo–19 yr · January 2022</div></div><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:`1.5px solid ${teaching?"#fff":"#ffffff40"}`,color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 ON":"📖 Teach"}</button></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:`1px solid ${C.rule}`,overflowX:"auto"}}>{tabs.map(t=>{const act=t.key===current;return(<button key={t.key} onClick={()=>onChange(t.key)} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?`2.5px solid ${C.primary}`:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>);})}</div>);}
+function Pad({children}){return<div style={{padding:"20px"}}>{children}</div>;}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>);}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:`1.5px solid ${border}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>);}
+function DoseRow({label,value,unit=""}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:`1px dashed ${C.rule}`}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit}</span></div>);}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;const t=TEACH[id];return(<div style={{background:C.tealBg,border:`1.5px solid ${C.tealBorder}`,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:`4px solid ${C.teal}`}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink}}>{t.content}</div></div>);}
+function Card({title,color,children,defaultOpen=true}){const[open,setOpen]=useState(defaultOpen);return(<div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={()=>setOpen(o=>!o)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:`1px solid ${C.rule}`}}>{children}</div>}</div>);}
+
+function App(){
+  const[tab,setTab]=useState("triage");
+  const[teaching,setTeaching]=useState(false);
+  const[weightKg,setWeightKg]=useState("");
+  const[twistChecks,setTwistChecks]=useState([false,false,false,false,false]);
+  const{maxW}=useResponsive();
+  const doses=useMemo(()=>calcDoses(weightKg),[weightKg]);
+
+  const twistTotal=useMemo(()=>twistChecks.reduce((sum,c,i)=>sum+(c?TWIST_PARAMS[i].pts:0),0),[twistChecks]);
+  const twistSev=useMemo(()=>{
+    if(!twistChecks.some(c=>c))return null;
+    if(twistTotal>=5)return{text:"HIGH RISK — Torsion Likely (≥5)",color:C.red,bg:C.redBg,border:C.redBorder};
+    if(twistTotal>=3)return{text:"INDETERMINATE (3–4)",color:C.amberMid,bg:C.amberBg,border:C.amberBorder};
+    return{text:"LOW RISK (0–2)",color:C.greenMid,bg:C.greenBg,border:C.greenBorder};
+  },[twistTotal,twistChecks]);
+
+  const tabs=[
+    {key:"triage",label:"Triage"},
+    {key:"twist",label:"TWIST Score"},
+    {key:"decision",label:"Decisions"},
+    {key:"meds",label:"Meds & Refs"},
+  ];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={()=>setTeaching(t=>!t)}/>
+      <TabBar current={tab} tabs={tabs} onChange={setTab}/>
+
+      <div style={{background:C.white,borderBottom:`1px solid ${C.rule}`,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1,maxWidth:200}}>
+          <label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label>
+          <input type="number" inputMode="decimal" value={weightKg} onChange={e=>setWeightKg(e.target.value)} placeholder="30" style={{display:"block",width:"100%",padding:"6px 8px",border:`1.5px solid ${C.rule}`,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}} onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.rule}/>
+        </div>
+        {twistSev&&<div style={{fontSize:10,fontWeight:700,color:twistSev.color,alignSelf:"flex-end",paddingBottom:8,whiteSpace:"nowrap"}}>TWIST {twistTotal}</div>}
+      </div>
+
+      {/* ── TRIAGE ── */}
+      {tab==="triage"&&(
+        <Pad>
+          <Q text="Triage & Initial Assessment" sub="Scrotal pain/redness/swelling — exclude torsion first"/>
+          <TeachBox id="overview" teaching={teaching}/>
+          <Card title="Inclusion / Exclusion" color={C.primary}>
+            <div style={{marginTop:8}}>
+              <Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Ages 3 months–19 years with scrotal pain and/or redness/swelling</Alert>
+              <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">History of scrotal trauma</Alert>
+            </div>
+          </Card>
+          <Card title="Initiate on Arrival" color={C.primary}>
+            <div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>
+              <strong>ESI Level II</strong><br/>
+              Full vitals<br/>
+              Ondansetron ODT for nausea {doses?<span style={{fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{doses.zofran_lo}–{doses.zofran_hi} mg</span>:"0.1–0.2 mg/kg (max 8 mg)"}<br/>
+              <strong>Calculate TWIST Score immediately</strong> (see TWIST tab)<br/>
+              Prepare discharge instruction packet with scrotal pain education
+            </div>
+          </Card>
+          <Card title="Diagnostics" color={C.blue}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>All patients:</strong> UA with micro + reflex culture<br/>
+              <strong>If sexually active or STI suspected:</strong> Urine PCR for GC/Chlamydia<br/>
+              <strong>TWIST &lt;5:</strong> Ultrasound scrotum and contents with Doppler
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ── TWIST SCORE ── */}
+      {tab==="twist"&&(
+        <Pad>
+          <Q text="TWIST Score" sub="Testicular Workup for Ischemia and Suspected Torsion (0–7)"/>
+          <TeachBox id="twist" teaching={teaching}/>
+
+          {TWIST_PARAMS.map((p,i)=>{
+            const checked=twistChecks[i];
+            return(
+              <button key={i} onClick={()=>setTwistChecks(prev=>{const n=[...prev];n[i]=!n[i];return n;})} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",borderRadius:10,border:`1.5px solid ${checked?C.red:C.rule}`,background:checked?C.redBg:C.white,cursor:"pointer",textAlign:"left",marginBottom:6}}>
+                <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${checked?C.red:C.rule}`,background:checked?C.red:C.white,display:"flex",alignItems:"center",justifyContent:"center",color:C.white,fontSize:13,fontWeight:700,flexShrink:0}}>{checked?"✓":""}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:checked?700:500,color:C.ink}}>{p.name}</div>
+                </div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:16,fontWeight:700,color:checked?C.red:C.muted}}>{p.pts}</div>
+              </button>
+            );
+          })}
+
+          {twistSev?(
+            <div style={{background:twistSev.bg,border:`1.5px solid ${twistSev.border}`,borderRadius:10,padding:"14px",marginTop:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div><div style={{fontSize:11,fontWeight:600,color:C.muted,textTransform:"uppercase"}}>TWIST Score</div><div style={{fontSize:32,fontWeight:700,color:twistSev.color,fontFamily:"'IBM Plex Mono',monospace"}}>{twistTotal}</div></div>
+              <div style={{textAlign:"right"}}><div style={{background:twistSev.color,color:C.white,padding:"6px 14px",borderRadius:8,fontSize:12,fontWeight:700}}>{twistSev.text}</div>
+              {twistTotal>=5&&<div style={{fontSize:11,color:C.red,fontWeight:700,marginTop:4}}>→ Urology STAT · NPO · Prepare OR</div>}
+              {twistTotal>=3&&twistTotal<5&&<div style={{fontSize:11,color:C.amberMid,fontWeight:600,marginTop:4}}>→ Doppler US scrotum</div>}
+              {twistTotal<3&&<div style={{fontSize:11,color:C.greenMid,fontWeight:600,marginTop:4}}>→ Low risk · US if clinical concern</div>}
+              </div>
+            </div>
+          ):(
+            <div style={{background:C.pLight,border:`1.5px solid ${C.pBorder}`,borderRadius:10,padding:"12px 14px",marginTop:12,textAlign:"center",fontSize:13,color:C.muted}}>Check findings above to calculate TWIST score</div>
+          )}
+          <button onClick={()=>setTwistChecks([false,false,false,false,false])} style={{marginTop:12,width:"100%",padding:"10px",borderRadius:8,border:`1.5px solid ${C.rule}`,background:C.white,color:C.muted,fontSize:12,fontWeight:600,cursor:"pointer"}}>Reset TWIST</button>
+        </Pad>
+      )}
+
+      {/* ── DECISIONS ── */}
+      {tab==="decision"&&(
+        <Pad>
+          <Q text="Decision Tree by TWIST Score & US Findings"/>
+
+          <Card title="TWIST ≥5 — Torsion Likely" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>1.</strong> Immediate Urology consult<br/>
+              <strong>2.</strong> NPO<br/>
+              <strong>3.</strong> Arrange emergent transfer to OR<br/>
+              <strong style={{color:C.red}}>No US needed — go directly to surgery</strong>
+            </div>
+          </Card>
+
+          <Card title="TWIST <5 — Ultrasound with Doppler" color={C.blue}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Obtain <strong>US scrotum and contents with Doppler</strong><br/>
+              Evaluate: testicular blood flow, appendix testis, epididymal changes, scrotal edema
+            </div>
+            <TeachBox id="ultrasound" teaching={teaching}/>
+          </Card>
+
+          <Card title="US: Absent or Decreased Testicular Flow" color={C.red}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong style={{color:C.red}}>→ Testicular Torsion — Urology STAT · NPO · OR</strong>
+            </div>
+          </Card>
+
+          <Card title="US: Appendix Testis/Epididymis Torsion" color={C.amberMid}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Sonographic evidence of appendicular swelling + superior-lateral tenderness ± blue-dot sign<br/><br/>
+              <strong>Conservative management:</strong><br/>
+              NSAIDs PRN · Scrotal support · Ice<br/>
+              Scrotal pain education materials<br/>
+              <strong style={{color:C.greenMid}}>→ Discharge</strong>
+            </div>
+            <TeachBox id="appendicular" teaching={teaching}/>
+          </Card>
+
+          <Card title="US: Increased Flow + Scrotal Swelling" color={C.amberMid}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>UA positive OR patient febrile?</strong>
+            </div>
+            <div style={{display:"flex",gap:6,marginTop:8}}>
+              <div style={{flex:1,background:C.redBg,border:`1.5px solid ${C.redBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.red}}>YES — Bacterial Epididymo-Orchitis</div>
+                <div style={{fontSize:11,marginTop:4}}>Urine culture · Urology consult/referral<br/>Antibiotics + NSAIDs<br/>Urine PCR if suspect STI<br/>Scrotal pain education</div>
+              </div>
+              <div style={{flex:1,background:C.greenBg,border:`1.5px solid ${C.greenBorder}`,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.greenMid}}>NO — Non-Bacterial Epididymo-Orchitis</div>
+                <div style={{fontSize:11,marginTop:4}}>NSAIDs PRN<br/>Scrotal pain education<br/><strong>→ Discharge</strong></div>
+              </div>
+            </div>
+            <TeachBox id="epididymitis" teaching={teaching}/>
+          </Card>
+
+          <Card title="US: Normal" color={C.greenMid} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              <strong>Likely normal exam</strong><br/>
+              NSAIDs PRN · Scrotal pain education materials<br/>
+              <strong style={{color:C.greenMid}}>→ Discharge</strong>
+            </div>
+          </Card>
+
+          {/* ── FLOWCHART ── */}
+          {(()=>{
+            const rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5";
+            const aC="#d97706",aBg="#fffbeb",aBd="#fcd34d";
+            const gC="#16a34a",gBg="#f0fdf4",gBd="#86efac";
+            const bC="#1e3a5f",bBg="#eff6ff",bBd="#93c5fd";
+            const blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd";
+            const mC="#6b7280";
+            const Arrow=({x1,y1,x2,y2,color="#94a3b8"})=>(<g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5}/><polygon points={`${x2},${y2} ${x2-3.5},${y2-6} ${x2+3.5},${y2-6}`} fill={color}/></g>);
+            const Box=({x,y,w,h,fill,stroke,sw=1,radius=6,children})=>(<g><rect x={x} y={y} width={w} height={h} rx={radius} fill={fill} stroke={stroke} strokeWidth={sw}/>{children}</g>);
+            const T=({x,y,size=9,weight=600,color="#1a1d21",anchor="middle",children})=>(<text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={color} fontFamily="'IBM Plex Sans',sans-serif">{children}</text>);
+            return(
+              <div style={{marginTop:20}}>
+                <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Pathway Overview</div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:6}}>TWIST score → US if &lt;5 → Diagnosis by findings</div>
+                <div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,padding:6,overflow:"hidden"}}>
+                  <svg viewBox="0 0 480 390" style={{width:"100%",display:"block"}}>
+                    <rect width={480} height={390} fill="#fafaf8" rx={6}/>
+                    <Box x={100} y={6} w={280} h={24} fill={bBg} stroke={bBd} sw={1.5} radius={12}>
+                      <T x={240} y={17} size={9} weight={700} color={bC}>ACUTE SCROTAL PAIN</T>
+                      <T x={240} y={26} size={5} color={mC}>Vitals · UA · Calculate TWIST Score</T>
+                    </Box>
+                    <Arrow x1={240} y1={30} x2={240} y2={44}/>
+
+                    <g transform="translate(240,56)"><polygon points="0,-12 55,0 0,12 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-1} size={7} weight={700}>TWIST ≥5?</T></g>
+
+                    <Arrow x1={295} y1={56} x2={420} y2={56} color={rC}/>
+                    <Arrow x1={420} y1={56} x2={420} y2={72} color={rC}/>
+                    <Box x={365} y={72} w={110} h={24} fill={rBg} stroke={rBd} sw={2}><T x={420} y={82} size={7} weight={700} color={rC}>TORSION LIKELY</T><T x={420} y={92} size={5} color={rC}>Urology · NPO · OR</T></Box>
+
+                    <Arrow x1={240} y1={68} x2={240} y2={82}/>
+                    <Box x={120} y={82} w={240} h={16} fill={blBg} stroke={blBd}><T x={240} y={92} size={7} weight={700} color={blC}>DOPPLER US — SCROTUM + CONTENTS</T></Box>
+                    <Arrow x1={240} y1={98} x2={240} y2={114}/>
+
+                    <g transform="translate(240,126)"><polygon points="0,-12 60,0 0,12 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-1} size={6} weight={700}>Testicular flow?</T></g>
+
+                    <Arrow x1={180} y1={126} x2={80} y2={152} color={rC}/>
+                    <Arrow x1={240} y1={138} x2={240} y2={152} color={aC}/>
+                    <Arrow x1={300} y1={126} x2={400} y2={152} color={gC}/>
+
+                    {/* Absent flow */}
+                    <Box x={20} y={152} w={120} h={24} fill={rBg} stroke={rBd} sw={2}><T x={80} y={162} size={7} weight={700} color={rC}>ABSENT/↓ FLOW</T><T x={80} y={172} size={5} color={rC}>→ Urology · NPO · OR</T></Box>
+
+                    {/* Abnormal */}
+                    <Box x={160} y={152} w={160} h={18} fill={aBg} stroke={aBd}><T x={240} y={163} size={7} weight={700} color={aC}>ABNORMAL FINDINGS</T></Box>
+                    <Arrow x1={200} y1={170} x2={160} y2={190} color={aC}/>
+                    <Arrow x1={280} y1={170} x2={320} y2={190} color={aC}/>
+
+                    {/* Appendicular */}
+                    <Box x={100} y={190} w={120} h={40} fill={aBg} stroke={aBd}><T x={160} y={201} size={6} weight={700} color={aC}>APPENDICULAR</T><T x={160} y={210} size={6} weight={700} color={aC}>TORSION</T><T x={160} y={220} size={5}>Sup-lat tenderness</T><T x={160} y={228} size={5} color={gC}>NSAIDs · Support · D/C</T></Box>
+
+                    {/* Increased flow */}
+                    <Box x={260} y={190} w={120} h={18} fill={aBg} stroke={aBd}><T x={320} y={201} size={6} weight={700} color={aC}>↑ FLOW + SWELLING</T></Box>
+                    <Arrow x1={320} y1={208} x2={320} y2={222}/>
+
+                    <g transform="translate(320,234)"><polygon points="0,-12 45,0 0,12 -45,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-1} size={5} weight={700}>UA+ or febrile?</T></g>
+
+                    <Arrow x1={275} y1={234} x2={240} y2={258} color={rC}/>
+                    <Arrow x1={365} y1={234} x2={400} y2={258} color={gC}/>
+
+                    <Box x={185} y={258} w={110} h={34} fill={rBg} stroke={rBd}><T x={240} y={268} size={6} weight={700} color={rC}>BACTERIAL</T><T x={240} y={277} size={6} weight={700} color={rC}>EPIDIDYMITIS</T><T x={240} y={287} size={5}>Abx · Urology · PCR if STI</T></Box>
+                    <Box x={350} y={258} w={100} h={34} fill={gBg} stroke={gBd}><T x={400} y={268} size={6} weight={700} color={gC}>NON-BACTERIAL</T><T x={400} y={277} size={6} weight={700} color={gC}>EPIDIDYMITIS</T><T x={400} y={287} size={5}>NSAIDs · Education · D/C</T></Box>
+
+                    {/* Normal US */}
+                    <Box x={350} y={152} w={110} h={24} fill={gBg} stroke={gBd}><T x={405} y={162} size={7} weight={700} color={gC}>NORMAL US</T><T x={405} y={172} size={5} color={gC}>NSAIDs · Education · D/C</T></Box>
+
+                    {/* Bottom: all get education */}
+                    <Box x={60} y={312} w={360} h={22} fill={blBg} stroke={blBd} radius={8}>
+                      <T x={240} y={321} size={6} weight={700} color={blC}>ALL NON-TORSION: Scrotal pain education · NSAIDs 3–5 days · Scrotal support · Ice</T>
+                    </Box>
+
+                    <Box x={60} y={346} w={360} h={22} fill="#f1f5f9" stroke="#e2e8f0" radius={8}>
+                      <T x={240} y={355} size={6} weight={700} color={rC}>TWIST ≥5: PPV 100% · Specificity 100% → Skip US → OR</T>
+                      <T x={240} y={365} size={6} weight={600} color={gC}>TWIST ≤2: NPV 100% · Very low risk of torsion</T>
+                    </Box>
+                  </svg>
+                </div>
+              </div>
+            );
+          })()}
+        </Pad>
+      )}
+
+      {/* ── MEDS & REFS ── */}
+      {tab==="meds"&&(
+        <Pad>
+          <Q text="Medications, Antibiotics & References" sub={doses?`Calculated for ${doses.w} kg`:"Enter weight for calculations"}/>
+
+          <Card title="Pain — NSAIDs (3–5 days)" color={C.primary}>
+            <div style={{marginTop:8}}>
+              <DoseRow label="Ibuprofen (10 mg/kg) q6h" value={doses?doses.ibu:"—"} unit={doses?"mg":""}/>
+              <DoseRow label="Acetaminophen (10–15 mg/kg) q6h" value={doses?`${doses.apap_lo}–${doses.apap_hi}`:"—"} unit={doses?"mg":""}/>
+            </div>
+          </Card>
+
+          <Card title="Anti-Emetic" color={C.primary} defaultOpen={false}>
+            <div style={{marginTop:8}}>
+              <DoseRow label="Ondansetron ODT (0.1–0.2 mg/kg, max 8)" value={doses?`${doses.zofran_lo}–${doses.zofran_hi}`:"—"} unit={doses?"mg":""}/>
+            </div>
+          </Card>
+
+          <Card title="Antibiotics — Bacterial Epididymo-Orchitis" color={C.red}>
+            <div style={{marginTop:8}}>
+              <div style={{background:C.blueBg,border:`1.5px solid ${C.blueBorder}`,borderRadius:8,padding:"10px 12px",marginBottom:6}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.blue}}>Non-STI</div>
+                <div style={{fontSize:12,marginTop:2}}>Ofloxacin 300 mg PO BID × 10 days<br/>OR Levofloxacin 500 mg PO daily × 10 days</div>
+              </div>
+              <div style={{background:C.purpleBg,border:`1.5px solid ${C.purpleBorder}`,borderRadius:8,padding:"10px 12px"}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.purple}}>STI — Suspected or Confirmed</div>
+                <div style={{fontSize:12,marginTop:2}}>Ceftriaxone 250 mg IM × 1<br/>PLUS Doxycycline 100 mg PO BID × 10 days<br/><span style={{fontSize:11,color:C.muted}}>Insertive anal sex: Levofloxacin 500 mg daily × 10 days</span></div>
+              </div>
+            </div>
+            <TeachBox id="antibiotics" teaching={teaching}/>
+          </Card>
+
+          <Card title="Discharge Education" color={C.greenMid} defaultOpen={false}>
+            <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+              Scrotal pain education materials for all non-torsion patients<br/>
+              NSAIDs PRN × 3–5 days · Scrotal support · Ice<br/>
+              Return precautions: worsening pain, new swelling, fever<br/>
+              Urology follow-up for epididymo-orchitis
+            </div>
+            <TeachBox id="discharge" teaching={teaching}/>
+          </Card>
+
+          <Card title="References" color={C.muted} defaultOpen={false}>
+            <div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>
+              1. Barbosa JA et al. Development and initial validation of a scoring system to diagnose testicular torsion in children. <em>J Urol</em> 2013; 189(5):1859–1864.<br/>
+              2. Redshaw JD et al. Epididymitis: 21-year retrospective review. <em>J Urol</em> 2014; 192(4):1203–1207.<br/>
+              3. Cristoforo TA. Evaluating necessity of antibiotics in treatment of acute epididymitis in pediatric patients. <em>Pediatr Emerg Care</em> 2017.<br/>
+              4. Pilatz A et al. Acute epididymitis revisited: impact of molecular diagnostics. <em>Eur Urol</em> 2015; 68(3):428–435.<br/>
+              5. Santillanes G et al. Are antibiotics necessary for pediatric epididymitis? <em>Pediatr Emerg Care</em> 2011; 27(3):174–178.<br/>
+              6. Karmazyn B et al. Clinical and sonographic criteria of acute scrotum in children. <em>Pediatr Radiol</em> 2005; 35(3):302–310.<br/>
+              7. Boettcher M et al. Differentiation of epididymitis and appendix testis torsion by clinical and US signs. <em>Urology</em> 2013; 82(4):899–904.<br/>
+              8. CDC (2010). Epididymitis treatment guidelines.
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:`1px solid ${C.rule}`}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Acute Scrotal Pain Clinical Pathway · January 2022
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
