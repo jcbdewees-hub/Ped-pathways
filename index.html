@@ -6,156 +6,343 @@
 <title>DCH PED Clinical Pathways</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3;min-height:100vh}
-.header{background:linear-gradient(135deg,#1a1d21 0%,#2d1f0e 100%);color:#fff;padding:24px 20px 20px;text-align:center}
-.header-sub{font-size:13px;opacity:0.7;letter-spacing:0.06em;text-transform:uppercase;font-weight:600}
-.header h1{font-size:24px;font-weight:700;margin-top:6px;line-height:1.2}
-.header-note{font-size:13px;opacity:0.6;margin-top:4px}
-.container{max-width:600px;margin:0 auto;padding:16px}
-@media(min-width:640px){.container{max-width:800px;padding:24px}}
-.search-wrap{position:sticky;top:0;z-index:10;background:#f7f6f3;padding:12px 0 8px}
-.search{width:100%;padding:12px 16px 12px 40px;border:1.5px solid #e5e2db;border-radius:10px;font-size:15px;font-family:'IBM Plex Sans',sans-serif;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat;outline:none;transition:border-color 0.15s}
-.search:focus{border-color:#7c2d12}
-.cat-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;margin:20px 0 8px;padding-left:2px}
-.card{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #e5e2db;border-radius:10px;padding:14px 16px;margin-bottom:8px;text-decoration:none;color:#1a1d21;transition:all 0.15s;cursor:pointer}
-.card:hover{border-color:#d4c5b0;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
-.card-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.card-body{flex:1;min-width:0}
-.card-title{font-size:14px;font-weight:700;line-height:1.3}
-.card-sub{font-size:11px;color:#6b7280;margin-top:2px;line-height:1.4}
-.card-arrow{color:#ccc;font-size:16px;flex-shrink:0}
-.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
-.badge-live{background:#f0fdf4;color:#166534;border:1px solid #86efac}
-.badge-soon{background:#fffbeb;color:#92400e;border:1px solid #fcd34d}
-.empty{text-align:center;padding:40px 20px;color:#6b7280;font-size:14px}
-.footer{text-align:center;padding:24px 20px;font-size:11px;color:#6b7280;line-height:1.6;border-top:1px solid #e5e2db;margin-top:20px}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+    background: #f7f6f3;
+    color: #1a1d21;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .header {
+    background: linear-gradient(135deg, #7c2d12 0%, #92400e 100%);
+    color: #fff;
+    padding: 28px 24px 22px;
+  }
+  .header-inner {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .header-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .header-sub {
+    font-size: 14px;
+    opacity: 0.85;
+  }
+  .header-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 6px;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 20px 60px;
+  }
+
+  /* Search */
+  .search-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #f7f6f3;
+    padding: 12px 0 8px;
+  }
+  .search-input {
+    width: 100%;
+    padding: 12px 14px 12px 38px;
+    border: 1.5px solid #e5e2db;
+    border-radius: 10px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: #92400e; }
+  .search-input::placeholder { color: #9ca3af; }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 6px;
+    padding: 8px 0 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-btn {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1.5px solid #e5e2db;
+    background: #fff;
+    color: #6b7280;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: #92400e; color: #92400e; }
+  .filter-btn.active {
+    background: #92400e;
+    color: #fff;
+    border-color: #92400e;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1.5px solid #e5e2db;
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: #1a1d21;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .card:hover {
+    border-color: #92400e;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transform: translateY(-1px);
+  }
+  .card.disabled {
+    opacity: 0.55;
+    cursor: default;
+    pointer-events: none;
+  }
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .card-sub {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+  .card-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-live { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+  .badge-soon { background: #fffbeb; color: #d97706; border: 1px solid #fcd34d; }
+
+  .count-bar {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #6b7280;
+    padding: 8px 0;
+    text-align: center;
+  }
+
+  .footer {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    font-size: 10px;
+    color: #9ca3af;
+    line-height: 1.5;
+    border-top: 1px solid #e5e2db;
+  }
+
+  @media (min-width: 520px) {
+    .card-grid { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-sub">Doernbecher Children's Hospital · PED</div>
-  <h1>Clinical Pathway Tools</h1>
-  <div class="header-note">Interactive decision support for the pediatric emergency department</div>
+  <div class="header-inner">
+    <div class="header-badge">DCH PED</div>
+    <h1>Clinical Pathway Tools</h1>
+    <div class="header-sub">Doernbecher Children's Hospital · Pediatric Emergency Department</div>
+    <div class="header-count">26 Pathways · 21 Live · 5 In Progress</div>
+  </div>
 </div>
 
 <div class="container">
-  <div class="search-wrap">
-    <input class="search" type="text" id="searchInput" placeholder="Search pathways..." oninput="filterCards()">
+  <div class="search-wrap" style="position:sticky;top:0;z-index:100;background:#f7f6f3;padding:12px 0 0;">
+    <div style="position:relative;">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" id="searchInput" placeholder="Search pathways..." oninput="filterCards()">
+    </div>
   </div>
-  <div id="cardContainer"></div>
-  <div class="empty" id="emptyState" style="display:none">No pathways match your search.</div>
+
+  <div class="filters" id="filterBar">
+    <button class="filter-btn active" onclick="setFilter('all')">All</button>
+    <button class="filter-btn" onclick="setFilter('resp')">Respiratory</button>
+    <button class="filter-btn" onclick="setFilter('gi')">GI / Surgical</button>
+    <button class="filter-btn" onclick="setFilter('id')">Infectious</button>
+    <button class="filter-btn" onclick="setFilter('neuro')">Neuro</button>
+    <button class="filter-btn" onclick="setFilter('heme')">Heme / Onc</button>
+    <button class="filter-btn" onclick="setFilter('gu')">GU</button>
+    <button class="filter-btn" onclick="setFilter('neonatal')">Neonatal</button>
+    <button class="filter-btn" onclick="setFilter('trauma')">Trauma / Abuse</button>
+    <button class="filter-btn" onclick="setFilter('other')">Other</button>
+  </div>
+
+  <div class="count-bar" id="countBar">Showing 26 of 26 pathways</div>
+
+  <div class="card-grid" id="cardGrid"></div>
 </div>
 
 <div class="footer">
-  Doernbecher Children's Hospital · Pediatric Emergency Department<br>
-  These tools support but do not replace clinical judgment.<br>
-  Verify all orders against institutional protocols.
+  <strong style="color:#b91c1c;">DISCLAIMER:</strong> These tools support but do not replace clinical judgment. Verify all orders against institutional protocols.
+  <br>Doernbecher Children's Hospital · PED · Clinical Pathway Tools
 </div>
 
 <script>
-const pathways = [
+const PATHWAYS = [
   // Respiratory
-  {name:"Asthma",file:"DCH_Asthma_Tool.html",cat:"Respiratory",color:"#1d4ed8",sub:"Ages 2–19 · AST scoring · Tiered treatment · Aug 2021",live:true},
-  {name:"Bronchiolitis",file:"DCH_Bronchiolitis_Tool.html",cat:"Respiratory",color:"#0e7490",sub:"Age ≤2yr · PBST scoring · HIP protocol · Oct 2021",live:true},
-  {name:"Croup",file:"DCH_Croup_Tool.html",cat:"Respiratory",color:"#065f46",sub:"Severity-tiered · Dex + racemic epi · Feb 2021",live:true},
+  { name: "Asthma", sub: "Ages 2–19 · ED Management", file: "DCH_Asthma_Tool.html", icon: "🫁", cat: "resp", live: true },
+  { name: "Bronchiolitis", sub: "Ages <2 · Severity & Management", file: "DCH_Bronchiolitis_Tool.html", icon: "🫁", cat: "resp", live: true },
+  { name: "Croup", sub: "Severity Scoring & Treatment", file: "DCH_Croup_Tool.html", icon: "🫁", cat: "resp", live: true },
 
   // GI / Surgical
-  {name:"Appendicitis",file:"DCH_Appendicitis_Tool.html",cat:"GI / Surgical",color:"#92400e",sub:"Ages 3–18 · PAS/Alvarado/pARC · Imaging algorithm · Jan 2022",live:true},
-  {name:"Dehydration",file:"DCH_Dehydration_Tool.html",cat:"GI / Surgical",color:"#1e3a5f",sub:"Age ≥6mo · ORT protocol · Dehydration score · Feb 2021",live:true},
-  {name:"Foreign Body Ingestion",file:"DCH_ForeignBody_Tool.html",cat:"GI / Surgical",color:"#78350f",sub:"Age <18 · Button battery protocol · Location-based consults · Jul 2022",live:true},
-  {name:"Gastrostomy Tube Displacement",file:"DCH_Gtube_Tool.html",cat:"GI / Surgical",color:"#374151",sub:"Tract maturity · Tube types · Foley placeholder · Jul 2021",live:true},
-  {name:"Intussusception",file:null,cat:"GI / Surgical",color:"#78716c",sub:"Sep 2021",live:false},
+  { name: "Appendicitis", sub: "Ages 3–18 · Clinical Decision Tool", file: "DCH_Appendicitis_Tool.html", icon: "🔬", cat: "gi", live: true },
+  { name: "Dehydration", sub: "Assessment & Fluid Management", file: "DCH_Dehydration_Tool.html", icon: "💧", cat: "gi", live: true },
+  { name: "Foreign Body Ingestion", sub: "Risk Stratification & Management", file: "DCH_ForeignBody_Tool.html", icon: "⚠️", cat: "gi", live: true },
+  { name: "G-Tube Displacement", sub: "Assessment & Replacement", file: "DCH_Gtube_Tool.html", icon: "🔧", cat: "gi", live: true },
+  { name: "Intussusception", sub: "Diagnosis & Management", file: "DCH_Intussusception_Tool.html", icon: "🔬", cat: "gi", live: true },
 
-  // Endocrine / Metabolic
-  {name:"Diabetic Ketoacidosis",file:"DCH_DKA_Tool.html",cat:"Endocrine / Metabolic",color:"#7c2d12",sub:"Ages 1–18 · Two-bag system · Cerebral edema protocol · Aug 2021",live:true},
-  {name:"Hyperbilirubinemia, Neonate",file:null,cat:"Endocrine / Metabolic",color:"#78716c",sub:"Mar 2022",live:false},
+  // Infectious Disease
+  { name: "Central Line with Fever", sub: "Risk Stratification & Workup", file: "DCH_CentralLine_Fever_Tool.html", icon: "🌡️", cat: "id", live: true },
+  { name: "Fever 29–60 Days", sub: "Risk Stratification & Workup", file: "DCH_Fever_29_60_Tool.html", icon: "🌡️", cat: "id", live: true },
+  { name: "Fever — Neutropenic", sub: "Oncology · Risk Stratification", file: "DCH_NeutropenicFever_Tool.html", icon: "🌡️", cat: "id", live: false },
+  { name: "MIS-C", sub: "Multisystem Inflammatory Syndrome", file: "DCH_MISC_Tool.html", icon: "🔥", cat: "id", live: true },
+  { name: "Sepsis (≥60 days)", sub: "Recognition & Management", file: "DCH_Sepsis_Tool.html", icon: "🚨", cat: "id", live: true },
 
-  // Infectious Disease / Fever
-  {name:"Neonatal Fever",file:"DCH_Neonatal_Fever_Tool.html",cat:"Infectious Disease / Fever",color:"#b45309",sub:"Feb 2022",live:true},
-  {name:"Infant Hypothermia",file:"DCH_Hypothermia_Tool.html",cat:"Infectious Disease / Fever",color:"#1b4965",sub:"Infants ≤60 days · REAL BIGS · Risk stratification · Jun 2025",live:true},
-  {name:"Fever 29–60 Days",file:"DCH_Fever_29_60_Tool.html",cat:"Infectious Disease / Fever",color:"#b45309",sub:"PECARN rule · ANC/PCT markers · Tiered antibiotics · Mar 2022",live:true},
-  {name:"Fever Neutropenic",file:"DCH_Neutropenic_Fever_Tool.html",cat:"Infectious Disease / Fever",color:"#991b1b",sub:"60-min abx goal · Cefepime · Risk stratification · Oct 2021",live:true},
-  {name:"Central Line with Fever",file:"DCH_CentralLine_Fever_Tool.html",cat:"Infectious Disease / Fever",color:"#9f1239",sub:"CVC + systemic symptoms · Population-based abx · Jul 2021",live:true},
-  {name:"Sepsis (≥60 days)",file:null,cat:"Infectious Disease / Fever",color:"#78716c",sub:"Mar 2021",live:false},
-  {name:"MIS-C",file:null,cat:"Infectious Disease / Fever",color:"#78716c",sub:"Oct 2021",live:false},
+  // Neuro
+  { name: "Seizure — Status Epilepticus", sub: "Acute Management Algorithm", file: "DCH_Seizure_Tool.html", icon: "🧠", cat: "neuro", live: false },
+  { name: "Suspected Stroke", sub: "Acute Recognition & Management", file: "DCH_Stroke_Tool.html", icon: "🧠", cat: "neuro", live: false },
+  { name: "VP Shunt / ETV Evaluation", sub: "Malfunction Assessment", file: "DCH_VPShunt_Tool.html", icon: "🧠", cat: "neuro", live: false },
 
-  // Hematology
-  {name:"Sickle Cell Disease with Fever",file:null,cat:"Hematology",color:"#78716c",sub:"Sep 2021",live:false},
-  {name:"Sickle Cell Disease — Suspected VOE",file:null,cat:"Hematology",color:"#78716c",sub:"Sep 2021",live:false},
+  // Heme / Onc
+  { name: "Sickle Cell — Fever", sub: "Risk Stratification & Workup", file: "DCH_SCD_Fever_Tool.html", icon: "🩸", cat: "heme", live: true },
+  { name: "Sickle Cell — Suspected VOE", sub: "Pain Management & Workup", file: "DCH_SCD_VOE_Tool.html", icon: "🩸", cat: "heme", live: true },
 
-  // Neurology
-  {name:"Suspected Stroke",file:"DCH_Stroke_Tool.html",cat:"Neurology",color:"#7c2d12",sub:"Age 0–18 · PedNIHSS · tPA screening · Oct 2020",live:true},
-  {name:"Seizure / Status Epilepticus",file:"DCH_Seizure_Tool.html",cat:"Neurology",color:"#4c1d95",sub:"Age 29d–18yr · Tiered escalation · Jan 2022",live:true},
-  {name:"VP Shunt / ETV Evaluation",file:null,cat:"Neurology",color:"#78716c",sub:"Jun 2022",live:false},
+  // GU
+  { name: "Scrotal Pain", sub: "Torsion Evaluation & Management", file: "DCH_ScrotalPain_Tool.html", icon: "⚕️", cat: "gu", live: true },
 
-  // Behavioral / Psych
-  {name:"Acute Psychiatric / Behavioral",file:"DCH_Psych_Behavioral_Tool.html",cat:"Behavioral / Psych",color:"#581c87",sub:"Safety framework · Agitation meds · Legal holds · Nov 2021",live:true},
+  // Neonatal
+  { name: "Hyperbilirubinemia — Neonate", sub: "Assessment & Phototherapy", file: "DCH_Hyperbili_Tool.html", icon: "👶", cat: "neonatal", live: true },
+  { name: "Infant Hypothermia", sub: "≤60 days · REAL BIGS", file: "DCH_Hypothermia_Tool.html", icon: "🥶", cat: "neonatal", live: false },
+  { name: "Neonatal Fever", sub: "≤28 days · Risk Stratification", file: "DCH_NeonatalFever_Tool.html", icon: "🌡️", cat: "neonatal", live: false },
 
-  // Urology
-  {name:"Scrotal Pain",file:null,cat:"Urology",color:"#78716c",sub:"Jan 2022",live:false},
+  // Trauma / Abuse
+  { name: "Non-Accidental Trauma", sub: "NAT Evaluation & Workup", file: "DCH_NAT_Tool.html", icon: "🛡️", cat: "trauma", live: true },
+  { name: "Pediatric Sexual Assault", sub: "Forensic · STD · Karly's Law", file: "DCH_SA_Tool.html", icon: "🛡️", cat: "trauma", live: true },
 
-  // Trauma / Safety
-  {name:"Non-Accidental Trauma",file:null,cat:"Trauma / Safety",color:"#78716c",sub:"Jan 2025",live:false},
-  {name:"Pediatric Sexual Assault",file:null,cat:"Trauma / Safety",color:"#78716c",sub:"Nov 2021",live:false},
+  // Other
+  { name: "Acute Psychiatric / Behavioral", sub: "Safety & Disposition", file: "DCH_Psych_Behavioral_Tool.html", icon: "🧩", cat: "other", live: true },
+  { name: "DKA", sub: "Diabetic Ketoacidosis · Management", file: "DCH_DKA_Tool.html", icon: "💉", cat: "other", live: true },
 ];
 
-function renderCards(filter = "") {
-  const container = document.getElementById("cardContainer");
-  const empty = document.getElementById("emptyState");
-  container.innerHTML = "";
+let currentFilter = 'all';
 
-  const q = filter.toLowerCase().trim();
-  const filtered = pathways.filter(p =>
-    p.name.toLowerCase().includes(q) ||
-    p.cat.toLowerCase().includes(q) ||
-    p.sub.toLowerCase().includes(q)
-  );
+function renderCards() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  const grid = document.getElementById('cardGrid');
+  grid.innerHTML = '';
 
-  if (filtered.length === 0) {
-    empty.style.display = "block";
-    return;
-  }
-  empty.style.display = "none";
+  let count = 0;
+  PATHWAYS.forEach(p => {
+    const matchFilter = currentFilter === 'all' || p.cat === currentFilter;
+    const matchSearch = !query || p.name.toLowerCase().includes(query) || p.sub.toLowerCase().includes(query);
 
-  let currentCat = "";
-  filtered.forEach(p => {
-    if (p.cat !== currentCat) {
-      currentCat = p.cat;
-      const label = document.createElement("div");
-      label.className = "cat-label";
-      label.textContent = currentCat;
-      container.appendChild(label);
-    }
+    if (!matchFilter || !matchSearch) return;
+    count++;
 
-    const card = document.createElement(p.live ? "a" : "div");
-    card.className = "card";
-    if (p.live && p.file) {
-      card.href = p.file;
-    }
-    if (!p.live) {
-      card.style.opacity = "0.55";
-      card.style.cursor = "default";
-    }
-
+    const card = document.createElement('a');
+    card.className = 'card' + (p.live ? '' : ' disabled');
+    if (p.live) card.href = p.file;
     card.innerHTML = `
-      <div class="card-dot" style="background:${p.color}"></div>
+      <div class="card-icon" style="background:${p.live ? '#fff7ed' : '#f3f4f6'};border:1px solid ${p.live ? '#fdba74' : '#e5e7eb'};">
+        ${p.icon}
+      </div>
       <div class="card-body">
-        <div class="card-title">${p.name}${p.live ? '<span class="badge badge-live">LIVE</span>' : '<span class="badge badge-soon">COMING</span>'}</div>
+        <div class="card-title">${p.name}</div>
         <div class="card-sub">${p.sub}</div>
       </div>
-      ${p.live ? '<div class="card-arrow">›</div>' : ''}
+      <span class="card-badge ${p.live ? 'badge-live' : 'badge-soon'}">${p.live ? 'Live' : 'Soon'}</span>
     `;
-
-    container.appendChild(card);
+    grid.appendChild(card);
   });
+
+  document.getElementById('countBar').textContent = `Showing ${count} of ${PATHWAYS.length} pathways`;
 }
 
-function filterCards() {
-  renderCards(document.getElementById("searchInput").value);
+function filterCards() { renderCards(); }
+
+function setFilter(cat) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase().replace(/[^a-z]/g, '').includes(cat) || (cat === 'all' && btn.textContent === 'All'));
+  });
+  // More precise active state
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCards();
 }
 
+// Initial render
 renderCards();
 </script>
 
