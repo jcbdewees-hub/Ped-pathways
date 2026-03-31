@@ -280,121 +280,121 @@ function App(){
                 <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Pathway Overview</div>
                 <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Suspected FB → Airway → Imaging → Battery? → Location → Management</div>
                 <div style={{background:C.white,border:`1.5px solid ${C.rule}`,borderRadius:10,padding:6,overflow:"hidden"}}>
-                  <svg viewBox="0 0 480 520" style={{width:"100%",display:"block"}}>
-                    <rect width={480} height={520} fill="#fafaf8" rx={6}/>
+                  <svg viewBox="0 0 520 540" style={{width:"100%",display:"block"}}>
+                    <rect width={520} height={540} fill="#fafaf8" rx={6}/>
 
                     {/* Row 1: Arrival */}
-                    <Box x={100} y={6} w={280} h={24} fill={bBg} stroke={bBd} sw={1.5} radius={12}>
-                      <T x={240} y={17} size={9} weight={700} color={bC}>SUSPECTED FB INGESTION</T>
-                      <T x={240} y={26} size={5} color={mC}>ESI II · Vitals · Monitoring · NPO · HOB 30°</T>
+                    <Box x={120} y={6} w={280} h={24} fill={bBg} stroke={bBd} sw={1.5} radius={12}>
+                      <T x={260} y={17} size={9} weight={700} color={bC}>SUSPECTED FB INGESTION</T>
+                      <T x={260} y={26} size={5} color={mC}>ESI II · Vitals · Monitoring · NPO · HOB 30°</T>
                     </Box>
-                    <Arrow x1={240} y1={30} x2={240} y2={42}/>
+                    <Arrow x1={260} y1={30} x2={260} y2={42}/>
 
                     {/* Row 2: Airway */}
-                    <g transform="translate(240,54)"><polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={1} size={6} weight={700}>Airway OK?</T></g>
-                    <line x1={290} y1={54} x2={440} y2={54} stroke="#94a3b8" strokeWidth={1}/>
-                    <Arrow x1={440} y1={54} x2={440} y2={68} color={rC}/>
-                    <Box x={400} y={68} w={76} h={18} fill={rBg} stroke={rBd} sw={2}><T x={438} y={79} size={6} weight={700} color={rC}>Emergent ENT</T></Box>
+                    <g transform="translate(260,54)"><polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={1} size={6} weight={700}>Airway OK?</T></g>
+                    <line x1={310} y1={54} x2={470} y2={54} stroke="#94a3b8" strokeWidth={1}/>
+                    <Arrow x1={470} y1={54} x2={470} y2={68} color={rC}/>
+                    <Box x={430} y={68} w={80} h={18} fill={rBg} stroke={rBd} sw={2}><T x={470} y={79} size={6} weight={700} color={rC}>Emergent ENT</T></Box>
 
-                    <Arrow x1={240} y1={66} x2={240} y2={78}/>
+                    <Arrow x1={260} y1={66} x2={260} y2={78}/>
 
                     {/* Row 3: Existing imaging? */}
-                    <g transform="translate(240,90)"><polygon points="0,-12 55,0 0,12 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Outside imaging</T><T x={0} y={7} size={6} weight={700}>confirms esoph BB?</T></g>
-                    <line x1={295} y1={90} x2={440} y2={90} stroke="#94a3b8" strokeWidth={1}/>
-                    <Arrow x1={440} y1={90} x2={440} y2={104} color={rC}/>
-                    <Box x={400} y={104} w={76} h={18} fill={rBg} stroke={rBd} sw={2}><T x={438} y={115} size={6} weight={700} color={rC}>Skip XR → OR</T></Box>
+                    <g transform="translate(260,90)"><polygon points="0,-12 55,0 0,12 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Outside imaging</T><T x={0} y={7} size={6} weight={700}>confirms esoph BB?</T></g>
+                    <line x1={315} y1={90} x2={470} y2={90} stroke="#94a3b8" strokeWidth={1}/>
+                    <Arrow x1={470} y1={90} x2={470} y2={104} color={rC}/>
+                    <Box x={430} y={104} w={80} h={18} fill={rBg} stroke={rBd} sw={2}><T x={470} y={115} size={6} weight={700} color={rC}>Skip XR → OR</T></Box>
 
-                    <Arrow x1={240} y1={102} x2={240} y2={114}/>
+                    <Arrow x1={260} y1={102} x2={260} y2={114}/>
 
                     {/* Row 4: Stat imaging */}
-                    <Box x={120} y={114} w={240} h={16} fill={blBg} stroke={blBd}><T x={240} y={124} size={7} weight={700} color={blC}>STAT IMAGING — AP ± Lateral</T></Box>
-                    <Arrow x1={240} y1={130} x2={240} y2={142}/>
+                    <Box x={140} y={114} w={240} h={16} fill={blBg} stroke={blBd}><T x={260} y={124} size={7} weight={700} color={blC}>STAT IMAGING — AP ± Lateral</T></Box>
+                    <Arrow x1={260} y1={130} x2={260} y2={142}/>
 
                     {/* Row 5: Button battery? */}
-                    <g transform="translate(240,154)"><polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={1} size={6} weight={700}>Button Battery?</T></g>
+                    <g transform="translate(260,154)"><polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={1} size={6} weight={700}>Button Battery?</T></g>
 
                     {/* Battery YES → left */}
-                    <Arrow x1={190} y1={154} x2={80} y2={178} color={rC}/>
-                    <Box x={10} y={178} w={140} h={18} fill={rBg} stroke={rBd} sw={2}><T x={80} y={189} size={7} weight={700} color={rC}>🔋 BUTTON BATTERY</T></Box>
-                    <Arrow x1={50} y1={196} x2={50} y2={208} color={rC}/>
-                    <Arrow x1={110} y1={196} x2={110} y2={208} color={aC}/>
-                    <Box x={10} y={208} w={70} h={30} fill={rBg} stroke={rBd}><T x={45} y={219} size={6} weight={700} color={rC}>ESOPHAGUS</T><T x={45} y={228} size={5}>Sucralfate/Honey</T><T x={45} y={236} size={5} weight={700} color={rC}>→ OR ASAP</T></Box>
-                    <Box x={84} y={208} w={70} h={30} fill={aBg} stroke={aBd}><T x={119} y={219} size={6} weight={700} color={aC}>STOMACH/SB</T><T x={119} y={228} size={5}>GI consult · IV</T><T x={119} y={236} size={5}>No sucralfate</T></Box>
+                    <Arrow x1={210} y1={154} x2={90} y2={178} color={rC}/>
+                    <Box x={20} y={178} w={140} h={18} fill={rBg} stroke={rBd} sw={2}><T x={90} y={189} size={7} weight={700} color={rC}>🔋 BUTTON BATTERY</T></Box>
+                    <Arrow x1={60} y1={196} x2={60} y2={210} color={rC}/>
+                    <Arrow x1={120} y1={196} x2={120} y2={210} color={aC}/>
+                    <Box x={20} y={210} w={70} h={30} fill={rBg} stroke={rBd}><T x={55} y={221} size={6} weight={700} color={rC}>ESOPHAGUS</T><T x={55} y={230} size={5}>Sucralfate/Honey</T><T x={55} y={238} size={5} weight={700} color={rC}>→ OR ASAP</T></Box>
+                    <Box x={94} y={210} w={70} h={30} fill={aBg} stroke={aBd}><T x={129} y={221} size={6} weight={700} color={aC}>STOMACH/SB</T><T x={129} y={230} size={5}>GI consult · IV</T><T x={129} y={238} size={5}>No sucralfate</T></Box>
 
                     {/* Non-battery → right */}
-                    <Arrow x1={290} y1={154} x2={340} y2={178} color={bC}/>
+                    <Arrow x1={310} y1={154} x2={340} y2={178} color={bC}/>
 
                     {/* Row 6: FB visualized? */}
                     <g transform="translate(340,190)"><polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={1} size={6} weight={700}>FB visualized?</T></g>
 
-                    {/* Not visualized */}
+                    {/* Not visualized → far right, shifted down */}
                     <line x1={390} y1={190} x2={440} y2={190} stroke="#94a3b8" strokeWidth={1}/>
-                    <Arrow x1={440} y1={190} x2={440} y2={206} color={pC}/>
-                    <Box x={400} y={206} w={76} h={28} fill={pBg} stroke={pBd}><T x={438} y={216} size={5} weight={700} color={pC}>NOT SEEN</T><T x={438} y={225} size={5}>Esoph surg hx?</T><T x={438} y={232} size={5} color={mC}>Y:Surg N:GI</T></Box>
+                    <Arrow x1={440} y1={190} x2={470} y2={210} color={pC}/>
+                    <Box x={430} y={210} w={84} h={30} fill={pBg} stroke={pBd}><T x={472} y={221} size={6} weight={700} color={pC}>NOT SEEN</T><T x={472} y={230} size={5}>Esoph surg hx?</T><T x={472} y={238} size={5} color={mC}>Y: Surg · N: GI</T></Box>
 
-                    {/* Visualized → location */}
-                    <Arrow x1={340} y1={202} x2={340} y2={216}/>
-                    <Box x={240} y={216} w={200} h={14} fill={bBg} stroke={bBd}><T x={340} y={226} size={7} weight={700} color={bC}>FB SEEN — LOCATION?</T></Box>
+                    {/* Visualized → location header */}
+                    <Arrow x1={340} y1={202} x2={340} y2={218}/>
+                    <Box x={210} y={218} w={180} h={14} fill={bBg} stroke={bBd}><T x={300} y={228} size={7} weight={700} color={bC}>FB SEEN — LOCATION?</T></Box>
 
-                    <Arrow x1={280} y1={230} x2={240} y2={248} color={rC}/>
-                    <Arrow x1={340} y1={230} x2={340} y2={248} color={aC}/>
-                    <Arrow x1={400} y1={230} x2={420} y2={248} color={gC}/>
+                    <Arrow x1={260} y1={232} x2={220} y2={252} color={rC}/>
+                    <Arrow x1={310} y1={232} x2={320} y2={252} color={aC}/>
+                    <Arrow x1={360} y1={232} x2={410} y2={252} color={gC}/>
 
                     {/* ESOPHAGUS column */}
-                    <Box x={185} y={248} w={110} h={56} fill={rBg} stroke={rBd}>
-                      <T x={240} y={258} size={7} weight={700} color={rC}>ESOPHAGUS</T>
-                      <T x={240} y={268} size={5}>Resp sx / drool / &gt;24h?</T>
-                      <T x={240} y={278} size={5} color={rC} weight={600}>Y: Above inlet→ENT</T>
-                      <T x={240} y={286} size={5} color={rC} weight={600}>Y: Below inlet→Surg</T>
-                      <T x={240} y={296} size={5} color={gC}>N: PO challenge →</T>
-                      <T x={240} y={302} size={5} color={gC}>repeat XR → if still</T>
+                    <Box x={170} y={252} w={100} h={60} fill={rBg} stroke={rBd}>
+                      <T x={220} y={262} size={7} weight={700} color={rC}>ESOPHAGUS</T>
+                      <T x={220} y={272} size={5}>Resp sx / drool / &gt;24h?</T>
+                      <T x={220} y={282} size={5} color={rC} weight={600}>Y: Above inlet → ENT</T>
+                      <T x={220} y={290} size={5} color={rC} weight={600}>Y: Below inlet → Surg</T>
+                      <T x={220} y={300} size={5} color={gC}>N: PO challenge →</T>
+                      <T x={220} y={308} size={5} color={gC}>repeat XR</T>
                     </Box>
-                    <Arrow x1={240} y1={304} x2={240} y2={316} color={rC}/>
-                    <Box x={200} y={316} w={80} h={16} fill={rBg} stroke={rBd}><T x={240} y={327} size={6} weight={700} color={rC}>→ OR if persists</T></Box>
+                    <Arrow x1={220} y1={312} x2={220} y2={324} color={rC}/>
+                    <Box x={180} y={324} w={80} h={16} fill={rBg} stroke={rBd}><T x={220} y={335} size={6} weight={700} color={rC}>→ OR if persists</T></Box>
 
                     {/* STOMACH column */}
-                    <Box x={300} y={248} w={90} h={56} fill={aBg} stroke={aBd}>
-                      <T x={345} y={258} size={7} weight={700} color={aC}>STOMACH</T>
-                      <T x={345} y={268} size={5}>Sx or dangerous obj?</T>
-                      <T x={345} y={278} size={5} color={rC} weight={600}>Sx/sharp/long*→</T>
-                      <T x={345} y={286} size={5} color={rC}>GI · NPO · OR urgent</T>
-                      <T x={345} y={296} size={5} color={gC}>Blunt coin → observe</T>
-                      <T x={345} y={302} size={5} color={aC}>Multi magnets→GI f/u</T>
+                    <Box x={278} y={252} w={90} h={60} fill={aBg} stroke={aBd}>
+                      <T x={323} y={262} size={7} weight={700} color={aC}>STOMACH</T>
+                      <T x={323} y={272} size={5}>Sx or dangerous obj?</T>
+                      <T x={323} y={282} size={5} color={rC} weight={600}>Sx/sharp/long* →</T>
+                      <T x={323} y={290} size={5} color={rC}>GI · NPO · OR urgent</T>
+                      <T x={323} y={300} size={5} color={gC}>Blunt coin → observe</T>
+                      <T x={323} y={308} size={5} color={aC}>Multi magnets → GI f/u</T>
                     </Box>
 
                     {/* BEYOND STOMACH column */}
-                    <Box x={395} y={248} w={80} h={46} fill={gBg} stroke={gBd}>
-                      <T x={435} y={258} size={7} weight={700} color={gC}>INTESTINE</T>
-                      <T x={435} y={268} size={5}>Obstruction signs?</T>
-                      <T x={435} y={278} size={5} color={rC} weight={600}>Y: Surg · NPO · Admit</T>
-                      <T x={435} y={288} size={5} color={gC}>N: GI · admit vs D/C</T>
+                    <Box x={376} y={252} w={84} h={48} fill={gBg} stroke={gBd}>
+                      <T x={418} y={262} size={7} weight={700} color={gC}>INTESTINE</T>
+                      <T x={418} y={272} size={5}>Obstruction signs?</T>
+                      <T x={418} y={282} size={5} color={rC} weight={600}>Y: Surg · NPO · Admit</T>
+                      <T x={418} y={292} size={5} color={gC}>N: GI · admit vs D/C</T>
                     </Box>
 
                     {/* Long definition */}
-                    <Box x={290} y={310} w={100} h={12} fill={C.white} stroke={aBd} radius={3}>
-                      <T x={340} y={318} size={5} color={mC}>*Long: &gt;2.5cm &lt;5y · &gt;5cm school-age</T>
+                    <Box x={268} y={318} w={120} h={12} fill={C.white} stroke={aBd} radius={3}>
+                      <T x={328} y={326} size={5} color={mC}>*Long: &gt;2.5cm &lt;5y · &gt;5cm school-age</T>
                     </Box>
 
                     {/* Consult routing */}
-                    <Box x={20} y={340} w={440} h={34} fill="#f1f5f9" stroke="#e2e8f0" radius={8}>
-                      <T x={240} y={352} size={6} weight={700} color={bC}>CONSULT ROUTING</T>
-                      <T x={240} y={362} size={5} color={mC}>Above thoracic inlet/resp sx → ENT · Esophageal → Surgery · Gastric+sx → GI/Surg · Gastric no sx → GI</T>
-                      <T x={240} y={370} size={5} color={rC}>Esophageal BB → Button Battery Paging Group (GI + Surg + CTS + IC)</T>
+                    <Box x={20} y={348} w={480} h={34} fill="#f1f5f9" stroke="#e2e8f0" radius={8}>
+                      <T x={260} y={360} size={6} weight={700} color={bC}>CONSULT ROUTING</T>
+                      <T x={260} y={370} size={5} color={mC}>Above thoracic inlet/resp sx → ENT · Esophageal → Surgery · Gastric+sx → GI/Surg · Gastric no sx → GI</T>
+                      <T x={260} y={378} size={5} color={rC}>Esophageal BB → Button Battery Paging Group (GI + Surg + CTS + IC)</T>
                     </Box>
 
                     {/* Prohibited */}
-                    <Box x={100} y={386} w={280} h={16} fill={rBg} stroke={rBd} radius={4}>
-                      <T x={240} y={397} size={6} weight={700} color={rC}>⚠ DO NOT USE: Glucagon or proteolytic enzymes</T>
+                    <Box x={100} y={396} w={320} h={16} fill={rBg} stroke={rBd} radius={4}>
+                      <T x={260} y={407} size={6} weight={700} color={rC}>⚠ DO NOT USE: Glucagon or proteolytic enzymes</T>
                     </Box>
 
                     {/* XR note */}
-                    <Box x={60} y={412} w={360} h={14} fill={blBg} stroke={blBd} radius={4}>
-                      <T x={240} y={421} size={5} weight={600} color={blC}>Only 64% of ingested FBs are radiopaque — maintain high index of suspicion</T>
+                    <Box x={60} y={422} w={400} h={14} fill={blBg} stroke={blBd} radius={4}>
+                      <T x={260} y={431} size={5} weight={600} color={blC}>Only 64% of ingested FBs are radiopaque — maintain high index of suspicion</T>
                     </Box>
 
                     {/* Expectant management note */}
-                    <Box x={60} y={434} w={360} h={14} fill={gBg} stroke={gBd} radius={4}>
-                      <T x={240} y={443} size={5} weight={600} color={gC}>Expectant management: radiograph in 1 week if no passage in stool</T>
+                    <Box x={60} y={444} w={400} h={14} fill={gBg} stroke={gBd} radius={4}>
+                      <T x={260} y={453} size={5} weight={600} color={gC}>Expectant management: radiograph in 1 week if no passage in stool</T>
                     </Box>
                   </svg>
                 </div>
