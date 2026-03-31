@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Sexual Assault — DCH PED Clinical Pathway</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans', -apple-system, sans-serif; background: #f7f6f3; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useCallback, useMemo } = React;
+
+/* ══════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — matches Appendicitis pathway exactly
+   ══════════════════════════════════════════════════════════════ */
+const C = {
+  primary: "#7c2d12", pLight: "#fff7ed", pBorder: "#fdba74",
+  red: "#b91c1c", redBg: "#fef2f2", redBorder: "#fca5a5",
+  amber: "#92400e", amberBg: "#fffbeb", amberBorder: "#fcd34d", amberMid: "#d97706",
+  green: "#166534", greenBg: "#f0fdf4", greenBorder: "#86efac", greenMid: "#16a34a",
+  blue: "#1e40af", blueBg: "#eff6ff", blueBorder: "#93c5fd",
+  purple: "#6b21a8", purpleBg: "#faf5ff", purpleBorder: "#c4b5fd",
+  teal: "#0f766e", tealBg: "#f0fdfa", tealBorder: "#5eead4",
+  muted: "#6b7280", ink: "#1a1d21", paper: "#f7f6f3", white: "#fff", rule: "#e5e2db",
+};
+
+/* ── Teaching content ── */
+const TEACH = {
+  notifications: {
+    title: "Mandatory Notifications",
+    content: "Oregon law and OHSU policy require notification of ED social work, the SCAN team, and PEM admin for ALL sexual assault patients <18 years. This occurs regardless of whether a full exam is completed. The SCAN team coordinates the multidisciplinary response and ensures proper follow-up, even if the forensic exam is performed by RSI/SANE."
+  },
+  examGeneral: {
+    title: "Approach to the Exam",
+    content: "Procedural sedation is rarely needed for the anogenital exam. Use reassurance, emphasis on privacy, and eliciting the child's concerns before considering sedation. If sedation is required, consider inpatient admission and discussion with the admitting team for the appropriate time and location. A trauma-informed approach—explaining each step before performing it, allowing the child control where possible—significantly improves cooperation and reduces re-traumatization."
+  },
+  forensicTiming: {
+    title: "Evidence Collection Windows",
+    content: "Evidence viability decreases over time. Pubertal patients (≥Tanner 2 or ~8 years) have a wider collection window (up to 72–96 hours for skin/hair/nails, up to 96 hours for anogenital swabs) because pubic hair and cervical mucus can retain evidence longer. Pre-pubertal patients (Tanner 1 or <8 years) generally have a 24-hour collection window, though exceptions exist for clear history of penetration/ejaculation with minimal bathing. Always collect unwashed clothing beyond the window."
+  },
+  chainOfCustody: {
+    title: "Chain of Custody",
+    content: "Once the forensic specimen kit is opened, its contents must remain in continuous physical possession of the examining provider (RSI RN maintains evidence package chain of custody). When evidence collection is complete, specimens must be transferred immediately to law enforcement custody. Every handoff must be documented with signatures, dates, and times. A break in chain of custody can render evidence inadmissible in court."
+  },
+  stdProphylaxis: {
+    title: "STD Prophylaxis Rationale",
+    content: "Per CDC 2021 STI Treatment Guidelines, STD prophylaxis is not routinely recommended for prepubertal children because prevalence of STIs after assault in this population is low, and prophylaxis may interfere with future diagnostic investigation. Post-menarchal patients should be offered prophylaxis for GC/CT and trichomoniasis in cases of genital-genital contact. The DCH pathway uses weight-based dosing tiers (≤45 kg, >45 kg to <150 kg, ≥150 kg)."
+  },
+  hivPep: {
+    title: "HIV PEP Protocol",
+    content: "HIV PEP should be considered on a case-by-case basis depending on the likelihood of infection in the assailant, local HIV epidemiology, and the circumstances of the assault. Do NOT start PEP in pediatric patients without consulting Peds Infectious Disease. For adolescents ≥35 kg, the standard regimen is Truvada (emtricitabine/tenofovir 200/300 mg) + Isentress (raltegravir 400 mg). For children <35 kg, consult the DCH HIV PEP Guideline for alternative weight-based regimens."
+  },
+  emergencyContraception: {
+    title: "Emergency Contraception",
+    content: "Ella (ulipristal acetate 30 mg) is effective up to 120 hours (5 days) after assault and is the preferred agent because it maintains efficacy throughout this window, unlike levonorgestrel which declines significantly after 72 hours. Offer to all post-menarchal patients when the assault was within 120 hours, the patient is not using highly reliable contraception, and the pregnancy test is negative."
+  },
+  karlysLaw: {
+    title: "Karly's Law (ORS 419B.022–024)",
+    content: "Oregon's Karly's Law requires that children with suspicious physical injuries be referred to a child-abuse-trained designated medical professional (CAIC) for evaluation and determination. For follow-up referrals >48 hours from initial presentation, suspicious injuries must be photo-documented. The medical chart must be dictated 'STAT' with a cc to CARES NW. Chart and photos must be sent to CARES NW within 48 hours of presentation."
+  },
+  photoPolicy: {
+    title: "Photography Policy (HC-RI-121-POL)",
+    content: "OHSU policy requires attending MD to take photo documentation. Only one patient per camera card — do NOT save photos to the camera itself. The required photo sequence documents patient identity, overall appearance, and specific injuries with and without a ruler for scale. Media cards follow chain of custody requirements and must be delivered to BICC room 104 (contacts: David Gunn, Aaron Bieleck, ext. 4-7621). During Modified Operations, cards go to Dr. Valvano's office (CDRC 1272E)."
+  },
+  skit: {
+    title: "Strangulation Kit (SKIT)",
+    content: "The Oregon Strangulation Forensic Evidence Kit (SKIT) can be used as part of the sexual assault workup or alone. It contains specific documentation forms, forensic evidence collection swabs, and imaging recommendations. If a SANE RN is not available, a just-in-time training video is accessible. Consult RSI/SANE RN via IP consult."
+  },
+};
+
+/* ── Weight-based dose calculations ── */
+function calcDoses(w) {
+  const wt = parseFloat(w) || 0;
+  if (wt <= 0) return null;
+  let tier;
+  if (wt <= 45) tier = 1;
+  else if (wt < 150) tier = 2;
+  else tier = 3;
+  return {
+    w: wt, tier,
+    ceftriT1: Math.min(Math.round(wt * 50), 125),
+    ceftriT1low: Math.min(Math.round(wt * 25), 125),
+    eesT1: Math.min(Math.round(wt * 50), 2000),
+    ceftriT2: 500,
+    ceftriT3: 1000,
+    metroT1: `${Math.round(wt * 15 / 3)} mg TID x 7d (${Math.round(wt * 15)} mg/day)`,
+    metroT2: 2000,
+    ondansetron: Math.min(Math.round(wt * 0.15 * 10) / 10, 4),
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SHARED COMPONENTS — identical to Appendicitis system
+   ══════════════════════════════════════════════════════════════ */
+function Header({ teaching, onToggleTeach }) {
+  return (
+    <div style={{ background: C.primary, color: C.white, padding: "16px 20px", borderRadius: "12px 12px 0 0" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <div style={{ fontSize: 13, opacity: 0.8, letterSpacing: "0.05em", textTransform: "uppercase", fontWeight: 600 }}>Doernbecher Children's Hospital · PED</div>
+          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4, lineHeight: 1.2 }}>Pediatric Sexual Assault</div>
+          <div style={{ fontSize: 14, opacity: 0.85, marginTop: 2 }}>Clinical Pathway · Age &lt;15 · November 2021</div>
+        </div>
+        <button onClick={onToggleTeach} style={{
+          background: teaching ? "#ffffff30" : "#ffffff15", border: `1.5px solid ${teaching ? "#fff" : "#ffffff40"}`,
+          color: C.white, borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 11,
+          fontWeight: 700, letterSpacing: "0.03em", marginTop: 2, whiteSpace: "nowrap", transition: "all 0.2s",
+        }}>
+          {teaching ? "📖 ON" : "📖 Teach"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TabBar({ current, tabs, onChange }) {
+  return (
+    <div style={{ display: "flex", padding: "0 12px", background: C.white, borderBottom: `1px solid ${C.rule}`, overflowX: "auto", gap: 0 }}>
+      {tabs.map(t => {
+        const act = t.key === current;
+        return (
+          <button key={t.key} onClick={() => onChange(t.key)} style={{
+            padding: "11px 14px", background: "none", border: "none", cursor: "pointer",
+            fontSize: 12, fontWeight: act ? 700 : 500, color: act ? C.primary : C.muted,
+            borderBottom: act ? `2.5px solid ${C.primary}` : "2.5px solid transparent",
+            whiteSpace: "nowrap", transition: "all 0.15s", marginBottom: -1,
+          }}>{t.label}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Pad({ children }) { return <div style={{ padding: "20px" }}>{children}</div>; }
+function Q({ text, sub }) {
+  return (<div style={{ marginBottom: 16 }}><div style={{ fontSize: 17, fontWeight: 700, color: C.ink, lineHeight: 1.3 }}>{text}</div>{sub && <div style={{ fontSize: 13, color: C.muted, marginTop: 4, lineHeight: 1.5 }}>{sub}</div>}</div>);
+}
+function Alert({ color, border, bg, icon, title, children }) {
+  return (<div style={{ background: bg, border: `1.5px solid ${border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}><div style={{ fontSize: 14, fontWeight: 700, color, display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>{icon} {title}</div><div style={{ fontSize: 13, lineHeight: 1.5, color: C.ink }}>{children}</div></div>);
+}
+function Sec({ title, color, children }) { return (<div style={{ marginBottom: 14 }}><div style={{ fontSize: 13, fontWeight: 700, color, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6, paddingBottom: 4, borderBottom: `2px solid ${color}` }}>{title}</div>{children}</div>); }
+function DoseRow({ label, value, unit = "" }) { return (<div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "4px 0", borderBottom: `1px dashed ${C.rule}` }}><span style={{ fontSize: 13, fontWeight: 500 }}>{label}</span><span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, fontWeight: 600, color: C.primary }}>{value} {unit}</span></div>); }
+
+function TeachBox({ id, teaching }) {
+  if (!teaching || !TEACH[id]) return null;
+  const t = TEACH[id];
+  return (
+    <div style={{ background: C.tealBg, border: `1.5px solid ${C.tealBorder}`, borderRadius: 10, padding: "12px 14px", marginBottom: 12, borderLeft: `4px solid ${C.teal}` }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.teal, display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>📖 {t.title}</div>
+      <div style={{ fontSize: 12, lineHeight: 1.6, color: C.ink }}>{t.content}</div>
+    </div>
+  );
+}
+
+function Card({ title, color, children, defaultOpen = true }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, marginBottom: 12, overflow: "hidden" }}>
+      <button onClick={() => setOpen(o => !o)} style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%",
+        padding: "12px 14px", background: "none", border: "none", cursor: "pointer", textAlign: "left",
+      }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color }}>{title}</span>
+        <span style={{ fontSize: 12, color: C.muted, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
+      </button>
+      {open && <div style={{ padding: "0 14px 14px", borderTop: `1px solid ${C.rule}` }}>{children}</div>}
+    </div>
+  );
+}
+
+function Badge({ color, bg, border, text }) {
+  return (<span style={{ display: "inline-block", fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color, background: bg, border: `1px solid ${border}`, borderRadius: 4, padding: "2px 7px" }}>{text}</span>);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN APP
+   ══════════════════════════════════════════════════════════════ */
+function App() {
+  const [tab, setTab] = useState("notify");
+  const [teaching, setTeaching] = useState(false);
+  const [weightKg, setWeightKg] = useState("");
+  const [ageYears, setAgeYears] = useState("");
+  const [kitType, setKitType] = useState("pubertal");
+
+  const wt = parseFloat(weightKg) || 0;
+  const age = parseFloat(ageYears) || 0;
+  const doses = useMemo(() => calcDoses(weightKg), [weightKg]);
+
+  const tabs = [
+    { key: "notify", label: "Notify" },
+    { key: "exam", label: "Exam" },
+    { key: "forensic", label: "Forensics" },
+    { key: "photo", label: "Photos" },
+    { key: "labs", label: "Labs" },
+    { key: "tx", label: "Treatment" },
+    { key: "dispo", label: "Dispo" },
+  ];
+
+  return (
+    <div style={{ maxWidth: 520, margin: "0 auto", fontFamily: "'IBM Plex Sans', -apple-system, sans-serif", background: C.paper, minHeight: "100vh" }}>
+      <Header teaching={teaching} onToggleTeach={() => setTeaching(t => !t)} />
+      <TabBar current={tab} tabs={tabs} onChange={setTab} />
+
+      {/* ── PERSISTENT PATIENT BAR ── */}
+      <div style={{ background: C.white, borderBottom: `1px solid ${C.rule}`, padding: "10px 20px", display: "flex", gap: 10, alignItems: "center" }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ fontSize: 10, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Age (yr)</label>
+          <input type="number" inputMode="decimal" value={ageYears} onChange={e => setAgeYears(e.target.value)} placeholder="10"
+            style={{ display: "block", width: "100%", padding: "6px 8px", border: `1.5px solid ${C.rule}`, borderRadius: 6, fontSize: 15, fontWeight: 500, fontFamily: "'IBM Plex Mono', monospace", outline: "none", marginTop: 2 }}
+            onFocus={e => e.target.style.borderColor = C.primary} onBlur={e => e.target.style.borderColor = C.rule} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={{ fontSize: 10, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Weight (kg)</label>
+          <input type="number" inputMode="decimal" value={weightKg} onChange={e => setWeightKg(e.target.value)} placeholder="30"
+            style={{ display: "block", width: "100%", padding: "6px 8px", border: `1.5px solid ${C.rule}`, borderRadius: 6, fontSize: 15, fontWeight: 500, fontFamily: "'IBM Plex Mono', monospace", outline: "none", marginTop: 2 }}
+            onFocus={e => e.target.style.borderColor = C.primary} onBlur={e => e.target.style.borderColor = C.rule} />
+        </div>
+        {wt > 0 && <div style={{ fontSize: 11, color: C.greenMid, fontWeight: 600, alignSelf: "flex-end", paddingBottom: 8 }}>✓</div>}
+      </div>
+
+      {/* ════════════════════════════════════════════════════════
+         TAB: NOTIFICATIONS
+         ════════════════════════════════════════════════════════ */}
+      {tab === "notify" && (
+        <Pad>
+          <Q text="Special Notifications" sub="Mandatory for ALL sexual assault patients <18 years" />
+          <TeachBox id="notifications" teaching={teaching} />
+
+          <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="4 Mandatory Notifications">
+            These notifications are required regardless of whether a full exam is completed.
+          </Alert>
+
+          {[
+            { num: "1", title: "ED Social Worker", detail: "Notify for ALL sexual assaults <18 years", color: C.red },
+            { num: "2", title: "PEM Admin (On-Call)", detail: "Available for problem solving", color: C.amberMid },
+            { num: "3", title: "SCAN Team", detail: "Must be notified for ALL sexual assaults <18 years", color: C.red },
+            { num: "4", title: "Exam Provider (RSI/SANE)", detail: "Exam completed by RSI or RSI/ED; SCAN team aware of patient and final disposition", color: C.blue },
+          ].map(n => (
+            <div key={n.num} style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8, borderLeft: `4px solid ${n.color}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: n.color, color: C.white, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{n.num}</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>{n.title}</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>{n.detail}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <Card title="Karly's Law Requirements" color={C.red}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              <strong>ORS 419B.022–024:</strong> Children with suspicious physical injuries must be referred to a child-abuse-trained designated medical professional (CAIC) for evaluation.<br/><br/>
+              <strong>48-Hour Checklist:</strong><br/>
+              • Case review by Designated Medical Professional within 48 hours<br/>
+              • Medical chart dictated "STAT" with cc to CARES NW<br/>
+              • Chart and photos sent to CARES NW within 48 hours
+            </div>
+            <TeachBox id="karlysLaw" teaching={teaching} />
+          </Card>
+
+          <Card title="Strangulation Kit (SKIT)" color={C.purple} defaultOpen={false}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              <strong>Oregon Strangulation Forensic Evidence Kit</strong><br/>
+              • IP Consult to RSI/SANE RN<br/>
+              • Can be part of sexual assault workup or standalone<br/>
+              • Each kit contains documentation, forensic evidence collection swabs, and imaging recommendations<br/><br/>
+              <strong>If SANE RN not available:</strong> Just-in-time training video at <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: C.blue }}>oregonsatf.org</span>
+            </div>
+            <TeachBox id="skit" teaching={teaching} />
+          </Card>
+
+          <Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="📋" title="Epic Order Set">
+            Use <strong style={{ fontFamily: "'IBM Plex Mono', monospace" }}>ED: Sexual Assault</strong> order set for all lab and treatment orders.
+          </Alert>
+        </Pad>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+         TAB: EXAM
+         ════════════════════════════════════════════════════════ */}
+      {tab === "exam" && (
+        <Pad>
+          <Q text="Physical Examination" sub="Clinician provider — systematic head-to-toe with anogenital focus" />
+          <TeachBox id="examGeneral" teaching={teaching} />
+
+          <Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠" title="Sedation Rarely Needed">
+            Try reassurance, emphasis on privacy, and eliciting child's concerns first. If sedation required, consider inpatient admission and discuss with admitting team for appropriate time and location.
+          </Alert>
+
+          <Card title="Skin — Full Body Inspection" color={C.primary}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              Inspect all areas with child unclothed/in gown. Document: bruises, petechiae, abrasions, lacerations, scarring, pattern injuries (bite marks or suction bruises), other marks.<br/><br/>
+              Note distinct shapes of recognizable objects, patterns, distribution, and <strong>concerning areas</strong> — non-exposed areas: buttocks, thighs, genitals, ears, frenulum.
+            </div>
+          </Card>
+
+          <Card title="Eyes / Oral / Abdomen" color={C.primary} defaultOpen={false}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              <Sec title="Eyes" color={C.blue}>
+                If abusive head trauma suspected → fundoscopic exam or consult ophthalmology.
+              </Sec>
+              <Sec title="Oral Exam" color={C.blue}>
+                Document lacerations, abrasions, petechiae, ecchymoses. Check mucosa, palate, upper and lower frenula, tongue, gums, lips, teeth for signs of injury.
+              </Sec>
+              <Sec title="Abdomen" color={C.blue}>
+                Look for bruises, abrasions. Consider associated intra-abdominal injury.
+              </Sec>
+            </div>
+          </Card>
+
+          <Card title="Genital Exam — Female" color={C.purple}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              <strong>Position:</strong> Supine frog leg or dorsal lithotomy AND prone knee-to-chest<br/><br/>
+              <strong>Technique:</strong> Gently apply labial separation and traction for visualization. Use good light source and magnification.<br/><br/>
+              <strong>Speculum:</strong> Not indicated in prepubertal or early pubertal girls<br/><br/>
+              <strong>Structures to examine:</strong> Inner thighs, mons pubis, labia majora/minora, inner labial wall, hymen, posterior fossa, posterior fourchette, perineum<br/><br/>
+              <strong>Hymeneal documentation:</strong> Morphology, edges, notches, clefts, mounds, projections, transection, absence of tissue, acute laceration or ecchymosis, healing injuries<br/><br/>
+              <em style={{ color: C.muted }}>If genital exam not possible, swabs from abdomen and umbilicus may be used to obtain DNA.</em>
+            </div>
+          </Card>
+
+          <Card title="Genital Exam — Male" color={C.purple} defaultOpen={false}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              Document penile, scrotal, or perineal: abrasions, ecchymoses, lacerations, petechiae, other marks, edema, discharge, erythema, tenderness, inflammation.
+            </div>
+          </Card>
+
+          <Card title="Perianal / Anal Exam" color={C.purple} defaultOpen={false}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              Document: anal fissures, visible laxity or dilatation (note presence/absence of stool in rectal vault), irregularity of orifice, scarring, abrasions, lacerations, tenderness, edema, discharge, erythema, condylomata acuminata, skin tags, hemorrhoids.<br/><br/>
+              <strong>Digital rectal exam NOT necessary</strong> unless concern for foreign body.<br/><br/>
+              If anoscopy indicated for anal bleeding or rectal pain after penetration → perform <strong>after</strong> forensic evidence collection.
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+         TAB: FORENSICS
+         ════════════════════════════════════════════════════════ */}
+      {tab === "forensic" && (
+        <Pad>
+          <Q text="Forensic Evidence Collection" sub="SANE RN — Sexual Assault Forensic Evidence (SAFE) Kit" />
+
+          <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔒" title="Chain of Custody">
+            Once opened, the forensic specimen kit must be in <strong>continuous physical possession</strong> of the examining provider. Once collected, specimens must be transferred <strong>immediately</strong> to law enforcement custody.
+          </Alert>
+          <TeachBox id="chainOfCustody" teaching={teaching} />
+
+          {/* Kit type toggle */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+            {[{id:"pubertal",label:"Pubertal (≥8y / >Tanner 1)"},{id:"prepubertal",label:"Pre-pubertal (<8y / Tanner 1)"}].map(t => (
+              <button key={t.id} onClick={() => setKitType(t.id)} style={{
+                flex: 1, padding: "10px 8px", borderRadius: 8,
+                border: `1.5px solid ${kitType === t.id ? C.primary : C.rule}`,
+                background: kitType === t.id ? C.primary : C.white,
+                color: kitType === t.id ? C.white : C.ink,
+                fontSize: 12, fontWeight: 700, cursor: "pointer", lineHeight: 1.3,
+              }}>{t.label}</button>
+            ))}
+          </div>
+
+          <TeachBox id="forensicTiming" teaching={teaching} />
+
+          {/* Evidence Collection Windows */}
+          <Card title="Evidence Collection Windows" color={C.amberMid}>
+            <div style={{ marginTop: 8 }}>
+              {kitType === "pubertal" ? (
+                <div>
+                  {[
+                    { window: "≤12 hours", items: "Oral swabs (routine)", color: C.greenMid, bg: C.greenBg, border: C.greenBorder },
+                    { window: "≤72–96 hours", items: "Skin swabs, hair/nail debris, clothing", color: C.amberMid, bg: C.amberBg, border: C.amberBorder },
+                    { window: "≤96 hours", items: "Anogenital swabs (external + internal)", color: C.amberMid, bg: C.amberBg, border: C.amberBorder },
+                    { window: "Any time", items: "Unwashed clothing, especially undergarments", color: C.blue, bg: C.blueBg, border: C.blueBorder },
+                  ].map((w, i) => (
+                    <div key={i} style={{ background: w.bg, border: `1px solid ${w.border}`, borderRadius: 8, padding: "8px 12px", marginBottom: 6 }}>
+                      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, fontWeight: 700, color: w.color }}>{w.window}</span>
+                      <span style={{ fontSize: 12, color: C.ink, marginLeft: 8 }}>{w.items}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⏰" title="24-Hour Guideline">
+                    Evidence collected only if contact within last <strong>24 hours</strong>. Exceptions: clear history of penetration/ejaculation with minimal bathing (may extend to ~30 hours).
+                  </Alert>
+                  <div style={{ background: C.blueBg, border: `1px solid ${C.blueBorder}`, borderRadius: 8, padding: "8px 12px", marginBottom: 6 }}>
+                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, fontWeight: 700, color: C.blue }}>Any time</span>
+                    <span style={{ fontSize: 12, color: C.ink, marginLeft: 8 }}>Always collect unwashed clothing, including underwear, beyond 24 hours</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* General Guidelines */}
+          <Card title="General Guidelines" color={C.primary} defaultOpen={false}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              • Use sterile cotton swabs<br/>
+              • Dry areas: lightly moisten swabs with sterile water; wet areas: use dry sterile swabs<br/>
+              • <strong>Wet swab first, then dry swab</strong><br/>
+              • Swabs must be thoroughly dried before packaging<br/>
+              • Create pre-made labels delineating site of specimen<br/>
+              • <strong>Never lick an envelope</strong> — use tape, adhesive seal, or patient ID label<br/>
+              • Sign over the seal, place specimen in Evidence Kit<br/>
+              • Do NOT discard unused envelopes — label and place in box, indicate why not collected
+            </div>
+          </Card>
+
+          {/* 6 Collection Steps */}
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginTop: 16, marginBottom: 12 }}>Collection Steps</div>
+
+          {[
+            {
+              step: 1, title: "Clothing Collection",
+              content: "Clothing worn at and after time of abuse, particularly undergarments and any stained/damaged clothing. Collect undergarments even if changed since assault. Have clothing removed while patient stands on exam paper. Each piece in separate labeled paper bag. Fold exam paper, place in separate labeled bag.",
+              badge: kitType === "pubertal" ? "Both kits" : "Both kits",
+            },
+            {
+              step: 2, title: "Oral Swabbing",
+              content: kitType === "pubertal"
+                ? "Routine collection for assault within 12 hours or visible injury. Use 2 swabs at a time (4 total) to swab buccal mucosa, under tongue, along inferior gum line. Use 4 more swabs vigorously along inner cheek for patient DNA standard."
+                : "Collect if contact within 24 hours. NOT necessary to collect oral sodomy slides if >12 hours since event — instead collect as DNA standard only.",
+              badge: kitType === "pubertal" ? "≤12 hours" : "≤24 hours",
+            },
+            {
+              step: 3, title: "Woods (UV) Lamp Examination",
+              content: "Collect sample with sterile-water-moistened swab for any area that fluoresces. Smear a dime-size area on a slide with swab after collection. Air dry swab and slide before placing in evidence envelope and slide holder.",
+              badge: "Both kits",
+            },
+            {
+              step: 4, title: "Skin Swabs After Oral Contact",
+              content: kitType === "pubertal"
+                ? "For any reports of mouth-on-skin contact, swab each area with lightly moistened cotton swab. Label each area separately in individual labeled envelopes."
+                : "For reports of mouth-on-skin contact, swab each area separately. When breasts are swabbed, label separately — each contact with each breast represents a separate crime. Include reason for collecting swab on each envelope.",
+              badge: "If applicable",
+            },
+            {
+              step: 5, title: "Skin, Hair & Nails",
+              content: kitType === "pubertal"
+                ? "Within 72–96 hours if child has not bathed: swab skin around dried secretions, bite/suction marks, areas fluorescing under Wood's lamp. Comb pubic hair if present and patient has not bathed — collect debris/foreign hair. If debris or blood under nails, scrape onto paper and place folded paper + scraper in labeled envelope."
+                : "Only within 24 hours if child has not bathed. Swab around dried secretions, marks, fluorescent areas. Nail scrapings if debris or blood present.",
+              badge: kitType === "pubertal" ? "≤72–96 hours" : "≤24 hours",
+            },
+            {
+              step: 6, title: "Anogenital Swabbing",
+              content: kitType === "pubertal"
+                ? "Consider external and internal genital swabbing (up to 4 swabs each) within 72–96 hours. Intravaginal/cervical swabbing rarely indicated for prepubertal girls. For adolescent girls without prior speculum exam, insert swabs into vagina. Do NOT use lubricant for speculum exams — use warm water. Consider perianal collection within 48 hours of assault. Rectal swabs if anal injury or reported contact — insert one lightly moistened swab ~2 cm past anal sphincter, up to 4 swabs per location."
+                : "Only within 24 hours. Only make slides from swabs that may contain ejaculate (usually genital slides). Do NOT make slides from swabs containing only saliva. Include reason for collecting swab on each envelope.",
+              badge: kitType === "pubertal" ? "≤96 hours" : "≤24 hours",
+            },
+          ].map(s => (
+            <Card key={s.step} title={`Step ${s.step}: ${s.title}`} color={C.primary} defaultOpen={s.step <= 2}>
+              <div style={{ marginTop: 8 }}>
+                <Badge color={C.amberMid} bg={C.amberBg} border={C.amberBorder} text={s.badge} />
+                <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>{s.content}</div>
+              </div>
+            </Card>
+          ))}
+
+          {/* Kit Contents Comparison */}
+          <Card title="SAFE Kit Contents" color={C.blue} defaultOpen={false}>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ background: C.purpleBg, border: `1px solid ${C.purpleBorder}`, borderRadius: 8, padding: "10px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.purple, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>Pubertal (≥8y)</div>
+                  {["Vaginal swabs","Cervical swabs","Oral swabs","Pubic hair combings","Pubic hair standards","Head hair standards","Comb","2 slides + mailers","Sterile swabs","Instructions/FLIF","Crime Victims Form"].map((item, i) => (
+                    <div key={i} style={{ fontSize: 11, color: C.ink, padding: "2px 0", borderBottom: `1px dashed ${C.rule}` }}>{item}</div>
+                  ))}
+                </div>
+                <div style={{ background: C.pLight, border: `1px solid ${C.pBorder}`, borderRadius: 8, padding: "10px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.primary, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>Pre-pubertal (&lt;8y)</div>
+                  {["Inner genitalia swab","Outer genitalia swab","Rectal/perianal swab","Oral swab","Body swab × 2","2 slides + mailers","Sterile swabs","Instructions/FLIF"].map((item, i) => (
+                    <div key={i} style={{ fontSize: 11, color: C.ink, padding: "2px 0", borderBottom: `1px dashed ${C.rule}` }}>{item}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+         TAB: PHOTOS
+         ════════════════════════════════════════════════════════ */}
+      {tab === "photo" && (
+        <Pad>
+          <Q text="Photographic Evidence" sub="Per OHSU policy HC-RI-121-POL" />
+          <TeachBox id="photoPolicy" teaching={teaching} />
+
+          <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="📸" title="Required for ALL Sexual Assault Exams">
+            Photographs of genitalia and any visualized marks, bruises, or other injuries.
+          </Alert>
+
+          <Card title="Required Photo Sequence (7 Images)" color={C.primary}>
+            <div style={{ marginTop: 8 }}>
+              {[
+                { num: "1", desc: "Patient ID label (first image)" },
+                { num: "2", desc: "Full picture of patient" },
+                { num: "3", desc: "Patient — a little closer" },
+                { num: "4a", desc: "Area(s) of documentation WITHOUT ruler" },
+                { num: "4b", desc: "Area(s) of documentation WITH ruler" },
+                { num: "5", desc: "Full picture of patient" },
+                { num: "6", desc: "Image of patient label (final image)" },
+              ].map(p => (
+                <div key={p.num} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderBottom: `1px dashed ${C.rule}` }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 6, background: C.pLight, border: `1px solid ${C.pBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: C.primary, flexShrink: 0 }}>{p.num}</div>
+                  <span style={{ fontSize: 13 }}>{p.desc}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card title="Camera Requirements" color={C.amberMid}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              <strong>Attending MD</strong> takes photo documentation<br/>
+              Verify date on camera is correct (time stamp accuracy)<br/>
+              <strong style={{ color: C.red }}>Only 1 patient per camera card — do NOT save to camera</strong>
+            </div>
+          </Card>
+
+          <Card title="Media Card Chain of Custody" color={C.blue}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              <Sec title="Normal Operations" color={C.greenMid}>
+                Secure memory card in envelope → sign envelope → RN/CNA/Tech takes media card to:<br/>
+                <strong style={{ fontFamily: "'IBM Plex Mono', monospace" }}>BICC Room 104</strong><br/>
+                <span style={{ fontSize: 12 }}>Contacts: David Gunn, Aaron Bieleck — ext. <strong>4-7621</strong></span><br/>
+                Chain of custody must be maintained; sign-off required for each handoff.
+              </Sec>
+              <Sec title="Modified Operations" color={C.amberMid}>
+                Media card taken to <strong style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Dr. Valvano's office — CDRC 1272E</strong><br/>
+                <span style={{ fontSize: 12 }}>Email PED ANM who will take card to Dr. Valvano's office.</span>
+              </Sec>
+            </div>
+          </Card>
+
+          <Alert color={C.muted} border={C.rule} bg={C.white} icon="📌" title="To Retrieve Media Cards">
+            Contact Aaron Bieleck, HIM ED COMM — ext. <strong style={{ fontFamily: "'IBM Plex Mono', monospace" }}>4-7621</strong>
+          </Alert>
+        </Pad>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+         TAB: LABS
+         ════════════════════════════════════════════════════════ */}
+      {tab === "labs" && (
+        <Pad>
+          <Q text="Diagnostic Testing" sub="Use ED: Sexual Assault order set" />
+
+          <Card title="STD Testing — Acute Setting" color={C.primary}>
+            <div style={{ marginTop: 8 }}>
+              {[
+                { test: "GC/CT NAAT", specimen: "Urine, rectum, or throat", color: C.ink },
+                { test: "Vaginal pathogens DNA probe", specimen: "Trich, G. vaginalis, Candida", color: C.ink },
+                { test: "Syphilis serology", specimen: "Serum", color: C.ink },
+                { test: "Hep B & C, RPR", specimen: "Based on patient history", color: C.muted },
+              ].map((t, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: `1px dashed ${C.rule}` }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: t.color }}>{t.test}</span>
+                  <span style={{ fontSize: 12, color: C.muted }}>{t.specimen}</span>
+                </div>
+              ))}
+              <div style={{ fontSize: 12, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
+                Swab any vesicular or ulcerative genital/perianal lesions suspicious for genital herpes → send for viral culture.
+              </div>
+            </div>
+          </Card>
+
+          <Card title="HIV Testing" color={C.red}>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ background: C.redBg, border: `1px solid ${C.redBorder}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.red, marginBottom: 4 }}>≥12 years AND starting HIV PEP</div>
+                <div style={{ fontSize: 13, fontWeight: 600, fontFamily: "'IBM Plex Mono', monospace" }}>HIV Ag/Ab Rapid w/ reflex to confirm</div>
+              </div>
+              <div style={{ background: C.amberBg, border: `1px solid ${C.amberBorder}`, borderRadius: 8, padding: "10px 12px" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.amberMid, marginBottom: 4 }}>&lt;12 years OR NOT starting PEP</div>
+                <div style={{ fontSize: 13, fontWeight: 600, fontFamily: "'IBM Plex Mono', monospace" }}>HIV Ag/Ab Screening w/ reflex to confirm</div>
+              </div>
+              <div style={{ fontSize: 12, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
+                HIV testing is generally <strong>not required in the ED</strong> and may be deferred for follow-up — unless PEP is being initiated, in which case obtain baseline.
+              </div>
+            </div>
+          </Card>
+
+          <Card title="Other Required Labs" color={C.primary} defaultOpen={false}>
+            <div style={{ marginTop: 8 }}>
+              <DoseRow label="Complete Metabolic Panel" value="Serum" />
+              <DoseRow label="Urine pregnancy test" value="Females ≥10y / Tanner 3 / periods" />
+              <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 10 }}>
+                <strong>Toxicology:</strong> For drug-endangered children, obtain 10–20 mL urine for drug screen. Other specific testing (heavy metals, alcohols) as indicated.<br/>
+                • <strong>Medical care:</strong> Send to hospital lab<br/>
+                • <strong>Medical-legal purposes:</strong> Follow chain of custody<br/>
+                • Call on-call toxicologist for questions about specific testing
+              </div>
+            </div>
+          </Card>
+
+          <Card title="Radiology" color={C.muted} defaultOpen={false}>
+            <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 8 }}>
+              Radiographic studies as indicated for suspected non-accidental trauma (skeletal survey, head imaging, etc. — see NAT pathway).
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+         TAB: TREATMENT
+         ════════════════════════════════════════════════════════ */}
+      {tab === "tx" && (
+        <Pad>
+          <Q text="Treatment" sub={doses ? `Calculated for ${doses.w} kg · Tier ${doses.tier}` : "Enter weight above for dose calculations"} />
+
+          {!doses && (
+            <Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">
+              Enter the patient's weight in the bar above to calculate doses.
+            </Alert>
+          )}
+
+          {/* Emergency Contraception */}
+          <Card title="Emergency Contraception — Ella (Ulipristal)" color={C.purple}>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ background: C.purpleBg, border: `1.5px solid ${C.purpleBorder}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 16, fontWeight: 700, color: C.purple }}>Ella 30 mg PO × 1</div>
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 6 }}>Eligibility Criteria (all must be met):</div>
+              {[
+                "Post-menarchal patient",
+                "Assault within last 120 hours (5 days)",
+                "NOT using a highly reliable method of birth control",
+                "Any pregnancy conceived in last 5 days would be undesirable",
+                "Pregnancy test is NEGATIVE",
+              ].map((c, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", fontSize: 13 }}>
+                  <span style={{ color: C.purple, fontWeight: 700 }}>☐</span> {c}
+                </div>
+              ))}
+            </div>
+            <TeachBox id="emergencyContraception" teaching={teaching} />
+          </Card>
+
+          {/* STD Prophylaxis */}
+          <Card title="STD Prophylaxis — GC/CT" color={C.red}>
+            <div style={{ marginTop: 8 }}>
+              <TeachBox id="stdProphylaxis" teaching={teaching} />
+
+              <div style={{ fontSize: 12, color: C.muted, marginBottom: 10, lineHeight: 1.5 }}>
+                Not routinely recommended for prepubertal children. Offer to <strong>post-menarchal patients</strong> with genital-genital contact.
+              </div>
+
+              {/* Tier 1 */}
+              <div style={{
+                background: doses && doses.tier === 1 ? C.amberBg : C.white,
+                border: `1.5px solid ${doses && doses.tier === 1 ? C.amberBorder : C.rule}`,
+                borderRadius: 10, padding: "12px 14px", marginBottom: 8,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.amberMid }}>Tier 1: ≤45 kg</span>
+                  {doses && doses.tier === 1 && <Badge color={C.greenMid} bg={C.greenBg} border={C.greenBorder} text="Active" />}
+                </div>
+                <DoseRow label="Ceftriaxone IM (25–50 mg/kg)" value={doses && doses.tier === 1 ? `${doses.ceftriT1low}–${doses.ceftriT1}` : "—"} unit="mg (max 125)" />
+                <DoseRow label="+ EES PO (50 mg/kg/day)" value={doses && doses.tier === 1 ? doses.eesT1 : "—"} unit="mg/day (max 2000)" />
+              </div>
+
+              {/* Tier 2 */}
+              <div style={{
+                background: doses && doses.tier === 2 ? C.amberBg : C.white,
+                border: `1.5px solid ${doses && doses.tier === 2 ? C.amberBorder : C.rule}`,
+                borderRadius: 10, padding: "12px 14px", marginBottom: 8,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.amberMid }}>Tier 2: &gt;45 kg to &lt;150 kg</span>
+                  {doses && doses.tier === 2 && <Badge color={C.greenMid} bg={C.greenBg} border={C.greenBorder} text="Active" />}
+                </div>
+                <DoseRow label="Ceftriaxone IM" value="500" unit="mg" />
+                <DoseRow label="+ Doxycycline PO (if ≥8y, NOT pregnant)" value="100" unit="mg" />
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>If &lt;8y or pregnant → Azithromycin 1000 mg PO</div>
+              </div>
+
+              {/* Tier 3 */}
+              <div style={{
+                background: doses && doses.tier === 3 ? C.amberBg : C.white,
+                border: `1.5px solid ${doses && doses.tier === 3 ? C.amberBorder : C.rule}`,
+                borderRadius: 10, padding: "12px 14px", marginBottom: 8,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.amberMid }}>Tier 3: ≥150 kg</span>
+                  {doses && doses.tier === 3 && <Badge color={C.greenMid} bg={C.greenBg} border={C.greenBorder} text="Active" />}
+                </div>
+                <DoseRow label="Ceftriaxone IM" value="1000" unit="mg (1 gram)" />
+                <DoseRow label="+ Doxycycline PO (if NOT pregnant)" value="100" unit="mg" />
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>If pregnant → Azithromycin 1000 mg PO</div>
+              </div>
+
+              {/* Allergy alternative */}
+              <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⚠" title="Ceftriaxone Allergy / Unavailable">
+                <strong style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Gentamicin 240 mg IM + Azithromycin 2000 mg PO</strong>
+              </Alert>
+            </div>
+          </Card>
+
+          {/* Trichomoniasis / BV */}
+          <Card title="Trichomoniasis / Bacterial Vaginosis" color={C.primary} defaultOpen={false}>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ background: C.amberBg, border: `1px solid ${C.amberBorder}`, borderRadius: 8, padding: "10px 12px" }}>
+                {doses && doses.tier === 1 ? (
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.amberMid }}>≤45 kg — Weight-Based</div>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, fontWeight: 600, marginTop: 4 }}>
+                      Metronidazole {doses.metroT1}
+                    </div>
+                    <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>15 mg/kg/day divided TID × 7 days</div>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.amberMid }}>&gt;45 kg — Standard</div>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, fontWeight: 600, marginTop: 4 }}>
+                      Metronidazole 2 g PO × 1
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+
+          {/* HIV PEP */}
+          <Card title="HIV Post-Exposure Prophylaxis (PEP)" color={C.red}>
+            <div style={{ marginTop: 8 }}>
+              <TeachBox id="hivPep" teaching={teaching} />
+
+              <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚫" title="Do NOT Start Without Consult">
+                Do not start PEP on pediatric patients without consulting <strong>Peds Infectious Disease</strong>.
+              </Alert>
+
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 8 }}>Standard Regimen (≥35 kg, adolescents/adults):</div>
+              <div style={{ background: C.redBg, border: `1.5px solid ${C.redBorder}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
+                <DoseRow label="Truvada (FTC/TDF) PO" value="200/300" unit="mg" />
+                <DoseRow label="Isentress (raltegravir) PO" value="400" unit="mg" />
+                <DoseRow label="Ondansetron ODT" value={doses ? doses.ondansetron : "4"} unit="mg" />
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 6 }}>Discharge with <strong>one-month supply</strong> of each medication.</div>
+              </div>
+
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginTop: 12, marginBottom: 8 }}>Follow-Up Consults:</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ background: C.blueBg, border: `1px solid ${C.blueBorder}`, borderRadius: 8, padding: "10px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.blue, marginBottom: 4 }}>&lt;18 years</div>
+                  <div style={{ fontSize: 12, color: C.ink }}>Peds ID Consult</div>
+                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600, color: C.blue, marginTop: 2 }}>CNSLT0102</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>Page attending on call before D/C to ensure urgent outpatient triage</div>
+                </div>
+                <div style={{ background: C.purpleBg, border: `1px solid ${C.purpleBorder}`, borderRadius: 8, padding: "10px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.purple, marginBottom: 4 }}>≥18 years</div>
+                  <div style={{ fontSize: 12, color: C.ink }}>IMC HIV Consult</div>
+                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600, color: C.purple, marginTop: 2 }}>CNSLT0336</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>Include IM Clinic phone in d/c instructions: <strong>503.494.8562</strong></div>
+                </div>
+              </div>
+
+              <div style={{ fontSize: 12, color: C.muted, marginTop: 8, lineHeight: 1.5, fontStyle: "italic" }}>
+                For children/adolescents &lt;35 kg: consult the DCH HIV PEP Guideline for alternative weight-based regimens and dosing.
+              </div>
+            </div>
+          </Card>
+
+          {/* Vaccines */}
+          <Card title="Vaccines" color={C.greenMid} defaultOpen={false}>
+            <div style={{ marginTop: 8 }}>
+              <Sec title="Hepatitis B Vaccine" color={C.greenMid}>
+                <span style={{ fontSize: 13 }}>
+                  Offer if patient not fully immunized, unvaccinated, or known non-responder to Hep B series AND secretion-mucosal contact occurred during assault. Include instructions for repeat doses.
+                </span>
+              </Sec>
+              <Sec title="HPV Vaccine" color={C.greenMid}>
+                <span style={{ fontSize: 13 }}>
+                  Offer to all patients <strong>ages 9–26 years</strong>. Include instructions for repeat doses if not fully immunized or unvaccinated.
+                </span>
+              </Sec>
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+         TAB: DISPOSITION
+         ════════════════════════════════════════════════════════ */}
+      {tab === "dispo" && (
+        <Pad>
+          <Q text="Disposition & Follow-Up" sub="Ensure safe disposition, mandatory referrals, and Karly's Law compliance" />
+
+          <Card title="Admit vs. Discharge" color={C.primary}>
+            <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div style={{ background: C.redBg, border: `1.5px solid ${C.redBorder}`, borderRadius: 10, padding: "12px" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.red, marginBottom: 6 }}>ADMIT</div>
+                <div style={{ fontSize: 12, lineHeight: 1.6 }}>
+                  If, in consultation with DHS, patient <strong>cannot be discharged to a safe environment</strong>
+                </div>
+              </div>
+              <div style={{ background: C.greenBg, border: `1.5px solid ${C.greenBorder}`, borderRadius: 10, padding: "12px" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.greenMid, marginBottom: 6 }}>DISCHARGE</div>
+                <div style={{ fontSize: 12, lineHeight: 1.6 }}>
+                  Safe environment confirmed with DHS. All required calls made. Follow-up arranged.
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card title="Pre-Discharge Checklist" color={C.amberMid}>
+            <div style={{ marginTop: 8 }}>
+              {[
+                "Appropriate calls made to DHS and/or law enforcement",
+                "Medical follow-up arranged for STDs",
+                "Pregnancy follow-up arranged (if applicable)",
+                "Physical injury follow-up arranged",
+                "Counseling referral provided",
+                "Karly's Law 48-hour requirements communicated",
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: `1px dashed ${C.rule}`, fontSize: 13 }}>
+                  <span style={{ color: C.amberMid, fontWeight: 700 }}>☐</span> {item}
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card title="County-Specific Referral Routing" color={C.blue}>
+            <div style={{ marginTop: 8 }}>
+              {[
+                {
+                  county: "Multnomah / Washington County",
+                  sub: "Abuse occurred in Multnomah or Washington County",
+                  referral: "CARES NW",
+                  detail: "Follow-up arranged by child abuse social worker at CARES",
+                  phone: "503-276-9000",
+                  color: C.blue,
+                },
+                {
+                  county: "Other Oregon County",
+                  sub: "Patient lives in another county in Oregon",
+                  referral: "Local Child Abuse Intervention Center (CAIC)",
+                  detail: null,
+                  phone: "childabuseintervention.org/centers",
+                  color: C.purple,
+                },
+                {
+                  county: "Washington State",
+                  sub: "Abuse occurred in Washington",
+                  referral: "Local CAIC — Washington",
+                  detail: null,
+                  phone: "360-397-6002",
+                  color: C.teal,
+                },
+              ].map((r, i) => (
+                <div key={i} style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8, borderLeft: `4px solid ${r.color}` }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: r.color }}>{r.county}</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{r.sub}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, marginTop: 6 }}>→ {r.referral}</div>
+                  {r.detail && <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{r.detail}</div>}
+                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, fontWeight: 600, color: r.color, marginTop: 4 }}>{r.phone}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card title="Karly's Law — 48-Hour Requirements" color={C.red}>
+            <div style={{ marginTop: 8 }}>
+              {[
+                { label: "Case review by Designated Medical Professional", deadline: "Within 48 hours" },
+                { label: "Medical chart dictated \"STAT\" with cc to CARES NW", deadline: "STAT" },
+                { label: "Chart and photos sent to CARES NW", deadline: "Within 48 hours" },
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px dashed ${C.rule}` }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, flex: 1 }}>{item.label}</span>
+                  <Badge color={C.red} bg={C.redBg} border={C.redBorder} text={item.deadline} />
+                </div>
+              ))}
+            </div>
+            <TeachBox id="karlysLaw" teaching={teaching} />
+          </Card>
+
+          <Card title="References" color={C.muted} defaultOpen={false}>
+            <div style={{ fontSize: 11, lineHeight: 1.7, marginTop: 8, color: C.muted }}>
+              1. Reichert S et al. <em>Oregon Medical Guidelines for Evaluation of Sexual Abuse in Children and Adolescents.</em> Oregon DOJ, 2004.<br/>
+              2. NACHRI. <em>Defining the Children's Hospital Role in Child Maltreatment.</em><br/>
+              3. CDC. <em>STI Treatment Guidelines 2021.</em> MMWR 70(4).<br/>
+              4. Kellogg N, AAP Committee on Child Abuse. <em>Pediatrics</em> 2005;116:506–12.<br/>
+              5. US DOJ Office on Violence Against Women. <em>National Protocol for Sexual Assault Medical Forensic Examinations.</em> 2004.<br/>
+              6. AACAP. <em>Practice Parameters for Forensic Evaluation of Children and Adolescents.</em> 1996.<br/><br/>
+              <strong>Pathway Authors:</strong> Melinda Hartenstein RN, Beech Burns MD<br/>
+              <strong>Reviewed:</strong> Thomas Valvano MD, Noelle Gibson NP<br/>
+              <strong>Approved:</strong> 8/31/09 · Updated: 5/3/2011, 11/2015, 4/2021
+            </div>
+          </Card>
+        </Pad>
+      )}
+
+      {/* FOOTER */}
+      <div style={{ padding: "12px 20px", fontSize: 10, color: C.muted, lineHeight: 1.5, borderTop: `1px solid ${C.rule}` }}>
+        <strong style={{ color: C.red }}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Pediatric Sexual Assault Clinical Pathway · November 2021
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
