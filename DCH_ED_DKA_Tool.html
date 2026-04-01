@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DKA — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#c2410c",pLight:"#fff7ed",pBorder:"#fdba74",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{title:"Pathway Rationale",content:"DKA is a complex metabolic state of hyperglycemia, ketosis, and acidosis. Hyperglycemia causes osmotic diuresis leading to excessive free water and electrolyte loss. Hypovolemia leads to tissue hypoperfusion and lactic acidosis. Treatment requires correction of dehydration and hyperglycemia, anticipation and resolution of electrolyte abnormalities, identification of precipitating/comorbid illnesses, and frequent monitoring."},
+cerebralEdema:{title:"Cerebral Edema",content:"DKA-associated cerebral edema occurs in ~1% of episodes. Overly rapid correction of serum hyperglycemia and osmolarity may create a large gradient between intracerebral and serum osmolarity. However, recent evidence (Kuppermann 2018) suggests no association between rates/volumes of fluid resuscitation and development of cerebral edema. Warning signs: headache, slow heart rate, irritability, AMS, incontinence, neurologic deficits. Treatment: elevate HOB, 3% NaCl 5 mL/kg IV over 30 min, consider mannitol 0.5–1 g/kg, consider decreasing IV fluids by 1/3, consider intracranial imaging."},
+fluids:{title:"Fluid Strategy",content:"If signs of dehydration → NS 20 mL/kg bolus over 30 min (faster if shock). If no signs of dehydration → NS 10 mL/kg over 60 min. Avoid excessive fluid administration. For patients on insulin gtt, add dextrose (up to D10) when BG <300 or glucose drops >100 mg/dL/hr. Keep glucose 200–300 until acidosis corrects. Use the two-bag system (Bag A: NS + K, Bag B: D10 NS + K) to titrate dextrose delivery."},
+insulin:{title:"Insulin Management",content:"Regular insulin IV at 0.05 units/kg/hr — start AFTER consult with endocrine. Do NOT bolus insulin. Do NOT use patient's personal pump if they meet DKA criteria. Flush Microbore syringe tubing with 10–20 mL of insulin solution prior to starting (or flush 1–2 mL and allow to dwell 20 min). Alaris 25 mL tubing: flush with 50 mL insulin. Continue infusion until pH >7.3 and HCO₃ >15, then transition to SQ insulin per endocrine."},
+potassium:{title:"Potassium Replacement",content:"Despite severe total body K+ depletion, serum hyperkalemia is often observed pre-resuscitation. Risk of cardiac arrhythmias → continuous cardiac monitoring. After initial hydration, if K <5 mmol and urine output established: NS with 20 mEq KAcetate + 20 mEq KPhos IV at 1.5× maintenance rate. If no urine output → consult endocrine/PICU before adding K+. Monitor K+ Q2H with Chem8."},
+bicarb:{title:"Bicarbonate — Not Recommended",content:"Supplemental bicarbonate is NOT recommended for routine DKA. A pediatric trial of bicarbonate in severe acidosis (pH <7.15) showed no benefit vs placebo. Multiple studies suggest bicarbonate may cause paradoxical intracellular acidosis, worsen tissue perfusion, cause hypokalemia, and increase cerebral edema risk. Acidosis resolves with isotonic fluid and insulin. Only consider if pH <7.0 and PICU/endocrine specifically recommend."},
+twoBag:{title:"Two-Bag System",content:"Bag A = NS + 40 mEq K (no dextrose). Bag B = D10 NS + 40 mEq K. Total rate = 1.5× maintenance. Adjust the ratio of Bag A to Bag B based on glucose level: BG ≥300 → all Bag A (D0). BG 200–300 → equal Bag A + Bag B (D5 equivalent). BG 150–200 → all Bag B (D10). BG <150 → contact provider. Notify provider if glucose drops >100 mg/dL/hr."},
+hhs:{title:"Hyperosmolar Hyperglycemic State (HHS)",content:"Glucose >600 mg/dL, serum osm >320 mOsm/L, may have bicarb >15 mmol/L with mild acidosis. HHS may be isolated. Patients may develop hypotension if serum osm falls rapidly (BP supported by hyperosmolality in the context of severe dehydration). Contact Endocrinology team."},
+monitoring:{title:"Monitoring Protocol",content:"Q1H: vitals, neuro checks, capillary or venous glucose. Q2–4H: Chem8 + POC VBG/lactate until acidosis resolved and transitioned to SQ insulin. Urine ketones Q void until ketosis resolves. Strict I&O. Continuous cardiac + pulse oximetry monitoring. NPO until stable."},
+picu:{title:"PICU Admission Criteria",content:"Any ONE of: hemodynamically unstable, altered mental status, insulin drip required, hypokalemia (K <3.5). Also consider PICU for: new onset DKA, HCO₃ <12, signs of cerebral edema."},
+newOnset:{title:"New-Onset Diabetes Workup",content:"For all new diabetic patients consider: HbA1c, tissue transglutaminase (TTG), and IgA (screening for celiac disease, which has increased prevalence in T1D)."},
+};
+
+function calcDoses(w){
+  var wt=parseFloat(w)||0;if(wt<=0)return null;
+  var bolus20=Math.round(wt*20);
+  var bolus10=Math.round(wt*10);
+  var insulin=Math.round(wt*0.05*100)/100;
+  // Maintenance: Holliday-Segar
+  var maint=0;
+  if(wt<=10)maint=wt*100;
+  else if(wt<=20)maint=1000+(wt-10)*50;
+  else maint=1500+(wt-20)*20;
+  var maintHr=Math.round(maint/24*10)/10;
+  var maint15=Math.round(maintHr*1.5*10)/10;
+  // Cerebral edema
+  var hyper3=Math.round(wt*5);
+  var mannitolLo=Math.round(wt*0.5*10)/10;
+  var mannitolHi=Math.round(wt*1*10)/10;
+  return{w:wt,bolus20:bolus20,bolus10:bolus10,insulin:insulin,maintHr:maintHr,maint15:maint15,hyper3:hyper3,mannitolLo:mannitolLo,mannitolHi:mannitolHi};
+}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+// ── PRIMITIVES ──
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Diabetic Ketoacidosis</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · August 2021</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;var t=TEACH[id];return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink}}>{t.content}</div></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+// Two-Bag Calculator
+function TwoBagCalc({doses}){
+  if(!doses)return(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight for two-bag calculations.</Alert>);
+  var r=doses.maint15;
+  var rows=[
+    {glucose:"≥300",bagA:r.toFixed(1),bagB:"0",dex:"D0"},
+    {glucose:"200–300",bagA:(r/2).toFixed(1),bagB:(r/2).toFixed(1),dex:"D5"},
+    {glucose:"150–200",bagA:"0",bagB:r.toFixed(1),dex:"D10"},
+    {glucose:"<150",bagA:"—",bagB:"—",dex:"CONTACT MD"},
+  ];
+  return(<div>
+    <div style={{fontSize:12,fontWeight:700,color:C.ink,marginBottom:6}}>Total Rate: {r} mL/hr (1.5× maintenance for {doses.w} kg)</div>
+    <div style={{border:"1.5px solid "+C.rule,borderRadius:8,overflow:"hidden"}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",background:"#f3f4f6",padding:"6px 8px",gap:4}}>
+        <div style={{fontSize:10,fontWeight:700,color:C.muted}}>GLUCOSE</div>
+        <div style={{fontSize:10,fontWeight:700,color:C.muted}}>BAG A (NS+K)</div>
+        <div style={{fontSize:10,fontWeight:700,color:C.muted}}>BAG B (D10+K)</div>
+        <div style={{fontSize:10,fontWeight:700,color:C.muted}}>FINAL [Dex]</div>
+      </div>
+      {rows.map(function(r,i){return(<div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",padding:"6px 8px",gap:4,borderTop:"1px solid "+C.rule,background:i===3?C.redBg:C.white}}>
+        <div style={{fontSize:12,fontWeight:600}}>{r.glucose}</div>
+        <div style={{fontSize:12,fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{r.bagA}</div>
+        <div style={{fontSize:12,fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{r.bagB}</div>
+        <div style={{fontSize:11,fontWeight:700,color:i===3?C.red:C.primary}}>{r.dex}</div>
+      </div>)})}
+    </div>
+    <div style={{fontSize:11,color:C.muted,marginTop:6}}>Bag A = NS + 40 mEq K/L · Bag B = D10 NS + 40 mEq K/L · Notify MD if glucose drops {'>'}100 mg/dL/hr</div>
+  </div>);
+}
+
+// ═══════════════════════════════
+// FLOWCHART
+// ═══════════════════════════════
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#c2410c",pBg="#fff7ed",pBd="#fdba74",puC="#6b21a8",puBg="#faf5ff",puBd="#c4b5fd",mC="#6b7280";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>BG {'>'}250 · pH {'<'}7.3 or HCO₃ {'<'}15 · Ketonuria · Ages 1–18</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 500" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={500} fill="#fafaf8" rx={6}/>
+          <Box x={120} y={6} w={240} h={28} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={pC}>DIABETIC KETOACIDOSIS</T><T x={240} y={28} size={6} color={mC}>BG {'>'}250 · pH {'<'}7.3 / HCO₃ {'<'}15 · Ketones</T></Box>
+          <Arrow x1={240} y1={34} x2={240} y2={48}/>
+          <Box x={100} y={48} w={280} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={240} y={58} size={8} weight={700} color={rC}>IMMEDIATE ACTION</T><T x={240} y={68} size={6} color={mC}>CBG · CMP · VBG · IV access · Cardiac monitor</T><T x={240} y={76} size={6} color={mC}>UA for ketones · NPO · Strict I&O · Q1H vitals + neuro</T></Box>
+          <Arrow x1={240} y1={78} x2={240} y2={94}/>
+          <g transform="translate(240,108)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Dehydrated?</T></g>
+          <Arrow x1={180} y1={108} x2={100} y2={130} color={aC}/>
+          <Arrow x1={300} y1={108} x2={380} y2={130} color={gC}/>
+          <Box x={40} y={130} w={120} h={24} fill={aBg} stroke={aBd}><T x={100} y={140} size={7} weight={700} color={aC}>YES</T><T x={100} y={150} size={6} color={mC}>NS 20 mL/kg / 30 min</T></Box>
+          <Box x={320} y={130} w={120} h={24} fill={gBg} stroke={gBd}><T x={380} y={140} size={7} weight={700} color={gC}>NO</T><T x={380} y={150} size={6} color={mC}>NS 10 mL/kg / 60 min</T></Box>
+          <Arrow x1={100} y1={154} x2={240} y2={172}/>
+          <Arrow x1={380} y1={154} x2={240} y2={172}/>
+
+          {/* Three parallel pillars */}
+          <Box x={20} y={172} w={140} h={24} fill={blBg} stroke={blBd} sw={1.5}><T x={90} y={182} size={8} weight={700} color={blC}>IV FLUIDS</T><T x={90} y={192} size={6} color={mC}>Two-bag system</T></Box>
+          <Box x={170} y={172} w={140} h={24} fill={pBg} stroke={pBd} sw={1.5}><T x={240} y={182} size={8} weight={700} color={pC}>INSULIN</T><T x={240} y={192} size={6} color={mC}>0.05 U/kg/hr</T></Box>
+          <Box x={320} y={172} w={140} h={24} fill={puBg} stroke={puBd} sw={1.5}><T x={390} y={182} size={8} weight={700} color={puC}>POTASSIUM</T><T x={390} y={192} size={6} color={mC}>If K {'<'}5 + UO</T></Box>
+
+          {/* Fluid details */}
+          <Arrow x1={90} y1={196} x2={90} y2={210} color={blC}/>
+          <Box x={20} y={210} w={140} h={48} fill={blBg} stroke={blBd}><T x={90} y={220} size={6}>BG ≥300 → Bag A only</T><T x={90} y={230} size={6}>BG 200–300 → A+B (D5)</T><T x={90} y={240} size={6}>BG 150–200 → Bag B (D10)</T><T x={90} y={250} size={6} weight={700} color={rC}>{'<'}150 → Contact MD</T></Box>
+
+          {/* Insulin details */}
+          <Arrow x1={240} y1={196} x2={240} y2={210} color={pC}/>
+          <Box x={170} y={210} w={140} h={48} fill={pBg} stroke={pBd}><T x={240} y={220} size={6}>After endocrine consult</T><T x={240} y={230} size={6} weight={700} color={rC}>Do NOT bolus</T><T x={240} y={240} size={6}>Prime tubing first</T><T x={240} y={250} size={6}>Keep BG 200–300</T></Box>
+
+          {/* K details */}
+          <Arrow x1={390} y1={196} x2={390} y2={210} color={puC}/>
+          <Box x={320} y={210} w={140} h={48} fill={puBg} stroke={puBd}><T x={390} y={220} size={6}>20 mEq KAcetate</T><T x={390} y={230} size={6}>+ 20 mEq KPhos</T><T x={390} y={240} size={6}>1.5× maintenance</T><T x={390} y={250} size={6}>Monitor Q2H w/ Chem8</T></Box>
+
+          {/* Resolution */}
+          <Arrow x1={240} y1={258} x2={240} y2={276}/>
+          <g transform="translate(240,290)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>pH {'>'}7.3 + HCO₃ {'>'}15?</T></g>
+          <Arrow x1={170} y1={290} x2={90} y2={312} color={gC}/>
+          <Arrow x1={310} y1={290} x2={390} y2={312} color={aC}/>
+          <Box x={30} y={312} w={120} h={24} fill={gBg} stroke={gBd} radius={8}><T x={90} y={322} size={7} weight={700} color={gC}>RESOLVED</T><T x={90} y={332} size={6} color={mC}>→ SQ insulin · Endocrine</T></Box>
+          <Box x={330} y={312} w={120} h={24} fill={aBg} stroke={aBd}><T x={390} y={322} size={7} weight={700} color={aC}>ONGOING</T><T x={390} y={332} size={6} color={mC}>Continue gtt · Q2H labs</T></Box>
+
+          {/* Cerebral edema box */}
+          <Box x={20} y={350} w={440} h={36} fill={rBg} stroke={rBd} sw={2} radius={8}><T x={240} y={360} size={8} weight={700} color={rC}>⚠ CEREBRAL EDEMA — MONITOR THROUGHOUT</T><T x={240} y={372} size={6} color={mC}>Headache · Bradycardia · AMS · Incontinence · Neuro deficits</T><T x={240} y={382} size={6} weight={700} color={rC}>→ Elevate HOB · 3% NaCl 5 mL/kg · Mannitol 0.5–1 g/kg · Head CT</T></Box>
+
+          {/* PICU criteria */}
+          <Box x={20} y={396} w={215} h={28} fill={rBg} stroke={rBd} radius={6}><T x={127} y={406} size={7} weight={700} color={rC}>PICU CRITERIA</T><T x={127} y={420} size={6} color={mC}>Unstable · AMS · Insulin gtt · K {'<'}3.5</T></Box>
+          <Box x={245} y={396} w={215} h={28} fill={aBg} stroke={aBd} radius={6}><T x={352} y={406} size={7} weight={700} color={aC}>CONSIDER PICU</T><T x={352} y={420} size={6} color={mC}>New onset · HCO₃ {'<'}12 · Cerebral edema</T></Box>
+
+          {/* HHS */}
+          <Box x={20} y={432} w={440} h={22} fill={puBg} stroke={puBd} radius={6}><T x={240} y={441} size={7} weight={700} color={puC}>HHS: BG {'>'}600 · Osm {'>'}320 · May have HCO₃ {'>'}15 → Contact Endocrine</T><T x={240} y={451} size={6} color={mC}>May develop hypotension if osm falls rapidly</T></Box>
+
+          <Box x={20} y={462} w={440} h={30} fill="#f1f5f9" stroke="#e2e8f0" radius={6}><T x={240} y={473} size={7} weight={700} color={pC}>KEY RULES</T><T x={120} y={485} size={6} color={mC}>No insulin bolus</T><T x={240} y={485} size={6} color={mC}>No personal pump</T><T x={370} y={485} size={6} color={mC}>No routine bicarb</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════
+// WALK-THROUGH WIZARD
+// ═══════════════════════════════
+function Wizard({teaching,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),dehydrated=s2[0],setDehydrated=s2[1];
+  var s3=useState(null),shock=s3[0],setShock=s3[1];
+  var s4=useState(null),kLevel=s4[0],setKLevel=s4[1];
+  var s5=useState(null),uOutput=s5[0],setUOutput=s5[1];
+  var s6=useState(null),picuCrit=s6[0],setPicuCrit=s6[1];
+
+  function reset(){setExcl(null);setDehydrated(null);setShock(null);setKLevel(null);setUOutput(null);setPicuCrit(null);}
+
+  return(<Pad>
+    <Q text="Walk-Through" sub="Step-by-step DKA management"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* STEP 1: Confirm DKA */}
+    <Card title="Step 1 — Confirm DKA" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>
+        <strong>Does the patient meet DKA criteria?</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>BG {'>'}250 mg/dL AND (venous pH {'<'}7.3 OR HCO₃ {'<'}15 mmol/L) AND ketonuria · Age 1–18</span>
+      </div>
+      <WizBtn label="Yes — DKA confirmed" sub="BG >250 + acidosis + ketones" color={C.primary} bg={C.pLight} border={C.pBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      <WizBtn label="Hyperglycemia without acidosis" sub="BG elevated but pH ≥7.3 and HCO₃ ≥15 → NOT DKA" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={excl==="hyper"} onClick={function(){setExcl("hyper")}}/>
+      <WizBtn label="Excluded — Off Pathway" sub="Age <1 year" color={C.red} bg={C.redBg} border={C.redBorder} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+      {excl==="hyper"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Not DKA">Hyperglycemia without acidosis — manage per endocrine consultation. Consider HHS if BG {'>'}600.</Alert>}
+      {excl==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Off Pathway">Age {'<'}1 year is excluded from this pathway.</Alert>}
+    </Card>
+
+    {/* STEP 2: Immediate Actions */}
+    {excl==="no"&&(<Card title="Step 2 — Immediate Actions" color={C.red}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Initiate on Arrival — ESI II">
+        <strong>IV access</strong> — 2 peripheral sites in separate extremities (if PICU admission anticipated)<br/>
+        If unable to get PIV → consider central line or IO. <strong>Avoid arterial access.</strong><br/>
+        <strong>Labs:</strong> CBG, CMP, phosphorus, POC VBG w/ lactate, Chem8 · UA for ketones<br/>
+        Cardiac + pulse oximetry monitoring<br/>
+        <strong>Q1H:</strong> vitals, neuro checks, capillary/venous glucose<br/>
+        <strong>Q2–4H:</strong> Chem8 + POC VBG/lactate until acidosis resolved<br/>
+        Urine ketones Q void · <strong>NPO</strong> · Strict I&O
+      </Alert>
+      <TeachBox id="monitoring" teaching={teaching}/>
+      <TeachBox id="newOnset" teaching={teaching}/>
+
+      <div style={{fontSize:13,marginBottom:10,marginTop:4}}><strong>Signs of shock?</strong></div>
+      <WizBtn label="Yes — Shock" sub="Tachycardia, poor perfusion, hypotension" color={C.red} bg={C.redBg} border={C.redBorder} selected={shock==="yes"} onClick={function(){setShock("yes");setDehydrated("yes")}}/>
+      <WizBtn label="Dehydrated but not shocked" sub="Dry mucosa, delayed cap refill, decreased UO" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={dehydrated==="yes"&&shock!=="yes"} onClick={function(){setDehydrated("yes");setShock("no")}}/>
+      <WizBtn label="Not dehydrated" sub="Adequate perfusion, moist mucosa" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={dehydrated==="no"} onClick={function(){setDehydrated("no");setShock("no")}}/>
+
+      {shock==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Shock — Rapid Bolus">NS <strong>{doses?doses.bolus20+" mL":"20 mL/kg"}</strong> bolus — push faster for shock. Repeat as needed.</Alert>}
+      {dehydrated==="yes"&&shock!=="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="💧" title="Dehydrated — NS Bolus">NS <strong>{doses?doses.bolus20+" mL":"20 mL/kg"}</strong> bolus over 30 minutes. Avoid excessive fluid administration.</Alert>}
+      {dehydrated==="no"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="💧" title="Not Dehydrated — Gentle Bolus">NS <strong>{doses?doses.bolus10+" mL":"10 mL/kg"}</strong> bolus over 60 minutes.</Alert>}
+      <TeachBox id="fluids" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 3: Insulin */}
+    {excl==="no"&&dehydrated!==null&&(<Card title="Step 3 — Insulin" color={C.primary}>
+      <Alert color={C.primary} border={C.pBorder} bg={C.pLight} icon="💉" title="Insulin IV Infusion">
+        <strong>Consult Endocrine FIRST</strong><br/>
+        <strong>Regular insulin</strong> {doses?doses.insulin+" units/hr":"0.05 units/kg/hr"} IV<br/>
+        <strong>Do NOT bolus insulin.</strong><br/>
+        <strong>Do NOT use patient's personal pump</strong> if they meet DKA criteria.<br/>
+        Prime tubing: flush Microbore syringe tubing with 10–20 mL insulin solution (or flush 1–2 mL and dwell 20 min). Alaris 25 mL tubing: flush with 50 mL.<br/>
+        Continue until <strong>pH {'>'}7.3 AND HCO₃ {'>'}15</strong>, then transition to SQ insulin per endocrine.
+      </Alert>
+      <TeachBox id="insulin" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 4: Potassium */}
+    {excl==="no"&&dehydrated!==null&&(<Card title="Step 4 — Potassium" color={C.purple}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Serum potassium level after initial hydration?</strong></div>
+      <WizBtn label="K ≥5 mmol/L" sub="Hold potassium replacement — recheck Q2H" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={kLevel==="high"} onClick={function(){setKLevel("high")}}/>
+      <WizBtn label="K <5 mmol/L" sub="Ready for replacement if UO established" color={C.primary} bg={C.pLight} border={C.pBorder} selected={kLevel==="low"} onClick={function(){setKLevel("low")}}/>
+      <WizBtn label="K <3.5 mmol/L" sub="Hypokalemia — PICU criteria" color={C.red} bg={C.redBg} border={C.redBorder} selected={kLevel==="critical"} onClick={function(){setKLevel("critical")}}/>
+
+      {kLevel==="high"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⏳" title="Hold K+ Replacement">K ≥5 — hold replacement. Recheck with Chem8 Q2H. Continuous cardiac monitoring (risk of arrhythmias).</Alert>}
+
+      {kLevel==="low"&&(<div>
+        <div style={{fontSize:13,marginBottom:10}}><strong>Urine output established?</strong></div>
+        <WizBtn label="Yes — UO established" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={uOutput==="yes"} onClick={function(){setUOutput("yes")}}/>
+        <WizBtn label="No — No UO yet" sub="Consult endocrine/PICU before adding K+" color={C.red} bg={C.redBg} border={C.redBorder} selected={uOutput==="no"} onClick={function(){setUOutput("no")}}/>
+        {uOutput==="yes"&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="💊" title="Start Potassium Replacement">NS with <strong>20 mEq KAcetate + 20 mEq KPhos</strong> per liter<br/>Rate: <strong>{doses?doses.maint15+" mL/hr":"1.5× maintenance"}</strong><br/>Monitor K+ Q2H with Chem8</Alert>}
+        {uOutput==="no"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="📞" title="Consult Before Adding K+">No urine output — consult endocrine/PICU before adding potassium replacement.</Alert>}
+      </div>)}
+
+      {kLevel==="critical"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Hypokalemia — PICU">K {'<'}3.5 is a PICU admission criterion. Aggressive replacement needed per PICU/endocrine guidance.</Alert>}
+      <TeachBox id="potassium" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 5: Two-Bag System */}
+    {excl==="no"&&dehydrated!==null&&(<Card title="Step 5 — Two-Bag Fluid System" color={C.blue}>
+      <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
+        Once on insulin gtt, manage glucose with the <strong>two-bag system</strong>.<br/>
+        Add dextrose when BG {'<'}300 OR glucose drops {'>'}100 mg/dL/hr.<br/>
+        <strong>Goal: keep glucose 200–300 until acidosis corrects.</strong>
+      </div>
+      <TwoBagCalc doses={doses}/>
+      <TeachBox id="twoBag" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 6: PICU Assessment */}
+    {excl==="no"&&dehydrated!==null&&(<Card title="Step 6 — Disposition" color={C.red}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Does the patient meet PICU criteria?</strong></div>
+      <WizBtn label="Yes — PICU required" sub="Hemodynamically unstable · AMS · Insulin drip · K <3.5 · New onset + HCO₃ <12 · Cerebral edema" color={C.red} bg={C.redBg} border={C.redBorder} selected={picuCrit==="yes"} onClick={function(){setPicuCrit("yes")}}/>
+      <WizBtn label="No — Ward with endocrine" sub="Stable, resolving, transitioning to SQ insulin" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={picuCrit==="no"} onClick={function(){setPicuCrit("no")}}/>
+
+      {picuCrit==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="PICU Admission">Consult PICU + Endocrinology. Continue insulin gtt, Q1H vitals + neuro checks. Monitor for cerebral edema.</Alert>}
+      {picuCrit==="no"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="🏥" title="Ward Admission">Consult hospitalist + endocrinology. Transition to SQ insulin when pH {'>'}7.3 and HCO₃ {'>'}15. Endocrine will guide SQ dosing.</Alert>}
+      <TeachBox id="picu" teaching={teaching}/>
+    </Card>)}
+
+    {/* Cerebral Edema — always visible */}
+    {excl==="no"&&dehydrated!==null&&(<Card title="⚠ Cerebral Edema — Emergency" color={C.red} defaultOpen={false}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🧠" title="Warning Signs">
+        Headache · Slow heart rate · Irritability · AMS · Incontinence · Neurologic deficits
+      </Alert>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Interventions">
+        1. Elevate head of bed<br/>
+        2. <strong>3% NaCl</strong> {doses?doses.hyper3+" mL":"5 mL/kg"} IV over 30 min<br/>
+        3. Consider decreasing IV fluids by 1/3<br/>
+        4. Consider <strong>Mannitol</strong> {doses?doses.mannitolLo+"–"+doses.mannitolHi+" g":"0.5–1 g/kg"} over 10–15 min<br/>
+        5. Consider intracranial imaging
+      </Alert>
+      <TeachBox id="cerebralEdema" teaching={teaching}/>
+    </Card>)}
+
+    {/* HHS */}
+    {excl==="no"&&dehydrated!==null&&(<Card title="Hyperosmolar Hyperglycemic State (HHS)" color={C.purple} defaultOpen={false}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+        <strong>Criteria:</strong> BG {'>'}600 mg/dL · Serum osm {'>'}320 mOsm/L · May have HCO₃ {'>'}15 with mild acidosis<br/>
+        HHS may be isolated. Patients may develop hypotension if serum osm falls rapidly.<br/>
+        <strong>→ Contact Endocrinology</strong>
+      </div>
+      <TeachBox id="hhs" teaching={teaching}/>
+    </Card>)}
+
+    {excl!==null&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+
+// ═══════════════════════════════
+// REFERENCE MODE TABS
+// ═══════════════════════════════
+function RefTriage({teaching}){return(<Pad>
+<Q text="Triage & Initial Assessment"/>
+<TeachBox id="overview" teaching={teaching}/>
+<Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Patients 1–18 years with DKA: BG {'>'}250 mg/dL AND venous pH {'<'}7.3 OR HCO₃ {'<'}15 mmol/L AND ketonuria</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Children {'<'}1 year · Hyperglycemia without acidosis</Alert></div></Card>
+<Card title="Initiate on Arrival — ESI II" color={C.red}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>IV access — 2 peripheral sites in separate extremities if PICU anticipated<br/>If unable to get PIV → central line or IO. <strong>Avoid arterial access.</strong><br/><strong>Labs:</strong> venous BG + UA for ketones<br/>Cardiac + pulse oximetry monitoring<br/><strong>Q1H:</strong> vitals, neuro checks, capillary/venous glucose<br/><strong>NPO · Strict I&O</strong></div></Card>
+<Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>All patients:</strong> hourly capillary or venous glucose · Serum glucose, CMP, phosphorus, POC VBG w/ lactate, Chem8 → then Chem8 + POC VBG/lactate Q2–4H until acidosis resolved<br/>Urine microscopy + UA — culture if indicated · Urine ketones Q void until ketosis resolves<br/><strong>New-onset diabetes:</strong> consider A1C, TTG, IgA</div><TeachBox id="newOnset" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching,doses}){return(<Pad>
+<Q text="Decision Tree" sub="Parallel management: fluids + insulin + potassium"/>
+<Card title="Fluids" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Dehydrated: NS {doses?doses.bolus20+" mL":"20 mL/kg"} over 30 min (faster if shock)<br/>Not dehydrated: NS {doses?doses.bolus10+" mL":"10 mL/kg"} over 60 min<br/>Avoid excessive fluid administration<br/><strong>Add dextrose</strong> when BG {'<'}300 or glucose drops {'>'}100 mg/dL/hr<br/>Keep BG 200–300 until acidosis corrects</div><TeachBox id="fluids" teaching={teaching}/></Card>
+<Card title="Two-Bag System" color={C.blue}><div style={{marginTop:8}}><TwoBagCalc doses={doses}/></div><TeachBox id="twoBag" teaching={teaching}/></Card>
+<Card title="Insulin" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Regular insulin <strong>{doses?doses.insulin+" units/hr":"0.05 units/kg/hr"}</strong> IV — start AFTER endocrine consult<br/><strong>Do NOT bolus insulin · Do NOT use patient's personal pump</strong><br/>Prime tubing before starting · Continue until pH {'>'}7.3 + HCO₃ {'>'}15 → transition to SQ insulin per endocrine</div><TeachBox id="insulin" teaching={teaching}/></Card>
+<Card title="Potassium" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>After initial hydration, if K {'<'}5 mmol and UO established:<br/>NS with <strong>20 mEq KAcetate + 20 mEq KPhos</strong>/L at <strong>{doses?doses.maint15+" mL/hr":"1.5× maintenance"}</strong><br/>No UO → consult endocrine/PICU before adding K+<br/>Monitor Q2H with Chem8</div><TeachBox id="potassium" teaching={teaching}/></Card>
+<Card title="Bicarbonate" color={C.muted}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Bicarbonate is <strong>NOT recommended</strong> routinely.<br/>If pH {'<'}7.0 → repeat VBG after initial fluid bolus. Only give HCO₃ if PICU/endocrine specifically recommend.</div><TeachBox id="bicarb" teaching={teaching}/></Card>
+<Card title="Cerebral Edema" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Warning signs:</strong> headache, bradycardia, irritability, AMS, incontinence, neuro deficits<br/><strong>Interventions:</strong><br/>1. Elevate HOB<br/>2. 3% NaCl {doses?doses.hyper3+" mL":"5 mL/kg"} IV over 30 min<br/>3. Consider decreasing IV fluids by 1/3<br/>4. Mannitol {doses?doses.mannitolLo+"–"+doses.mannitolHi+" g":"0.5–1 g/kg"} over 10–15 min<br/>5. Consider intracranial imaging</div><TeachBox id="cerebralEdema" teaching={teaching}/></Card>
+<Card title="HHS Identification" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>BG {'>'}600 · Serum osm {'>'}320 · May have HCO₃ {'>'}15 with mild acidosis<br/>May develop hypotension if osm falls rapidly<br/><strong>→ Contact Endocrinology</strong></div><TeachBox id="hhs" teaching={teaching}/></Card>
+<PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+<Q text="Medications & Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+{!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+<Card title="Fluids — Initial" color={C.blue}><div style={{marginTop:8}}><DoseRow label="NS bolus — dehydrated (20 mL/kg)" value={doses?doses.bolus20:"—"} unit={doses?"mL":""}/><DoseRow label="NS bolus — not dehydrated (10 mL/kg)" value={doses?doses.bolus10:"—"} unit={doses?"mL":""}/></div></Card>
+<Card title="Fluids — Maintenance (Two-Bag)" color={C.blue}><div style={{marginTop:8}}><DoseRow label="Maintenance rate" value={doses?doses.maintHr:"—"} unit={doses?"mL/hr":""}/><DoseRow label="1.5× maintenance rate" value={doses?doses.maint15:"—"} unit={doses?"mL/hr":""}/><div style={{marginTop:8}}><TwoBagCalc doses={doses}/></div></div></Card>
+<Card title="Insulin" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Regular insulin IV (0.05 U/kg/hr)" value={doses?doses.insulin:"—"} unit={doses?"U/hr":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Start after endocrine consult. Do NOT bolus. Prime tubing first. Continue until pH {'>'}7.3 + HCO₃ {'>'}15.</div></div></Card>
+<Card title="Potassium" color={C.purple}><div style={{marginTop:8}}><DoseRow label="KAcetate (per liter)" value="20" unit="mEq/L"/><DoseRow label="KPhos (per liter)" value="20" unit="mEq/L"/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Added to NS at 1.5× maintenance rate. Only if K {'<'}5 mmol and UO established.</div></div></Card>
+<Card title="Cerebral Edema — Emergency" color={C.red}><div style={{marginTop:8}}><DoseRow label="3% NaCl IV (5 mL/kg over 30 min)" value={doses?doses.hyper3:"—"} unit={doses?"mL":""}/><DoseRow label="Mannitol (0.5–1 g/kg over 10–15 min)" value={doses?doses.mannitolLo+"–"+doses.mannitolHi:"—"} unit={doses?"g":""}/></div></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+<Q text="Disposition & References"/>
+<Card title="PICU Admission Criteria" color={C.red}><div style={{marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU — Any One:</div><div style={{fontSize:12,marginTop:2}}>Hemodynamically unstable · Altered mental status · Insulin drip required · Hypokalemia (K {'<'}3.5)</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>Consider PICU:</div><div style={{fontSize:12,marginTop:2}}>New-onset DKA · HCO₃ {'<'}12 · Signs of cerebral edema · Signs of shock</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>Ward Admission:</div><div style={{fontSize:12,marginTop:2}}>Stable, acidosis resolving, transitioning to SQ insulin. Consult hospitalist + endocrinology.</div></div>
+</div><TeachBox id="picu" teaching={teaching}/></Card>
+<Card title="Resolution Criteria" color={C.greenMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>pH {'>'}7.3 AND HCO₃ {'>'}15 → <strong>transition to SQ insulin</strong><br/>Consult endocrinology for SQ dosing<br/>Continue glucose monitoring · Resume PO intake when stable</div></Card>
+<Card title="Insulin Reference Table" color={C.muted} defaultOpen={false}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+{[["Humalog (lispro)","5–15 min","1–2 hr","3–5 hr"],["Novolog (aspart)","5–15 min","1–2 hr","3–5 hr"],["Apidra (glulisine)","5–15 min","1–2 hr","3–5 hr"],["Regular","30–45 min","2–3 hr","5–8 hr"],["NPH","~1–2 hr","4–8 hr","12–18 hr"],["Levemir (detemir)","~2 hr","3–9 hr*","12–24 hr"],["Lantus (glargine)","~2 hr","Peakless","~24 hr"]].map(function(r,i){return <div key={i} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:4,padding:"3px 0",borderBottom:"1px dashed "+C.rule}}><div style={{fontWeight:600}}>{r[0]}</div><div style={{textAlign:"center",color:C.muted}}>{r[1]}</div><div style={{textAlign:"center",color:C.muted}}>{r[2]}</div><div style={{textAlign:"center",color:C.muted}}>{r[3]}</div></div>})}
+<div style={{fontSize:10,color:C.muted,marginTop:4}}>*Levemir peak is dose-dependent</div>
+</div></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Kuppermann N et al. Clinical Trial of Fluid Infusion Rates for Pediatric DKA. <em>N Engl J Med</em> 2018; 378:2275.<br/>2. Nallasamy K et al. Low-dose vs standard-dose insulin in pediatric DKA. <em>JAMA Pediatr</em> 2014; 168(11):999-1005.<br/>3. Chua HR et al. Bicarbonate in DKA — a systematic review. <em>Ann Intensive Care</em> 2011; 1(1):23.<br/>4. Glaser N et al. Risk factors for cerebral edema in children with DKA. <em>N Engl J Med</em> 2001; 344:264.<br/>5. Knopp JL et al. Capacity of Infusion Lines for Insulin Adsorption. <em>J Diabetes Sci Technol</em> 2021; 15(1):109-120.</div></Card>
+</Pad>)}
+
+
+// ═══════════════════════════════
+// APP
+// ═══════════════════════════════
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decision",label:"Decisions"},{key:"meds",label:"Meds & Fluids"},{key:"dispo",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (years)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="12" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="40" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · DKA Clinical Pathway · August 2021
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
