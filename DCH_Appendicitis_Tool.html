@@ -230,8 +230,8 @@ function PathwayFlowchart() {
       <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 4 }}>Full Algorithm</div>
       <div style={{ fontSize: 11, color: C.muted, marginBottom: 6 }}>Suspected appendicitis · Ages 3–18</div>
       <div style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: 6, overflow: "hidden" }}>
-        <svg viewBox="0 0 480 440" style={{ width: "100%", display: "block" }}>
-          <rect width={480} height={440} fill="#fafaf8" rx={6} />
+        <svg viewBox="0 0 480 460" style={{ width: "100%", display: "block" }}>
+          <rect width={480} height={460} fill="#fafaf8" rx={6} />
           <Box x={115} y={6} w={250} h={28} fill={bBg} stroke={bBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={bC}>ARRIVAL — TRIAGE ESI III</T><T x={240} y={28} size={6} weight={400} color={mC}>Vitals · Ondansetron ODT · LMX · Labs + IV</T></Box>
           <Arrow x1={240} y1={34} x2={240} y2={46} />
           <Box x={130} y={46} w={220} h={22} fill={pBg} stroke={pBd} sw={1.5}><T x={240} y={56} size={8} weight={700} color={pC}>APPLY CLINICAL SCORE</T><T x={240} y={64} size={6} color={mC}>PAS · Alvarado · pARC</T></Box>
@@ -259,23 +259,25 @@ function PathwayFlowchart() {
           <Arrow x1={80} y1={242} x2={80} y2={252} color={gC} />
           <Box x={20} y={252} w={120} h={18} fill={gBg} stroke={gBd}><T x={80} y={263} size={6} weight={600} color={gC}>Alt dx · PO challenge · D/C</T></Box>
           <Box x={168} y={220} w={144} h={22} fill={aBg} stroke={aBd}><T x={240} y={229} size={7} weight={700} color={aC}>INCONCLUSIVE</T><T x={240} y={238} size={6} color={mC}>Appendix not seen</T></Box>
-          <Arrow x1={240} y1={242} x2={240} y2={254} color={aC} />
-          <Box x={168} y={254} w={144} h={18} fill={pBg} stroke={pBd}><T x={240} y={265} size={7} weight={700} color={pC}>MRI (preferred) or CT</T></Box>
-          <Arrow x1={195} y1={272} x2={148} y2={286} color={gC} />
-          <Arrow x1={240} y1={272} x2={240} y2={286} color={aC} />
-          <Arrow x1={285} y1={272} x2={332} y2={286} color={rC} />
-          <Box x={108} y={286} w={76} h={18} fill={gBg} stroke={gBd}><T x={146} y={297} size={6} weight={700} color={gC}>MR NEG</T></Box>
-          <Box x={202} y={286} w={76} h={18} fill={aBg} stroke={aBd}><T x={240} y={297} size={6} weight={700} color={aC}>EQUIVOCAL</T></Box>
-          <Box x={296} y={286} w={76} h={18} fill={rBg} stroke={rBd}><T x={334} y={297} size={6} weight={700} color={rC}>MR POS</T></Box>
-          <Arrow x1={240} y1={304} x2={240} y2={318} color={aC} />
-          <Arrow x1={334} y1={304} x2={400} y2={318} color={rC} />
-          <Box x={184} y={318} w={112} h={18} fill={aBg} stroke={aBd}><T x={240} y={329} size={6} weight={600} color={aC}>Consult Peds Surgery</T></Box>
+          <Arrow x1={240} y1={242} x2={240} y2={250} color={aC} />
+          <Box x={178} y={250} w={124} h={16} fill={C.white} stroke={aBd} sw={1.5}><T x={240} y={260} size={6} weight={700} color={aC}>Repeat PE · Consider alt dx</T></Box>
+          <Arrow x1={240} y1={266} x2={240} y2={274} color={aC} />
+          <Box x={168} y={274} w={144} h={18} fill={pBg} stroke={pBd}><T x={240} y={283} size={6} weight={700} color={pC}>If still likely → MRI / CT</T></Box>
+          <Arrow x1={195} y1={292} x2={148} y2={306} color={gC} />
+          <Arrow x1={240} y1={292} x2={240} y2={306} color={aC} />
+          <Arrow x1={285} y1={292} x2={332} y2={306} color={rC} />
+          <Box x={108} y={306} w={76} h={18} fill={gBg} stroke={gBd}><T x={146} y={317} size={6} weight={700} color={gC}>MR NEG</T></Box>
+          <Box x={202} y={306} w={76} h={18} fill={aBg} stroke={aBd}><T x={240} y={317} size={6} weight={700} color={aC}>EQUIVOCAL</T></Box>
+          <Box x={296} y={306} w={76} h={18} fill={rBg} stroke={rBd}><T x={334} y={317} size={6} weight={700} color={rC}>MR POS</T></Box>
+          <Arrow x1={240} y1={324} x2={240} y2={338} color={aC} />
+          <Arrow x1={334} y1={324} x2={400} y2={338} color={rC} />
+          <Box x={184} y={338} w={112} h={18} fill={aBg} stroke={aBd}><T x={240} y={349} size={6} weight={600} color={aC}>Consult Peds Surgery</T></Box>
           <Box x={340} y={220} w={120} h={22} fill={rBg} stroke={rBd}><T x={400} y={229} size={7} weight={700} color={rC}>US POSITIVE</T><T x={400} y={238} size={6} color={mC}>Appendicitis</T></Box>
-          <Arrow x1={400} y1={242} x2={400} y2={318} color={rC} />
-          <Box x={340} y={318} w={120} h={34} fill={rBg} stroke={rBd} sw={2}><T x={400} y={329} size={8} weight={700} color={rC}>APPENDICITIS</T><T x={400} y={340} size={6} color={C.ink}>Consult Peds Surgery</T><T x={400} y={349} size={6} color={mC}>Abx if perf or per surgery</T></Box>
+          <Arrow x1={400} y1={242} x2={400} y2={338} color={rC} />
+          <Box x={340} y={338} w={120} h={34} fill={rBg} stroke={rBd} sw={2}><T x={400} y={349} size={8} weight={700} color={rC}>APPENDICITIS</T><T x={400} y={360} size={6} color={C.ink}>Consult Peds Surgery</T><T x={400} y={369} size={6} color={mC}>Abx if perf or per surgery</T></Box>
           <T x={404} y={178} size={5} weight={400} color={rC} anchor="middle">⚠ 19% false-neg US in high risk</T>
-          <Box x={30} y={370} w={420} h={24} fill={bBg} stroke={bBd} radius={8}><T x={240} y={380} size={7} weight={700} color={bC}>SCORING DRIVES IMAGING · US FIRST · MRI PREFERRED OVER CT</T><T x={240} y={390} size={6} color={mC}>pARC has best test characteristics · Avoid empiric abx unless perforation suspected</T></Box>
-          <Box x={30} y={406} w={420} h={24} fill="#f1f5f9" stroke="#e2e8f0" radius={6}><T x={130} y={416} size={7} weight={700} color={rC}>CONFIRMED: Peds Surgery consult</T><T x={130} y={426} size={6} color={mC}>Abx: Ceftri 50 + Flagyl 30 mg/kg/day</T><T x={370} y={416} size={7} weight={700} color={gC}>LOW RISK: D/C with PCP f/u</T><T x={370} y={426} size={6} color={mC}>Return if worsening pain/fever/vomiting</T></Box>
+          <Box x={30} y={390} w={420} h={24} fill={bBg} stroke={bBd} radius={8}><T x={240} y={400} size={7} weight={700} color={bC}>SCORING DRIVES IMAGING · US FIRST · MRI PREFERRED OVER CT</T><T x={240} y={410} size={6} color={mC}>pARC has best test characteristics · Avoid empiric abx unless perforation suspected</T></Box>
+          <Box x={30} y={426} w={420} h={24} fill="#f1f5f9" stroke="#e2e8f0" radius={6}><T x={130} y={436} size={7} weight={700} color={rC}>CONFIRMED: Peds Surgery consult</T><T x={130} y={446} size={6} color={mC}>Abx: Ceftri 50 + Flagyl 30 mg/kg/day</T><T x={370} y={436} size={7} weight={700} color={gC}>LOW RISK: D/C with PCP f/u</T><T x={370} y={446} size={6} color={mC}>Return if worsening pain/fever/vomiting</T></Box>
         </svg>
       </div>
     </div>
@@ -290,6 +292,7 @@ function AppyWizard({ teaching, doses, ageYears }) {
   const [scored, setScored] = useState(false);
   const [usResult, setUsResult] = useState(null);
   const [mrResult, setMrResult] = useState(null);
+  const [reassess, setReassess] = useState(null);
 
   const pasTotal = useMemo(() => pasChecked.reduce((s, i) => s + PAS_ITEMS[i].pts, 0), [pasChecked]);
   const alvTotal = useMemo(() => alvChecked.reduce((s, i) => s + ALV_ITEMS[i].pts, 0), [alvChecked]);
@@ -307,7 +310,7 @@ function AppyWizard({ teaching, doses, ageYears }) {
     : risk === "high" ? { text: "High Risk (≥7)", color: C.red, bg: C.redBg, border: C.redBorder }
     : null;
 
-  function reset() { setPasChecked([]); setAlvChecked([]); setScored(false); setUsResult(null); setMrResult(null); }
+  function reset() { setPasChecked([]); setAlvChecked([]); setScored(false); setUsResult(null); setMrResult(null); setReassess(null); }
 
   return (<Pad>
     <Q text="Walk-Through" sub="Score the patient, then follow the pathway step by step" />
@@ -372,9 +375,9 @@ function AppyWizard({ teaching, doses, ageYears }) {
             The pARC requires a dedicated calculator. Open MDCalc (linked above), calculate the risk, then select the result below.
           </Alert>
           <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-            <WizBtn label="Very Low / Low (<15%)" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={scored && risk === "low"} onClick={() => { setScoreTool("parc"); setPasChecked([]); setAlvChecked([]); setScored(true); setUsResult(null); setMrResult(null); }} />
-            <WizBtn label="Intermediate (15–74%)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={scored && risk === "intermediate"} onClick={() => { setScoreTool("parc_int"); setScored(true); setUsResult(null); setMrResult(null); }} />
-            <WizBtn label="High (≥75%)" color={C.red} bg={C.redBg} border={C.redBorder} selected={scored && risk === "high"} onClick={() => { setScoreTool("parc_high"); setScored(true); setUsResult(null); setMrResult(null); }} />
+            <WizBtn label="Very Low / Low (<15%)" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={scored && risk === "low"} onClick={() => { setScoreTool("parc"); setPasChecked([]); setAlvChecked([]); setScored(true); setUsResult(null); setMrResult(null); setReassess(null); }} />
+            <WizBtn label="Intermediate (15–74%)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={scored && risk === "intermediate"} onClick={() => { setScoreTool("parc_int"); setScored(true); setUsResult(null); setMrResult(null); setReassess(null); }} />
+            <WizBtn label="High (≥75%)" color={C.red} bg={C.redBg} border={C.redBorder} selected={scored && risk === "high"} onClick={() => { setScoreTool("parc_high"); setScored(true); setUsResult(null); setMrResult(null); setReassess(null); }} />
           </div>
         </div>
       )}
@@ -402,9 +405,9 @@ function AppyWizard({ teaching, doses, ageYears }) {
         <strong>NPO · IV access · {risk === "high" ? "IV pain meds + fluid bolus · " : "Consider IV pain meds · "}Obtain US abdomen</strong>
         {risk === "high" && <><br /><span style={{ fontSize: 12, color: C.red }}>⚠ High-risk caveat: 19% false-neg, 45% equivocal → appy</span></>}
       </div>
-      <WizBtn label="US Positive — Appendicitis" color={C.red} bg={C.redBg} border={C.redBorder} selected={usResult === "positive"} onClick={() => { setUsResult("positive"); setMrResult(null); }} />
-      <WizBtn label="US Negative — Appendix seen, normal" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={usResult === "negative"} onClick={() => { setUsResult("negative"); setMrResult(null); }} />
-      <WizBtn label="Inconclusive — Appendix not seen" sub="→ Consider MRI or CT" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={usResult === "inconclusive"} onClick={() => { setUsResult("inconclusive"); setMrResult(null); }} />
+      <WizBtn label="US Positive — Appendicitis" color={C.red} bg={C.redBg} border={C.redBorder} selected={usResult === "positive"} onClick={() => { setUsResult("positive"); setMrResult(null); setReassess(null); }} />
+      <WizBtn label="US Negative — Appendix seen, normal" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={usResult === "negative"} onClick={() => { setUsResult("negative"); setMrResult(null); setReassess(null); }} />
+      <WizBtn label="Inconclusive — Appendix not seen" sub="→ Repeat PE · Reassess before advanced imaging" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={usResult === "inconclusive"} onClick={() => { setUsResult("inconclusive"); setMrResult(null); setReassess(null); }} />
       <TeachBox id="ultrasound" teaching={teaching} />
     </Card>)}
 
@@ -419,8 +422,25 @@ function AppyWizard({ teaching, doses, ageYears }) {
       1. Repeat PE · Consider alternative diagnoses<br />2. PO challenge<br />3. Consider discharge vs observation
     </Alert>)}
 
+    {/* ── STEP 2B: REASSESSMENT AFTER INCONCLUSIVE US ── */}
+    {usResult === "inconclusive" && (<Card title="Step 2B — Reassessment" color={C.amberMid}>
+      <div style={{ fontSize: 13, lineHeight: 1.6, marginBottom: 10 }}>
+        <strong>US was inconclusive (appendix not seen).</strong><br />
+        1. <strong>Repeat physical exam</strong><br />
+        2. <strong>Consider alternative diagnoses</strong> (mesenteric adenitis, constipation, ovarian pathology, UTI, etc.)<br />
+        3. If appendicitis is still considered likely → proceed to advanced imaging
+      </div>
+      <WizBtn label="Appendicitis still likely — Proceed to MRI/CT" sub="Clinical suspicion persists after reassessment" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={reassess === "likely"} onClick={() => setReassess("likely")} />
+      <WizBtn label="Alternative diagnosis more likely" sub="Exam improved or findings suggest other etiology" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={reassess === "alt"} onClick={() => setReassess("alt")} />
+      {reassess === "alt" && (<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Consider Alternative Diagnosis">
+        Appendicitis less likely after reassessment.<br />
+        Consider PO challenge · Observe or discharge with PCP follow-up in 24 hours.<br />
+        Return precautions: worsening pain, fever, vomiting
+      </Alert>)}
+    </Card>)}
+
     {/* ── STEP 3: ADVANCED IMAGING ── */}
-    {usResult === "inconclusive" && (<Card title="Step 3 — Advanced Imaging" color={C.purple}>
+    {usResult === "inconclusive" && reassess === "likely" && (<Card title="Step 3 — Advanced Imaging" color={C.purple}>
       <div style={{ fontSize: 13, marginBottom: 10 }}><strong>MRI abdomen</strong> (preferred — avoids radiation, 10–15 min)<br /><strong>CT abdomen</strong> if: age {'<'}5, cannot hold still, suspected rupture, obese</div>
       <WizBtn label="MR/CT Positive — Appendicitis confirmed" sub="Wall thickening, appendix >6mm, appendicolith, fat stranding" color={C.red} bg={C.redBg} border={C.redBorder} selected={mrResult === "positive"} onClick={() => setMrResult("positive")} />
       <WizBtn label="MR/CT Negative — No appendicitis" sub="Normal appendix or not seen with no RLQ fat stranding/free fluid" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={mrResult === "negative"} onClick={() => setMrResult("negative")} />
