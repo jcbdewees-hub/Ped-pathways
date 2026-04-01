@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intussusception — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#0f766e",pLight:"#f0fdfa",pBorder:"#5eead4",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{
+  title:"Pathway Rationale — Intussusception",
+  patho:"Intussusception occurs when a proximal segment of bowel telescopes into the lumen of an adjacent distal segment. The ileocolic type (ileum telescoping through the ileocecal valve into the colon) accounts for ~90% of pediatric cases. The trapped segment's mesentery is compressed, causing venous congestion, bowel wall edema, and eventually arterial compromise with ischemia and necrosis if not reduced. Lead points (Meckel's diverticulum, lymphoma, polyps) are uncommon in children 3 months–5 years but should be considered outside this age range.\n\nClassic triad of colicky abdominal pain, vomiting, and bloody ('currant jelly') stools is present in only ~20% of cases. More commonly, young infants present with intermittent inconsolable crying, drawing up of legs, and lethargy between episodes.",
+  pearls:"Peak incidence is 5–10 months of age, with 80% of cases occurring before age 2. The intermittent, colicky nature of the pain is the hallmark — infants may appear completely well between episodes. Lethargy can be a presenting symptom and may mimic sepsis. Always maintain NPO status once intussusception is suspected.\n\nKey initial actions: ESI II triage, continuous cardiorespiratory monitoring, IV access, and NS bolus if any signs of dehydration or hypovolemia. Get ultrasound to confirm diagnosis — do NOT delay for plain films unless perforation is suspected.",
+  evidence:"US sensitivity and specificity approach 100% for ileocolic intussusception with experienced sonographers, with NPV near 100%. Air contrast enema is the most widely used non-operative reduction method with excellent safety profile. (Stein-Wexler 2015, Sujka 2018, Burns 2018)"
+},
+diagnosis:{
+  title:"Diagnostic Imaging",
+  patho:"Ultrasound demonstrates the characteristic 'target sign' (concentric rings of bowel wall) in transverse view and 'pseudokidney sign' in longitudinal view. The trapped mesenteric fat and lymph nodes create the echogenic center. Important distinction: intussusception identified outside the RLQ or with lesion size ≤3 cm suggests ileoileal (small bowel) intussusception, which typically reduces spontaneously and does not require air enema.\n\nPlain radiography is inferior to US but should be obtained if there is concern for perforation — free air (pneumoperitoneum), dilated bowel loops, and air-fluid levels suggest complicated intussusception.",
+  pearls:"Order 'Ultrasound Abdomen Complete' to establish diagnosis. If an outside US shows intussusception, repeat at DCH to confirm before proceeding to enema. Plain radiograph (2-view abdomen) only if any concern for perforation: persistently tachycardic, blood in stool, peritoneal signs.\n\nDo NOT delay ultrasound for labs. Labs (CMP, consider CBC + T&S if concern for blood loss) can be drawn while awaiting imaging.",
+  evidence:"US has near 100% sensitivity and specificity with NPV close to 100% for ileocolic intussusception. Plain radiography sensitivity is only ~45%. (OHSU DCH ED Pathway Sept 2021)"
+},
+airEnema:{
+  title:"Air Contrast Enema — Therapeutic Reduction",
+  patho:"Pneumatic (air contrast) reduction works by insufflating air into the colon under fluoroscopic guidance, creating intraluminal pressure that pushes the intussusceptum back through the ileocecal valve. Air is preferred over barium or hydrostatic reduction at most centers because: (1) air is readily available and less messy, (2) air has lower perforation risk than barium (and if perforation occurs, pneumoperitoneum is less catastrophic than barium peritonitis), and (3) success rates are comparable (~80–95%).\n\nContraindications to air enema: peritonitis, hemodynamic instability, or signs of perforation. Relative contraindications include 2 of 3: elevated WBC, high fever, symptoms >72 hours.",
+  pearls:"Peds ED RN accompanies patient to Radiology with cardiac monitor, BP cuff, pulse ox, fluid bolus, and O₂ delivery apparatus. RN monitors for distress, vital sign changes, and mental status changes during the procedure. Call for emergency help if any deterioration.\n\nPre-medicate with IN midazolam 0.3–0.4 mg/kg (or IV midazolam 0.05–0.1 mg/kg) before leaving the ED for the enema. Fentanyl 1 mcg/kg IN/IV for pain management.",
+  evidence:"Air contrast enema success rate 80–95%. Perforation rate <1% with air vs ~2.5% with barium. Recurrence rate ~10% after successful reduction, with minority recurring within 48 hours. (Stein-Wexler 2015, Raval 2015, Burns 2018)"
+},
+edObservation:{
+  title:"4-Hour ED Observation Protocol",
+  patho:"After successful enema reduction, intussusception recurs in approximately 10% of patients. Most recurrences happen within the first 48 hours, but the risk within 4 hours is very low. Multiple institutions have demonstrated that a subset of patients can be safely observed in the ED for 4 hours and discharged, reducing length of stay and healthcare costs without significant safety events.",
+  pearls:"ED observation (minimum 4 hours) if ALL of the following: intussusception easily reduced by air enema, well-appearing with stable vitals, no fever, no bloody stool, no lethargy, family lives near hospital and is reliable.\n\nProtocol: NPO for 3 hours after reduction → 1-hour PO challenge → if tolerates PO, vital signs stable, well-appearing → DISCHARGE with return precautions.\n\nAdmit to Peds Surgery if: fever, bloody stool, lethargy, unreliable access to care, family lives remotely, ED volume cannot accommodate observation.",
+  evidence:"Multiple studies demonstrate safety of ED observation and discharge after successful uncomplicated enema reduction. (Sujka 2018 — prospective protocol; Mallicote 2017; Raval 2015 — QI study; Burns 2018)"
+},
+surgical:{
+  title:"Surgical Reduction",
+  patho:"Operative reduction is required when air enema fails, when there is perforation, or when a pathologic lead point is identified. The operative approach depends on the viability of the bowel: if the intussusceptum can be manually reduced and the bowel is viable, no resection is needed. Necrotic bowel or an identified lead point requires segmental resection with primary anastomosis. Laparoscopic-assisted reduction is increasingly used.",
+  pearls:"Consult Peds Surgery early if: failed enema reduction, perforation on imaging, hemodynamically unstable patient, or recurrent intussusception (consider lead point). All patients going to OR should have T&S sent, NPO status confirmed, and IV access secured.",
+  evidence:"Surgical reduction required in ~5–10% of ileocolic intussusception cases. Lead points found in ~5% of children, more common in patients >3 years and <3 months. (OHSU DCH ED Pathway Sept 2021)"
+},
+painAnxiolysis:{
+  title:"Pain Management & Anxiolysis",
+  patho:"Intussusception causes visceral pain from mesenteric traction and bowel wall ischemia. Fentanyl is preferred for visceral pain due to rapid onset and short duration, allowing serial abdominal exams. Midazolam provides anxiolysis for the air enema procedure — the rectal insufflation is uncomfortable and frightening for young children, and anxiolysis improves cooperation and success rates.",
+  pearls:"IN fentanyl 1 mcg/kg for pain while in ED. Ondansetron 0.15 mg/kg (max 4 mg) IV for nausea/vomiting.\n\nPre-enema anxiolysis (give before leaving ED): IN midazolam 0.3–0.4 mg/kg OR IV midazolam 0.05–0.1 mg/kg. Time the midazolam so peak effect coincides with enema start.",
+  evidence:"IN midazolam achieves effective anxiolysis within 5–10 minutes. IN fentanyl provides rapid visceral pain relief. (OHSU DCH ED Pathway Sept 2021)"
+},
+recurrence:{
+  title:"Recurrence & Lead Points",
+  pearls:"Recurrence rate after successful enema reduction is ~10%. Most recurrences are within 48 hours. Recurrent intussusception can be treated with repeat air enema (success rate similar to first attempt). After 2–3 recurrences, consider lead point workup and surgical consult.\n\nLead points are uncommon in the 3 month–5 year age group (idiopathic, likely related to Peyer's patch hypertrophy from viral illness). Lead points are more common at age extremes: <3 months (Meckel's diverticulum) and >5 years (lymphoma, polyps, Henoch-Schönlein purpura)."
+}
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,bolus:Math.round(wt*20),fentIN:Math.round(wt*1*10)/10,midazIN:Math.round(wt*0.35*10)/10,midazIV_lo:Math.round(wt*0.05*10)/10,midazIV_hi:Math.round(wt*0.1*10)/10,ondIV:Math.min(Math.round(wt*0.15*10)/10,4)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Intussusception</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · September 2021</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+function TeachBox({id,teaching}){
+  var s=useState("pearls"),tab=s[0],setTab=s[1];
+  if(!teaching||!TEACH[id])return null;
+  var t=TEACH[id];
+  if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}
+  var tabs=[];
+  if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});
+  if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});
+  if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});
+  if(tabs.length===0)return null;
+  var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;
+  var activeContent=t[activeKey]||"";
+  return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>{tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}</div><div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{activeContent}</div></div>);
+}
+
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Confirmed intussusception · US diagnosis · Air enema reduction · ED observation protocol</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 530" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={530} fill="#fafaf8" rx={6}/>
+          <Box x={115} y={8} w={250} h={30} fill={tBg} stroke={tBd} sw={1.5} radius={14}><T x={240} y={20} size={9} weight={700} color={tC}>INTUSSUSCEPTION DIAGNOSED BY US</T><T x={240} y={31} size={6} color={mC}>Repeat US at DCH if diagnosed at OSH</T></Box>
+
+          <Arrow x1={240} y1={38} x2={240} y2={54}/>
+          <g transform="translate(240,68)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Concern for perforation?</T></g>
+          <Arrow x1={310} y1={68} x2={410} y2={90} color={rC}/><T x={370} y={78} size={6} weight={600} color={rC}>Yes</T>
+          <Box x={355} y={90} w={110} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={102} size={7} weight={700} color={rC}>2-VIEW ABD XR</T><T x={410} y={114} size={6} color={mC}>Evaluate for perforation</T></Box>
+
+          <Arrow x1={240} y1={82} x2={240} y2={100}/><T x={250} y={96} size={6} weight={600} color={gC} anchor="start">No</T>
+
+          <g transform="translate(240,114)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Bloody stool, abn hemodynamics,</T><T x={0} y={7} size={6} weight={700}>peritonitis?</T></g>
+          <Arrow x1={320} y1={114} x2={410} y2={136} color={rC}/><T x={375} y={124} size={6} weight={600} color={rC}>Yes</T>
+          <Box x={355} y={136} w={110} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={148} size={7} weight={700} color={rC}>PEDS SURGERY</T><T x={410} y={160} size={6} color={mC}>Operative reduction</T></Box>
+
+          <Arrow x1={240} y1={128} x2={240} y2={150}/><T x={250} y={146} size={6} weight={600} color={gC} anchor="start">No</T>
+
+          <Box x={140} y={150} w={200} h={30} fill={pBg} stroke={pBd} sw={1.5}><T x={240} y={162} size={8} weight={700} color={pC}>AIR CONTRAST ENEMA</T><T x={240} y={175} size={6} color={mC}>RN accompanies with monitor + meds</T></Box>
+
+          <Arrow x1={240} y1={180} x2={240} y2={198}/>
+          <g transform="translate(240,212)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Successful reduction?</T></g>
+          <Arrow x1={310} y1={212} x2={410} y2={236} color={rC}/><T x={370} y={222} size={6} weight={600} color={rC}>No</T>
+          <Box x={355} y={236} w={110} h={28} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={248} size={7} weight={700} color={rC}>ADMIT SURGERY</T><T x={410} y={259} size={6} color={mC}>Operative reduction</T></Box>
+
+          <Arrow x1={240} y1={226} x2={240} y2={248}/><T x={250} y={244} size={6} weight={600} color={gC} anchor="start">Yes</T>
+
+          <g transform="translate(240,262)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Blood in stool, fever,</T><T x={0} y={7} size={6} weight={700}>lethargy present?</T></g>
+          <Arrow x1={320} y1={262} x2={410} y2={288} color={aC}/><T x={375} y={274} size={6} weight={600} color={aC}>Yes</T>
+          <Box x={355} y={288} w={110} h={28} fill={aBg} stroke={aBd} sw={1.5}><T x={410} y={300} size={7} weight={700} color={aC}>ADMIT SURGERY</T><T x={410} y={311} size={6} color={mC}>Inpatient observation</T></Box>
+
+          <Arrow x1={240} y1={276} x2={240} y2={296}/><T x={250} y={292} size={6} weight={600} color={gC} anchor="start">No</T>
+
+          <g transform="translate(240,310)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Remote access / ED can't</T><T x={0} y={7} size={6} weight={700}>accommodate obs?</T></g>
+          <Arrow x1={320} y1={310} x2={410} y2={335} color={aC}/><T x={375} y={322} size={6} weight={600} color={aC}>Yes</T>
+          <Box x={370} y={335} w={95} h={22} fill={aBg} stroke={aBd}><T x={418} y={349} size={7} weight={700} color={aC}>ADMIT</T></Box>
+
+          <Arrow x1={240} y1={324} x2={240} y2={346}/><T x={250} y={342} size={6} weight={600} color={gC} anchor="start">No</T>
+
+          <Box x={130} y={346} w={220} h={40} fill={blBg} stroke={blBd} sw={1.5}><T x={240} y={358} size={8} weight={700} color={blC}>ED OBSERVATION (≥4 HOURS)</T><T x={240} y={370} size={6} color={mC}>NPO × 3 hours → 1-hour PO challenge</T><T x={240} y={380} size={6} color={mC}>Monitor vitals, appearance, pain</T></Box>
+
+          <Arrow x1={240} y1={386} x2={240} y2={404}/>
+          <g transform="translate(240,418)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Tolerates PO, VSS,</T><T x={0} y={7} size={6} weight={700}>well appearing?</T></g>
+          <Arrow x1={320} y1={418} x2={400} y2={442} color={rC}/><T x={370} y={429} size={6} weight={600} color={rC}>No</T>
+          <Box x={355} y={442} w={110} h={24} fill={rBg} stroke={rBd}><T x={410} y={457} size={7} weight={700} color={rC}>ADMIT</T></Box>
+
+          <Arrow x1={160} y1={418} x2={80} y2={442} color={gC}/><T x={108} y={429} size={6} weight={600} color={gC}>Yes</T>
+
+          <Box x={15} y={470} w={210} h={40} fill={gBg} stroke={gBd} radius={8}><T x={120} y={484} size={8} weight={700} color={gC}>DISCHARGE</T><T x={120} y={496} size={6} color={mC}>Return precautions given</T><T x={120} y={506} size={6} color={mC}>PCP follow-up · Recurrence ~10%</T></Box>
+          <Box x={245} y={470} w={225} h={40} fill={rBg} stroke={rBd} radius={8}><T x={358} y={484} size={7} weight={700} color={rC}>ADMIT CRITERIA</T><T x={358} y={496} size={6} color={mC}>Failed reduction · Fever · Bloody stool</T><T x={358} y={506} size={6} color={mC}>Lethargy · Remote · Failed PO trial</T></Box>
+          <Arrow x1={80} y1={442} x2={80} y2={470} color={gC}/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Wizard({teaching,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),perf=s2[0],setPerf=s2[1];
+  var s3=useState(null),peritonitis=s3[0],setPeritonitis=s3[1];
+  var s4=useState(null),reduced=s4[0],setReduced=s4[1];
+  var s5=useState(null),admitCriteria=s5[0],setAdmitCriteria=s5[1];
+  var s6=useState(null),obsResult=s6[0],setObsResult=s6[1];
+  function reset(){setExcl(null);setPerf(null);setPeritonitis(null);setReduced(null);setAdmitCriteria(null);setObsResult(null);}
+
+  return(<Pad>
+    <Q text="Intussusception Walk-Through" sub="Step-by-step from confirmed diagnosis through disposition"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    <Card title="Step 1 — Exclusion Screening" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is the patient hemodynamically unstable or is this abdominal pain from an alternative etiology?</div>
+      <WizBtn label="Yes — Exclusion present" sub="Off pathway — resuscitate or evaluate alternate diagnosis" color={C.red} bg={C.redBg} border={C.redBorder} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+      <WizBtn label="No — Confirmed intussusception, hemodynamically stable" sub="Proceed with pathway" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      {excl==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⚠️" title="Off Pathway">If hemodynamically unstable: aggressive fluid resuscitation, Peds Surgery consult, consider operative management. If alternative diagnosis: evaluate per appropriate pathway.</Alert>}
+    </Card>
+
+    {excl==="no"&&<Card title="Step 2 — Assess for Perforation" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Any concern for perforation? (Persistently tachycardic, blood in stool, peritoneal signs)</div>
+      <WizBtn label="Yes — Concern for perforation" sub="2-view abdominal radiograph → evaluate" color={C.red} bg={C.redBg} border={C.redBorder} selected={perf==="yes"} onClick={function(){setPerf("yes")}}/>
+      <WizBtn label="No — No perforation concern" sub="Proceed to enema assessment" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={perf==="no"} onClick={function(){setPerf("no")}}/>
+      {perf==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Perforation Workup">Obtain 2-view abdominal radiograph. If free air → Peds Surgery for operative reduction. Air contrast enema is CONTRAINDICATED with perforation.</Alert>}
+      <TeachBox id="diagnosis" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&perf==="no"&&<Card title="Step 3 — Peritonitis / Instability Screen" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Bloody stool, abnormal hemodynamics, or peritonitis present?</div>
+      <WizBtn label="Yes — Peritonitis or instability" sub="Direct to Peds Surgery — operative reduction" color={C.red} bg={C.redBg} border={C.redBorder} selected={peritonitis==="yes"} onClick={function(){setPeritonitis("yes")}}/>
+      <WizBtn label="No — Stable, no peritonitis" sub="Proceed to air contrast enema" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={peritonitis==="no"} onClick={function(){setPeritonitis("no")}}/>
+      {peritonitis==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Surgical Consult">Admit to Peds Surgery for operative reduction. NS bolus {doses?doses.bolus+" mL":"20 mL/kg"} for resuscitation. Labs: CMP, CBC, Type & Screen.</Alert>}
+    </Card>}
+
+    {excl==="no"&&perf==="no"&&peritonitis==="no"&&<Card title="Step 4 — Air Contrast Enema" color={C.purple}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>
+        <strong>Pre-enema orders:</strong><br/>
+        {doses&&<span>IN Midazolam {doses.midazIN} mg (0.3–0.4 mg/kg) OR IV Midazolam {doses.midazIV_lo}–{doses.midazIV_hi} mg (0.05–0.1 mg/kg)<br/>IN/IV Fentanyl {doses.fentIN} mcg (1 mcg/kg) for pain<br/>Ondansetron {doses.ondIV} mg IV (0.15 mg/kg) if nausea/vomiting<br/></span>}
+        {!doses&&<span>IN Midazolam 0.3–0.4 mg/kg OR IV Midazolam 0.05–0.1 mg/kg<br/>IN/IV Fentanyl 1 mcg/kg<br/>Ondansetron 0.15 mg/kg IV PRN<br/></span>}
+        RN accompanies to Radiology with cardiac monitor, BP cuff, pulse ox, fluid bolus, O₂
+      </div>
+      <div style={{fontSize:13,fontWeight:700,marginBottom:8}}>Was the enema reduction successful?</div>
+      <WizBtn label="Yes — Successfully reduced" sub="Proceed to observation assessment" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={reduced==="yes"} onClick={function(){setReduced("yes")}}/>
+      <WizBtn label="No — Failed reduction" sub="Admit to Peds Surgery for operative reduction" color={C.red} bg={C.redBg} border={C.redBorder} selected={reduced==="no"} onClick={function(){setReduced("no")}}/>
+      {reduced==="no"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Failed Reduction → Surgery">Admit to Pediatric Surgery for operative reduction. Ensure T&S sent, NPO confirmed, IV access secured.</Alert>}
+      <TeachBox id="airEnema" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&reduced==="yes"&&<Card title="Step 5 — Admission Criteria Screen" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Are any of the following present: fever, bloody stool, lethargy, family lives remotely, unreliable access to care, ED cannot accommodate observation?</div>
+      <WizBtn label="Yes — Admission criteria present" sub="Admit to Peds Surgery for inpatient observation" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={admitCriteria==="yes"} onClick={function(){setAdmitCriteria("yes")}}/>
+      <WizBtn label="No — None present" sub="Proceed to 4-hour ED observation" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={admitCriteria==="no"} onClick={function(){setAdmitCriteria("no")}}/>
+      {admitCriteria==="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🏥" title="Admit to Peds Surgery">Inpatient observation for: persistent symptoms, fever, bloody stool, lethargy, remote family, or insufficient ED observation capacity.</Alert>}
+    </Card>}
+
+    {excl==="no"&&admitCriteria==="no"&&<Card title="Step 6 — 4-Hour ED Observation" color={C.blue}>
+      <div style={{fontSize:13,lineHeight:1.7,marginTop:8,marginBottom:10}}>
+        <strong>Protocol:</strong><br/>
+        NPO for 3 hours after successful reduction<br/>
+        1-hour PO challenge (clear liquids → advance)<br/>
+        Monitor vitals, appearance, and pain throughout<br/><br/>
+        <strong>After ≥4 hours total:</strong> Does the patient tolerate PO, have stable vitals, and appear well?
+      </div>
+      <WizBtn label="Yes — Tolerates PO, VSS, well appearing" sub="Safe for discharge with return precautions" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={obsResult==="pass"} onClick={function(){setObsResult("pass")}}/>
+      <WizBtn label="No — Symptoms, VS changes, or unable to tolerate PO" sub="Admit to Peds Surgery" color={C.red} bg={C.redBg} border={C.redBorder} selected={obsResult==="fail"} onClick={function(){setObsResult("fail")}}/>
+      {obsResult==="pass"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Discharge">
+        Tolerating PO, vital signs stable, well-appearing, afebrile, no pain.<br/>
+        <strong>Discharge with return precautions:</strong> return immediately for recurrent colicky pain, vomiting, bloody stool, or lethargy.<br/>
+        Recurrence rate ~10% — most within 48 hours. PCP follow-up.
+      </Alert>}
+      {obsResult==="fail"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="Admit">Failed observation criteria. Admit to Peds Surgery for continued monitoring and possible re-imaging or operative intervention.</Alert>}
+      <TeachBox id="edObservation" teaching={teaching}/>
+    </Card>}
+
+    {excl!==null&&<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+function RefTriage({teaching}){return(<Pad>
+  <Q text="Triage & Initial Assessment" sub="Patients <20 years with confirmed intussusception"/>
+  <TeachBox id="overview" teaching={teaching}/>
+  <Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Patients aged {'<'}20 years with confirmed intussusception on ultrasound.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Abdominal pain from alternative etiology · Hemodynamically unstable (resuscitate first)</Alert></div></Card>
+  <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong><br/>Continuous cardiac and pulse ox monitoring<br/>Full vital signs including blood pressure<br/>Insert and maintain peripheral IV<br/>NPO — maintain nothing by mouth<br/>NS bolus if signs of dehydration/hypovolemia or confirmed intussusception on US<br/>Consider ondansetron 0.15 mg/kg IV for nausea/vomiting<br/>Consider IN midazolam prior to air contrast enema<br/><strong>RN to transport patient to Radiology</strong> with cardiac monitor, BP cuff, pulse ox, fluid bolus, O₂ apparatus</div></Card>
+  <Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Ultrasound (abdomen complete)</strong> to establish diagnosis — if outside US shows intussusception, repeat at DCH to confirm<br/><strong>CMP;</strong> if concerned for blood loss: CBC, Type & Screen<br/><strong>Plain radiograph</strong> (2-view abdomen) if any concern for perforation<br/><span style={{fontSize:12,color:C.muted}}>US sensitivity and specificity approach 100%. Target sign (transverse) and pseudokidney sign (longitudinal). Lesion outside RLQ or ≤3 cm suggests ileoileal type (usually self-resolving).</span></div><TeachBox id="diagnosis" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+  <Q text="Decision Tree" sub="Air enema reduction → observation → disposition"/>
+  <Card title="Air Contrast Enema" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Contraindications:</strong> perforation, peritonitis, hemodynamic instability<br/><strong>Relative contraindications:</strong> 2 of 3: elevated WBC, high fever, symptoms {'>'} 72 hours<br/>RN accompanies patient with full monitoring equipment<br/>Pre-medicate with anxiolysis (midazolam) and analgesia (fentanyl) before leaving ED<br/>Success rate: 80–95% for ileocolic intussusception</div><TeachBox id="airEnema" teaching={teaching}/></Card>
+  <Card title="Post-Reduction: 4-Hour ED Observation" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Criteria for ED observation</strong> (all must be met):<br/><div style={{paddingLeft:12}}>• Easily reduced by air enema<br/>• Well-appearing with stable vitals<br/>• No fever, bloody stool, or lethargy<br/>• Family lives nearby and is reliable<br/>• ED has capacity for observation</div><div style={{marginTop:8}}><strong>Protocol:</strong> NPO × 3 hours → 1-hour PO challenge → if tolerates PO, VSS, well-appearing → DISCHARGE</div></div><TeachBox id="edObservation" teaching={teaching}/></Card>
+  <Card title="Admission Criteria" color={C.red}><div style={{marginTop:8}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>{["Failed enema reduction","Perforation","Fever","Bloody stool","Lethargy","Remote family / unreliable access","Ill-appearing","ED cannot accommodate obs","Lead point identified","Recurrent intussusception"].map(function(r){return <div key={r} style={{background:C.redBg,border:"1px solid "+C.redBorder,borderRadius:6,padding:"6px 8px",fontSize:12,fontWeight:500}}>{r}</div>})}</div></div></Card>
+  <Card title="Recurrence & Lead Points" color={C.amberMid} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Recurrence rate ~10% after successful reduction, most within 48 hours<br/>Can treat recurrence with repeat air enema (similar success rate)<br/>After 2–3 recurrences → consider lead point workup + surgical consult<br/><strong>Lead points uncommon in 3mo–5yr (idiopathic, Peyer's patch hypertrophy)</strong><br/>Higher suspicion at age extremes: {'<'}3mo (Meckel's) or {'>'} 5yr (lymphoma, polyps, HSP)</div><TeachBox id="recurrence" teaching={teaching}/></Card>
+  <PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+  <Q text="Medications & Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+  {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+  <Card title="Fluids" color={C.primary}><div style={{marginTop:8}}><DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Give if signs of dehydration, hypovolemia, or confirmed intussusception on US.</div></div></Card>
+  <Card title="Pain & Anxiolysis" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Fentanyl IN/IV (1 mcg/kg)" value={doses?doses.fentIN:"—"} unit={doses?"mcg":""}/><DoseRow label="Midazolam IN (0.3–0.4 mg/kg)" value={doses?doses.midazIN:"—"} unit={doses?"mg":""}/><DoseRow label="Midazolam IV (0.05–0.1 mg/kg)" value={doses?doses.midazIV_lo+"–"+doses.midazIV_hi:"—"} unit={doses?"mg":""}/><DoseRow label="Ondansetron IV (0.15 mg/kg, max 4)" value={doses?doses.ondIV:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Give midazolam before leaving ED for air enema. Fentanyl for visceral pain. Ondansetron for nausea/vomiting.</div></div><TeachBox id="painAnxiolysis" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+  <Q text="Disposition & References"/>
+  <Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+    <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Successful enema reduction · 4-hour ED observation: tolerates PO, VSS, well-appearing, afebrile, no pain · Family lives nearby · Return precautions given</div></div>
+    <div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT — PEDS SURGERY</div><div style={{fontSize:12,marginTop:2}}>Fever · Bloody stool · Lethargy · Remote family / unreliable access · ED volume · Failed PO trial during observation</div></div>
+    <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>SURGERY — OPERATIVE REDUCTION</div><div style={{fontSize:12,marginTop:2}}>Failed enema · Perforation · Peritonitis · Hemodynamic instability · Lead point</div></div>
+  </div></Card>
+  <Card title="Discharge Instructions" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Return immediately if:</strong> recurrent colicky abdominal pain, vomiting, bloody or dark stools, lethargy, fever<br/>Recurrence rate ~10% — most within 48 hours<br/>PCP follow-up recommended</div></Card>
+  <Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Intussusception Clinical Pathway, September 2021<br/>Stein-Wexler R et al. Current methods for reducing intussusception. Pediatr Radiol 2015;45(5):667<br/>Sujka J et al. ED discharge following successful radiologic reduction of ileocolic intussusception. J Pediatr Surg 2018<br/>Mallicote M et al. Hospital admission unnecessary for successful uncomplicated radiographic reduction. Am J Surg 2017<br/>Raval MV et al. Improving quality and efficiency for intussusception management. Pediatrics 2015;136(5)<br/>Burns R. Improving high-value care of ileocolic intussusception in a pediatric ED. ACS Quality & Safety 2018</div></Card>
+</Pad>)}
+
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decisions",label:"Decisions"},{key:"meds",label:"Meds"},{key:"dispo",label:"Dispo & Refs"}];
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (months)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="8" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="8" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decisions"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}><strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.<br/>Doernbecher Children's Hospital · PED · Intussusception Clinical Pathway · September 2021</div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
