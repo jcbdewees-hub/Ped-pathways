@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asthma — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect,useCallback}=React;
+const C={primary:"#0f766e",pLight:"#f0fdfa",pBorder:"#5eead4",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{title:"Pathway Rationale & Airway Mechanics",patho:"Asthma is driven by a biphasic inflammatory cascade. The early acute phase is mediated by IgE cross-linking on mast cells, triggering histamine and leukotriene release causing profound smooth muscle bronchospasm. The late phase (hours later) involves eosinophil and TH2-lymphocyte infiltration causing mucosal edema, epithelial damage, and mucus hypersecretion.\n\nPediatric patients are particularly vulnerable due to Poiseuille's Law: airway resistance is inversely proportional to the radius to the fourth power (R ∝ 1/r⁴). Even 1 mm of mucosal edema in a child's small airway exponentially increases resistance and work of breathing.",pearls:"This pathway standardizes early identification and treatment to combat both phases: rapid bronchodilators for the early spasm, and early corticosteroids for the late-phase inflammation. Triage nurse initiation of protocols reduces time to bronchodilators and steroids — the single most critical metric in averting admissions and preventing respiratory failure.",evidence:"Standardized clinical pathways for pediatric asthma in the ED significantly improve timely delivery of evidence-based care, decrease admission rates, and reduce ED length of stay. Delaying steroid administration by even one hour increases likelihood of prolonged hospitalization. (Zemek 2012, PMID: 22430454)"},
+ast:{title:"Asthma Severity Tool (AST) & Hemodynamics",patho:"Children have highly compliant chest walls; when airway resistance increases, forceful diaphragmatic contraction generates massive negative intrathoracic pressure, pulling the chest wall inward (retractions). This negative pressure also increases LV transmural pressure (increasing afterload) and increases RV venous return, bowing the septum into the LV — the mechanism behind pulsus paradoxus (systolic BP drop >10 mmHg during inspiration) in severe exacerbations.",pearls:"Always score on room air to establish an unmasked baseline. Do not delay O₂ if hypoxic, but record room air status first. Hypoxia is a late and ominous sign — it indicates significant V/Q mismatch from mucus plugging and atelectasis, not just bronchospasm.",evidence:"Validated clinical asthma scores improve inter-rater reliability, accurately predict need for hospitalization, and provide objective metrics to guide stepping-up or weaning of continuous bronchodilator therapy. (Gorelick 2004, PMID: 14709423)"},
+steroids:{title:"Dexamethasone vs Prednisone",patho:"Corticosteroids exert genomic effects (entering the nucleus to downregulate IL-4/IL-5, taking 4–6 hours to manifest) and rapid non-genomic effects: they upregulate beta-2 receptors on airway smooth muscle and prevent their downregulation (tachyphylaxis), restoring airway responsiveness to albuterol.",pearls:"Dexamethasone is highly preferred due to its long biologic half-life (up to 72 hours) and significantly better palatability. Vomiting a dose of prednisone means delayed absorption and prolonged ED stays. The IV formulation can be given orally to minimize volume for the dyspneic child.",evidence:"A 1-to-2 dose regimen of oral dexamethasone is non-inferior to a 5-day course of oral prednisone for preventing ED relapse, with improved compliance and dramatically lower rates of emesis. (Keeney 2014, PMID: 24534402; Cronin 2016, PMID: 26545388)"},
+duonebs:{title:"Albuterol + Ipratropium (Duo Nebs)",patho:"Albuterol activates beta-2 receptors → adenylate cyclase → increased cAMP → lowered intracellular calcium → smooth muscle relaxation. Ipratropium competitively blocks muscarinic M3 receptors, blunting vagal tone, preventing cholinergic bronchoconstriction, and decreasing mucus hypersecretion. The synergistic effect of increasing cAMP (albuterol) and decreasing cGMP (ipratropium) maximizes bronchodilation.",pearls:"Ipratropium is most effective in the first hour of severe exacerbations. 'Stacking' 3 nebs back-to-back rapidly saturates receptors. It has little proven benefit after the initial stabilization phase and is typically discontinued upon admission.",evidence:"Adding ipratropium to albuterol in initial management of severe pediatric asthma significantly reduces hospital admission rates and improves FEV1 compared to albuterol alone. (Griffiths 2013, PMID: 23966143)"},
+continuous:{title:"Continuous Albuterol Dosing",patho:"Continuous beta-2 agonism maintains steady-state bronchodilation for severe refractory bronchospasm. Systemic beta-2 activation also drives the Na⁺/K⁺ ATPase pump, forcing potassium intracellularly. Beta-2 receptors in the pulmonary vasculature cause vasodilation — when albuterol reverses hypoxic pulmonary vasoconstriction in poorly ventilated lung units, it transiently worsens V/Q mismatch, which is why SpO₂ may paradoxically drop when continuous nebs are initiated.",pearls:"Anticipate side effects: tachycardia, diastolic hypotension (systemic beta-2 vasodilation), and hypokalemia. Monitor electrolytes on prolonged continuous therapy. Ensure the nebulizer is driven by oxygen if the patient is hypoxic — room-air continuous nebs can worsen hypoxia.",evidence:"Continuous albuterol is safe, highly effective, and superior to intermittent dosing for severe exacerbations, often averting intubation or more invasive mechanical ventilation in status asthmaticus. (Camargo 2003, PMID: 14583926)"},
+magnesium:{title:"IV Magnesium Sulfate",patho:"Magnesium acts as a physiological calcium channel antagonist. By preventing calcium uptake at the sarcoplasmic reticulum, it inhibits smooth muscle contraction causing bronchial relaxation. It also inhibits histamine release from mast cells and antagonizes NMDA receptors, potentially dampening neural pathways involved in bronchospasm.",pearls:"Magnesium also relaxes vascular smooth muscle — it must be infused slowly over 15–30 minutes. Rapid bolusing causes profound vasodilation, flushing, and dangerous systemic hypotension. Ensure adequate IV hydration prior to or during administration.",evidence:"IV magnesium sulfate significantly improves pulmonary function and reduces odds of hospital admission by ~30% in children with severe acute asthma unresponsive to initial bronchodilator therapy. (Cheuk 2005, PMID: 15613519)"},
+terbutaline:{title:"Systemic Beta-Agonists (Terbutaline/Epi)",patho:"In status asthmaticus, airways can become so severely constricted or completely occluded with mucus plugs that inhaled albuterol physically cannot reach distal airways. Systemic delivery (IV terbutaline or SQ epinephrine) bypasses the respiratory tract, delivering beta-2 agonist directly to target tissue via the systemic capillary bed.",pearls:"Terbutaline loses beta-2 selectivity at high doses, causing significant beta-1 cross-reactivity — profound tachycardia and increased myocardial oxygen demand with risk of myocardial ischemia (elevated troponin). Requires continuous cardiac monitoring, frequent ECGs, and serial labs (K⁺, lactate).",evidence:"IV terbutaline is a life-saving rescue therapy for impending respiratory failure in status asthmaticus, but its higher adverse-effect profile means it is reserved for severe refractory cases mandating ICU monitoring. (Travers 2001, PMID: 11406025)"},
+ketamine:{title:"Ketamine — Rescue & Sedation",patho:"Ketamine is a dissociative anesthetic with intrinsic sympathomimetic properties. It inhibits catecholamine reuptake, increasing circulating epinephrine/norepinephrine which stimulates bronchial beta-2 receptors for bronchodilation. Crucially, it does not trigger histamine release (unlike morphine or propofol) and preserves intrinsic respiratory drive and airway reflexes.",pearls:"Ketamine is the induction agent of choice if intubation becomes unavoidable. In the non-intubated patient, sub-dissociative or dissociative dosing is excellent for the highly agitated, severely dyspneic child — dissociation can improve compliance with tight-fitting BiPAP masks, breaking the cycle of panic and hyperventilation.",evidence:"Ketamine bolus and continuous infusion can rapidly improve clinical asthma scores, reduce peak inspiratory pressures in intubated patients, and frequently help avoid mechanical ventilation entirely in refractory pediatric status asthmaticus. (Denmark 2006, PMID: 16567250)"},
+niv:{title:"Non-Invasive Ventilation (NIV)",patho:"Severe asthma is characterized by prolonged expiratory times and air trapping (dynamic hyperinflation). Before the child can fully exhale, they must take another breath, creating auto-PEEP. This flattens the diaphragm, placing it at severe mechanical disadvantage.\n\nPositive pressure (CPAP/BiPAP) provides a pneumatic splint keeping small airways open during exhalation, allowing trapped air to escape. This offsets auto-PEEP, decreases WOB, and rests the fatigued respiratory muscles.",pearls:"Synchrony is the biggest hurdle in pediatrics — an anxious, hypoxic child will fight the mask. A calm provider, child life specialist, or mild sedation (dexmedetomidine or ketamine) is often necessary. Monitor closely for hypercarbic narcosis.",evidence:"Early NIV in severe pediatric asthma significantly reduces WOB, improves gas exchange, and frequently prevents intubation, which carries high morbidity in asthmatics. (Basnet 2012, PMID: 22596068)"},
+weaning:{title:"Weaning Continuous Nebs",patho:"While acute bronchospasm may break quickly with albuterol, underlying mucosal edema, inflammation, and cellular hyperresponsiveness persist for days. Intrinsic airway tone remains highly unstable during the ED recovery phase.",pearls:"Abrupt withdrawal of continuous beta-agonists removes bronchodilatory drive before steroids achieve full anti-inflammatory effect, causing severe rebound bronchospasm. Always step down gradually — cut the continuous rate in half for one hour to prove the patient's respiratory mechanics can support the transition.",evidence:"Standardized weaning protocols from continuous to intermittent albuterol improve patient safety, decrease length of stay, and prevent dangerous bounce-backs to higher-acuity care. (Kelly 2004, PMID: 15127003)"},
+disposition:{title:"Disposition & Risk Stratification",patho:"Because asthma recovery is biphasic, early clinical improvement represents resolution of bronchospasm, but the late inflammatory phase persists at home. Patients discharged too early remain at high risk for fatal or near-fatal asthma events.",pearls:"Never discharge a patient who requires albuterol more frequently than Q4H. Ensure their respiratory status is stable enough to allow safe sleep through the night without intervention.\n\nIdentify high-risk patients: history of prior intubation, previous PICU admissions, poor compliance with inhaled corticosteroids, or recent ED visits.",evidence:"Strict discharge criteria requiring stable vitals, normal mentation, and proven tolerance of Q4H albuterol spacing significantly reduce ED relapse and readmission rates within 72 hours. (Boychuk 2006, PMID: 17169188)"},
+};
+
+function calcDoses(w){
+  var wt=parseFloat(w)||0;if(wt<=0)return null;
+  var dex=Math.min(Math.round(wt*0.6*10)/10,16);
+  var mag25=Math.round(wt*25);var mag50=Math.min(Math.round(wt*50),2000);
+  var terbLoad=Math.round(wt*10);
+  var terbSQ_lo=Math.round(wt*0.005*1000)/1000;var terbSQ_hi=Math.min(Math.round(wt*0.01*1000)/1000,0.4);
+  var ketLoad_lo=Math.round(wt*0.3*10)/10;var ketLoad_hi=Math.round(wt*0.5*10)/10;
+  var contAlb=wt<=10?10:wt<=20?15:20;
+  var epi=Math.min(Math.round(wt*0.01*100)/100,0.5);
+  return{w:wt,dex:dex,mag25:mag25,mag50:mag50,terbLoad:terbLoad,terbSQ_lo:terbSQ_lo,terbSQ_hi:terbSQ_hi,ketLoad_lo:ketLoad_lo,ketLoad_hi:ketLoad_hi,contAlb:contAlb,epi:epi};
+}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+// ── PRIMITIVES ──
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Asthma</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · February 2021</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function TeachBox({id,teaching}){var s=useState("pearls"),tab=s[0],setTab=s[1];if(!teaching||!TEACH[id])return null;var t=TEACH[id];if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;var activeTab=tab;if(!t[activeTab])activeTab=tabs[0].key;return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden"}}><div style={{background:"#ccfbf1",padding:"8px 12px",borderBottom:"1px solid "+C.tealBorder,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13,fontWeight:700,color:C.teal}}>📖 {t.title}</span></div>{tabs.length>1&&(<div style={{display:"flex",background:C.white,borderBottom:"1px solid "+C.rule}}>{tabs.map(function(tb){var act=activeTab===tb.key;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{flex:1,padding:"8px 0",background:act?C.tealBg:"#f8fafc",border:"none",borderBottom:act?"2.5px solid "+C.teal:"2.5px solid transparent",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted}}>{tb.label}</button>)})}</div>)}<div style={{padding:"12px 14px",fontSize:12,lineHeight:1.65,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeTab]}</div></div>);}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+// ── AST Scoring Component ──
+var AST_ITEMS=[
+{category:"Room Air SpO₂",options:[
+{label:">95%",pts:0},{label:"93–95%",pts:1},{label:"90–92%",pts:2},{label:"<90%",pts:3}
+]},
+{category:"Accessory Muscle Use",options:[
+{label:"None",pts:0},{label:"Mild",pts:1},{label:"Moderate",pts:2},{label:"Severe",pts:3}
+]},
+{category:"Inspiratory / Expiratory Ratio",options:[
+{label:"2:1 (normal)",pts:0},{label:"1:1",pts:1},{label:"1:2",pts:2},{label:"1:3",pts:3}
+]},
+{category:"Wheezing",options:[
+{label:"None",pts:0},{label:"End-expiratory only",pts:1},{label:"Insp + exp with good aeration",pts:2},{label:"Insp + exp with poor aeration",pts:3}
+]},
+{category:"Heart Rate",options:[
+{label:"Normal (<120 if <3y / <100 if ≥3y)",pts:0},{label:"Mildly elevated (120–140 / 100–120)",pts:1},{label:"Moderately elevated (141–160 / 121–140)",pts:2},{label:"Severely elevated (>160 / >140)",pts:3}
+]},
+{category:"Respiratory Rate",options:[
+{label:"Normal (<30 if <6y / <20 if ≥6y)",pts:0},{label:"Mildly elevated (31–45 / 21–35)",pts:1},{label:"Moderately elevated (46–60 / 36–50)",pts:2},{label:"Severely elevated (>60 / >50)",pts:3}
+]}
+];
+
+function ASTCalculator({onScore,teaching}){
+  var s=useState([null,null,null,null,null,null]),vals=s[0],setVals=s[1];
+  function setPt(idx,pts){setVals(function(p){var n=p.slice();n[idx]=pts;return n});}
+  var answered=vals.filter(function(v){return v!==null}).length;
+  var total=vals.reduce(function(s,v){return s+(v||0)},0);
+  var severity=total<6?"mild":total<12?"moderate":"severe";
+  var sevColor=severity==="mild"?C.greenMid:severity==="moderate"?C.amberMid:C.red;
+  var sevBg=severity==="mild"?C.greenBg:severity==="moderate"?C.amberBg:C.redBg;
+
+  return(<div>
+    {AST_ITEMS.map(function(item,idx){return(<div key={idx} style={{marginBottom:14}}>
+      <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:6}}>{item.category}</div>
+      {item.options.map(function(o,oi){return <WizBtn key={oi} label={o.label} color={C.primary} bg={C.pLight} border={C.pBorder} selected={vals[idx]===o.pts} onClick={function(){setPt(idx,o.pts)}}/>})}
+    </div>)})}
+
+    <div style={{background:sevBg,border:"2px solid "+sevColor,borderRadius:10,padding:"14px",marginTop:4,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div>
+        <div style={{fontSize:11,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>AST Total</div>
+        <div style={{fontSize:28,fontWeight:700,color:sevColor,fontFamily:"'IBM Plex Mono',monospace"}}>{total}<span style={{fontSize:14,fontWeight:400,color:C.muted}}> / 18</span></div>
+      </div>
+      <div style={{textAlign:"right"}}>
+        <div style={{background:sevColor,color:C.white,padding:"6px 14px",borderRadius:8,fontSize:13,fontWeight:700}}>{severity==="mild"?"Mild (<6)":severity==="moderate"?"Moderate (6–11)":"Severe (12–18)"}</div>
+        {onScore&&answered===6&&<button onClick={function(){onScore(total,severity)}} style={{marginTop:6,background:C.primary,color:C.white,border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer"}}>Score → Next Step</button>}
+        {onScore&&answered<6&&<div style={{fontSize:11,color:C.muted,marginTop:6}}>Answer all 6 to continue</div>}
+      </div>
+    </div>
+    <TeachBox id="ast" teaching={teaching}/>
+  </div>);
+}
+
+
+// ═══════════════════════════════
+// FLOWCHART
+// ═══════════════════════════════
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Ages 2–19 · Known asthma · AST severity-driven management</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 540" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={540} fill="#fafaf8" rx={6}/>
+
+          {/* Entry */}
+          <Box x={130} y={6} w={220} h={28} fill={tBg} stroke={tBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={tC}>ASTHMA EXACERBATION</T><T x={240} y={28} size={6} color={mC}>Ages 2–19 · Known asthma · ESI II–IV</T></Box>
+
+          <Arrow x1={240} y1={34} x2={240} y2={48}/>
+
+          {/* Initial assessment */}
+          <Box x={140} y={48} w={200} h={26} fill={blBg} stroke={blBd} sw={1.5}><T x={240} y={58} size={8} weight={700} color={blC}>INITIAL ASSESSMENT</T><T x={240} y={70} size={6} color={mC}>Vitals · SpO₂ · Isolation · O₂ if SpO₂ {'<'}90%</T></Box>
+
+          <Arrow x1={240} y1={74} x2={240} y2={88}/>
+
+          {/* AST diamond */}
+          <g transform="translate(240,102)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>AST Score</T><T x={0} y={7} size={6}>(room air)</T></g>
+
+          {/* Three branches */}
+          <Arrow x1={180} y1={102} x2={70} y2={128} color={gC}/>
+          <Arrow x1={240} y1={116} x2={240} y2={128} color={aC}/>
+          <Arrow x1={300} y1={102} x2={410} y2={128} color={rC}/>
+
+          {/* MILD */}
+          <Box x={10} y={128} w={120} h={28} fill={gBg} stroke={gBd} sw={1.5}><T x={70} y={138} size={8} weight={700} color={gC}>MILD ({'<'}6)</T><T x={70} y={150} size={6} color={mC}>ESI IV · SpO₂ ≥93%</T></Box>
+          <Arrow x1={70} y1={156} x2={70} y2={170} color={gC}/>
+          <Box x={10} y={170} w={120} h={48} fill={gBg} stroke={gBd}><T x={70} y={181} size={6} weight={600} color={gC}>Albuterol MDI 4–8 puffs</T><T x={70} y={191} size={6}>Repeat × 1 in 30–60 min PRN</T><T x={70} y={201} size={6} weight={600} color={gC}>Dex 0.6 mg/kg PO</T><T x={70} y={211} size={6}>Oral hydration</T></Box>
+          <Arrow x1={70} y1={218} x2={70} y2={232} color={gC}/>
+          <Box x={10} y={232} w={120} h={28} fill={gBg} stroke={gBd} radius={8}><T x={70} y={243} size={7} weight={700} color={gC}>DISCHARGE</T><T x={70} y={255} size={5.5} color={mC}>± 2nd dex in 24h · F/U 1 wk</T></Box>
+
+          {/* MODERATE */}
+          <Box x={155} y={128} w={170} h={28} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={138} size={8} weight={700} color={aC}>MODERATE (6–11)</T><T x={240} y={150} size={6} color={mC}>ESI III · SpO₂ ≥90%</T></Box>
+          <Arrow x1={240} y1={156} x2={240} y2={170} color={aC}/>
+          <Box x={155} y={170} w={170} h={48} fill={aBg} stroke={aBd}><T x={240} y={181} size={6} weight={600} color={aC}>3 stacked Duo nebs (20 min)</T><T x={240} y={191} size={6}>Dex 0.6 mg/kg PO (IM/IV PRN)</T><T x={240} y={201} size={6}>Consider MgSO₄ 25–50 mg/kg IV</T><T x={240} y={211} size={6}>Consider CXR · Q2H albuterol</T></Box>
+
+          {/* Moderate rescore */}
+          <Arrow x1={240} y1={218} x2={240} y2={234} color={aC}/>
+          <Box x={170} y={234} w={140} h={20} fill={aBg} stroke={aBd}><T x={240} y={244} size={7} weight={700} color={aC}>1ST HR RE-SCORE</T></Box>
+          <Arrow x1={240} y1={254} x2={240} y2={268} color={aC}/>
+
+          <g transform="translate(240,282)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>AST {'>'}8?</T></g>
+
+          <Arrow x1={295} y1={282} x2={375} y2={298} color={rC}/>
+          <Box x={340} y={298} w={100} h={20} fill={rBg} stroke={rBd}><T x={390} y={310} size={6} weight={700} color={rC}>Consider admit/transfer</T></Box>
+
+          <Arrow x1={185} y1={282} x2={150} y2={300} color={aC}/>
+          <Box x={120} y={300} w={100} h={20} fill={aBg} stroke={aBd}><T x={170} y={310} size={7} weight={700} color={aC}>2ND HR RE-SCORE</T></Box>
+
+          <Arrow x1={170} y1={320} x2={170} y2={338} color={aC}/>
+          <g transform="translate(170,352)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Q4H MDI?</T></g>
+          <Arrow x1={115} y1={352} x2={55} y2={368} color={gC}/>
+          <Box x={10} y={368} w={90} h={20} fill={gBg} stroke={gBd} radius={8}><T x={55} y={380} size={7} weight={700} color={gC}>DISCHARGE</T></Box>
+          <Arrow x1={225} y1={352} x2={290} y2={368} color={rC}/>
+          <Box x={250} y={368} w={120} h={20} fill={rBg} stroke={rBd}><T x={310} y={380} size={6} weight={700} color={rC}>Consider transfer</T></Box>
+
+          {/* SEVERE */}
+          <Box x={350} y={128} w={120} h={28} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={138} size={8} weight={700} color={rC}>SEVERE (12–18)</T><T x={410} y={150} size={6} color={mC}>ESI II · SpO₂ ≤90%</T></Box>
+          <Arrow x1={410} y1={156} x2={410} y2={170} color={rC}/>
+          <Box x={340} y={170} w={135} h={48} fill={rBg} stroke={rBd}><T x={407} y={181} size={6} weight={600} color={rC}>Continuous albuterol</T><T x={407} y={191} size={6}>Dex 0.6 mg/kg · IV fluids</T><T x={407} y={201} size={6}>Adjuncts: Mag · Terb · Epi</T><T x={407} y={211} size={6}>VBG · CXR · Heliox</T></Box>
+          <Arrow x1={410} y1={218} x2={410} y2={234} color={rC}/>
+          <Box x={355} y={234} w={110} h={24} fill={rBg} stroke={rBd} radius={8}><T x={410} y={244} size={7} weight={700} color={rC}>EARLY PICU</T><T x={410} y={253} size={5.5} color={mC}>Call early for transfer</T></Box>
+
+          {/* Bottom summary */}
+          <Box x={20} y={400} w={440} h={20} fill={tBg} stroke={tBd} radius={8}><T x={240} y={411} size={7} weight={700} color={tC}>ALL PATIENTS: Dexamethasone 0.6 mg/kg PO (max 16 mg) × 1</T></Box>
+
+          {/* Continuous neb weaning */}
+          <Box x={20} y={426} w={440} h={26} fill={pBg} stroke={pBd} radius={8}><T x={240} y={436} size={7} weight={700} color={pC}>WEANING CONTINUOUS NEBS</T><T x={240} y={447} size={6} color={mC}>Do NOT stop abruptly · Decrease dose by half × 1 hr → if tolerated → Q2H nebs</T></Box>
+
+          {/* Adjunct summary */}
+          <Box x={20} y={458} w={440} h={36} fill={blBg} stroke={blBd} radius={8}>
+            <T x={240} y={468} size={7} weight={700} color={blC}>ADJUNCT MEDICATIONS (SEVERE)</T>
+            <T x={120} y={480} size={6} color={mC}>MgSO₄ 25–50 mg/kg IV</T>
+            <T x={240} y={480} size={6} color={mC}>Terbutaline IV/SQ</T>
+            <T x={370} y={480} size={6} color={mC}>Epi 0.01 mg/kg SQ/IM</T>
+            <T x={120} y={490} size={6} color={mC}>Ketamine IV</T>
+            <T x={240} y={490} size={6} color={mC}>Heliox 80/20%</T>
+            <T x={370} y={490} size={6} color={mC}>BiPAP / HFNC</T>
+          </Box>
+
+          <Box x={20} y={500} w={440} h={34} fill="#f1f5f9" stroke="#e2e8f0" radius={6}>
+            <T x={240} y={511} size={8} weight={700} color={rC}>SIGNS OF DETERIORATION</T>
+            <T x={240} y={523} size={6} color={mC}>Fatigue with breathing · Worsening SpO₂ · Decreasing air movement · AMS</T>
+            <T x={240} y={531} size={6} weight={700} color={rC}>→ Give MgSO₄ or Terbutaline prior to transfer</T>
+          </Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════
+// WALK-THROUGH WIZARD
+// ═══════════════════════════════
+function Wizard({teaching,weightKg,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(false),scored=s2[0],setScored=s2[1];
+  var s3=useState(null),severity=s3[0],setSeverity=s3[1];
+  var s4=useState(null),astTotal=s4[0],setAstTotal=s4[1];
+  // Mild
+  var s5=useState(null),mildResp=s5[0],setMildResp=s5[1];
+  // Moderate
+  var s6=useState(null),mod1hr=s6[0],setMod1hr=s6[1];
+  var s7=useState(null),mod2hr=s7[0],setMod2hr=s7[1];
+  // Severe
+  var s8=useState(null),sevDeterior=s8[0],setSevDeterior=s8[1];
+
+  function handleScore(total,sev){setAstTotal(total);setSeverity(sev);setScored(true);}
+  function reset(){setExcl(null);setScored(false);setSeverity(null);setAstTotal(null);setMildResp(null);setMod1hr(null);setMod2hr(null);setSevDeterior(null);}
+
+  return(<Pad>
+    <Q text="Walk-Through" sub="Answer each question for a severity-based treatment plan"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* STEP 1: Inclusion */}
+    <Card title="Step 1 — Inclusion Check" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>
+        <strong>Does the patient meet criteria?</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>Age 2–19 years with known history of asthma</span>
+      </div>
+      <WizBtn label="Yes — On Pathway" sub="Age 2–19, known asthma, no exclusions" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      <WizBtn label="Excluded — Off Pathway" sub="First-time wheezing · No asthma history · Chronic lung disease (CF) · Cardiac disease" color={C.red} bg={C.redBg} border={C.redBorder} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+      {excl==="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Off Pathway">This patient has exclusion criteria. Consider alternative diagnosis/pathway.</Alert>}
+    </Card>
+
+    {/* STEP 2: AST Score */}
+    {excl==="no"&&(<Card title="Step 2 — AST Score (Room Air)" color={C.primary}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Score on room air. Initiate O₂ to maintain SpO₂ {'>'}90% after scoring.</strong></div>
+      <ASTCalculator onScore={handleScore} teaching={teaching}/>
+    </Card>)}
+
+    {/* ─── MILD PATHWAY ─── */}
+    {excl==="no"&&scored&&severity==="mild"&&(<Card title="Step 3 — Mild Asthma (AST <6)" color={C.greenMid}>
+      <Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="💊" title="Initial Treatment — Mild">
+        <strong>Albuterol MDI with spacer</strong> 4–8 puffs · Repeat × 1 in 30–60 min if needed<br/>
+        <strong>Dexamethasone</strong> {doses?doses.dex+" mg":"0.6 mg/kg (max 16 mg)"} PO × 1<br/>
+        Oral hydration<br/>
+        Review rescue inhaler and spacer technique
+      </Alert>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Response to treatment?</strong></div>
+      <WizBtn label="Good response — improved" sub="Decreased WOB, no accessory use, SpO₂ ≥93%" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={mildResp==="good"} onClick={function(){setMildResp("good")}}/>
+      <WizBtn label="Poor response — not improving" sub="Persistent symptoms, rescored AST ≥6" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={mildResp==="poor"} onClick={function(){setMildResp("poor")}}/>
+
+      {mildResp==="good"&&(<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Discharge">
+        Discharge with:<br/>
+        ± Second dose oral dexamethasone to take in 24 hours<br/>
+        Rescue inhaler + spacer<br/>
+        Follow-up with primary provider or asthma specialist within 1 week<br/>
+        Return for worsening breathing, increased albuterol use, or decreased activity
+      </Alert>)}
+      {mildResp==="poor"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⬆️" title="Escalate to Moderate Protocol">
+        Re-score AST ≥6 → manage as <strong>Moderate</strong><br/>
+        Start 3 stacked Duo nebs · Q2H albuterol<br/>
+        Consider MgSO₄ · Consider CXR
+      </Alert>)}
+      <TeachBox id="steroids" teaching={teaching}/>
+    </Card>)}
+
+    {/* ─── MODERATE PATHWAY ─── */}
+    {excl==="no"&&scored&&severity==="moderate"&&(<div>
+      <Card title="Step 3 — Moderate Asthma (AST 6–11)" color={C.amberMid}>
+        <Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="💊" title="Initial Treatment — Moderate">
+          <strong>3 stacked Duo nebs</strong> within 20 min (do not delay {'>'}5 min between nebs)<br/>
+          <strong>Dexamethasone</strong> {doses?doses.dex+" mg":"0.6 mg/kg (max 16 mg)"} PO × 1 (IM/IV if unable to tolerate PO)<br/>
+          Consider <strong>MgSO₄</strong> {doses?doses.mag25+"–"+doses.mag50+" mg":"25–50 mg/kg"} IV (max 2 g)<br/>
+          Oral hydration if improved after 3 stacked nebs, otherwise consider IV<br/>
+          Continue <strong>Q2H albuterol nebs</strong> with AST assessments pre/post nebs<br/>
+          Consider CXR
+        </Alert>
+        <TeachBox id="duonebs" teaching={teaching}/>
+        <TeachBox id="magnesium" teaching={teaching}/>
+      </Card>
+
+      <Card title="Step 4 — 1st Hour Re-Score" color={C.amberMid}>
+        <div style={{fontSize:13,marginBottom:10}}><strong>AST score after 1st hour of neb therapy?</strong></div>
+        <WizBtn label="AST >8 after 1st hour" sub="Consider transport to children's hospital / admission" color={C.red} bg={C.redBg} border={C.redBorder} selected={mod1hr==="high"} onClick={function(){setMod1hr("high")}}/>
+        <WizBtn label="AST ≤8 — continue Q2H nebs" sub="Proceed to 2nd hour re-score" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={mod1hr==="ok"} onClick={function(){setMod1hr("ok")}}/>
+
+        {mod1hr==="high"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="Consider Admission / Transfer">AST {'>'}8 after 1st hour of neb therapy — consider transport to children's hospital or admission.</Alert>}
+      </Card>
+
+      {mod1hr==="ok"&&(<Card title="Step 5 — 2nd Hour Re-Score & Dispo" color={C.amberMid}>
+        <div style={{fontSize:13,marginBottom:10}}><strong>Status after 2nd hour?</strong></div>
+        <WizBtn label="Able to space to Q4H MDI puffs" sub="Symptoms improving, no supplemental O₂ needed" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={mod2hr==="q4"} onClick={function(){setMod2hr("q4")}}/>
+        <WizBtn label="AST 6–8 or still needing Q2H nebs" sub="Consider transfer to children's hospital" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={mod2hr==="q2"} onClick={function(){setMod2hr("q2")}}/>
+        <WizBtn label="AST >8 — worsening" sub="Admit / transfer" color={C.red} bg={C.redBg} border={C.redBorder} selected={mod2hr==="bad"} onClick={function(){setMod2hr("bad")}}/>
+
+        {mod2hr==="q4"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Consider Discharge">Able to space to Q4H MDI · ± 2nd dose dex in 24h · Follow-up in 1 week</Alert>}
+        {mod2hr==="q2"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🏥" title="Consider Transfer">Score 6–8 following 2nd hour or continued Q2H neb need → consider transfer to children's hospital.</Alert>}
+        {mod2hr==="bad"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Admit / Transfer">Worsening → admission or transfer with continued escalated therapy.</Alert>}
+        <TeachBox id="disposition" teaching={teaching}/>
+      </Card>)}
+    </div>)}
+
+    {/* ─── SEVERE PATHWAY ─── */}
+    {excl==="no"&&scored&&severity==="severe"&&(<div>
+      <Card title="Step 3 — Severe Asthma (AST 12–18)" color={C.red}>
+        <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Initial Treatment — Severe">
+          <strong>Continuous albuterol</strong> {doses?doses.contAlb+" mg/hr":"10–20 mg/hr based on weight"}<br/>
+          <strong>Dexamethasone</strong> {doses?doses.dex+" mg":"0.6 mg/kg (max 16 mg)"} PO/IM/IV × 1<br/>
+          <strong>IV hydration</strong><br/>
+          Consider adjunct medications: <strong>MgSO₄</strong> {doses?doses.mag25+"–"+doses.mag50+" mg":"25–50 mg/kg"} IV, <strong>Terbutaline</strong>, <strong>Epinephrine</strong><br/>
+          Consider Heliox 80/20%<br/>
+          VBG · CXR<br/>
+          <strong>Call EARLY for PICU transfer</strong>
+        </Alert>
+        <TeachBox id="continuous" teaching={teaching}/>
+        <TeachBox id="terbutaline" teaching={teaching}/>
+
+        <div style={{fontSize:13,marginBottom:10,marginTop:8}}><strong>Signs of deterioration?</strong></div>
+        <WizBtn label="Yes — Worsening / fatigue" sub="Worsening condition, fatigue with breathing, decreasing air movement" color={C.red} bg={C.redBg} border={C.redBorder} selected={sevDeterior==="yes"} onClick={function(){setSevDeterior("yes")}}/>
+        <WizBtn label="Stable on continuous therapy" sub="Monitoring and preparing for transfer/admission" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={sevDeterior==="no"} onClick={function(){setSevDeterior("no")}}/>
+
+        {sevDeterior==="yes"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Deteriorating — Give Adjuncts Before Transfer">
+          <strong>MgSO₄</strong> {doses?doses.mag25+"–"+doses.mag50+" mg":"25–50 mg/kg"} IV over 15–30 min (max 150 mg/min) — may repeat × 2, max 2 g total<br/>
+          <strong>Terbutaline</strong> {doses?doses.terbLoad+" mcg":"10 mcg/kg"} IV loading over 10 min → infusion 0.1–10 mcg/kg/min<br/>
+          <em>OR SQ/IM</em> {doses?doses.terbSQ_lo+"–"+doses.terbSQ_hi+" mg":"0.005–0.01 mg/kg"} (max 0.4 mg) Q15–20 min × 3<br/>
+          <strong>Epinephrine</strong> {doses?doses.epi+" mg":"0.01 mg/kg"} (1:1000) SQ/IM (max 0.5 mg) Q20 min × 3 if refractory<br/>
+          Consider <strong>Ketamine</strong> {doses?doses.ketLoad_lo+"–"+doses.ketLoad_hi+" mg":"0.3–0.5 mg/kg"} IV load → 0.3–0.5 mg/kg/hr infusion<br/>
+          Consider BiPAP (EPAP 5, IPAP 15) or HFNC<br/>
+          <strong>→ PICU admission</strong>
+        </Alert>)}
+
+        {sevDeterior==="no"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🏥" title="Continue Monitoring → PICU Transfer">
+          Continue continuous albuterol · Monitor closely<br/>
+          Arrange PICU transfer early · Prepare adjuncts if condition changes
+        </Alert>)}
+        <TeachBox id="ketamine" teaching={teaching}/>
+      </Card>
+    </div>)}
+
+    {/* RESET */}
+    {excl!==null&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
+
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+
+// ═══════════════════════════════
+// REFERENCE MODE TABS
+// ═══════════════════════════════
+function RefTriage({teaching}){return(<Pad>
+<Q text="Triage & Initial Assessment" sub="Ages 2–19 · Known asthma history"/>
+<TeachBox id="overview" teaching={teaching}/>
+<Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Pediatric patients 2–19 years of age with a history of asthma.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">First-time wheezing · Respiratory distress without asthma history · Wheezing in children without asthma diagnosis · Chronic lung disease (e.g., CF) · Cardiac disease</Alert></div></Card>
+<Card title="Nurse Documentation" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>Chief complaint · Onset of symptoms<br/>Asthma history: peak flow use, medications, last steroid use, recent illness, hospitalizations, PICU stays, intubation<br/>General appearance, lung sounds, WOB, retractions, pulses, skin temp/fever<br/><strong>Initial room air AST score</strong></div></Card>
+<Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>Determine severity (initial and rescoring on <strong>room air</strong>)<br/><strong>ESI Triage Level II, III, or IV</strong> depending on severity<br/>Evaluate need for isolation<br/>Full set of vitals<br/>Continuous pulse oximetry if SpO₂ ≤95%<br/>O₂ to maintain SpO₂ {'>'}90%<br/>Initiate <strong>Duo nebs</strong> for audible wheezing, retractions, or distress (considering asthma history)<br/>Consider initially using <strong>continuous albuterol</strong> for severe exacerbations<br/>Administer continuous nebs with <strong>air</strong>, using oxygen as needed for SpO₂</div></Card>
+</Pad>)}
+
+function RefScoring({teaching}){return(<Pad>
+<Q text="AST Scoring Tool" sub="Pediatric Asthma Severity Tool — score on room air"/>
+<TeachBox id="ast" teaching={teaching}/>
+<Card title="Interactive AST Calculator" color={C.primary}><ASTCalculator teaching={teaching}/></Card>
+<Card title="AST Reference Table" color={C.blue} defaultOpen={false}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+<div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",gap:4,marginBottom:6}}>
+<div style={{fontWeight:700,fontSize:10,color:C.muted}}>PARAMETER</div>
+<div style={{fontWeight:700,fontSize:10,color:C.muted,textAlign:"center"}}>0</div>
+<div style={{fontWeight:700,fontSize:10,color:C.muted,textAlign:"center"}}>1</div>
+<div style={{fontWeight:700,fontSize:10,color:C.muted,textAlign:"center"}}>2</div>
+<div style={{fontWeight:700,fontSize:10,color:C.muted,textAlign:"center"}}>3</div>
+</div>
+{[
+["SpO₂ (room air)",">95%","93–95%","90–92%","<90%"],
+["Accessory Muscles","None","Mild","Moderate","Severe"],
+["I:E Ratio","2:1","1:1","1:2","1:3"],
+["Wheezing","None","End-exp","Insp+exp good aer.","Insp+exp poor aer."],
+["HR <3y / ≥3y","<120 / <100","120–140 / 100–120","141–160 / 121–140",">160 / >140"],
+["RR <6y / ≥6y","<30 / <20","31–45 / 21–35","46–60 / 36–50",">60 / >50"]
+].map(function(r,i){return <div key={i} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",gap:4,padding:"3px 0",borderBottom:"1px dashed "+C.rule}}>
+<div style={{fontSize:11,fontWeight:600}}>{r[0]}</div>
+<div style={{fontSize:10,textAlign:"center"}}>{r[1]}</div>
+<div style={{fontSize:10,textAlign:"center"}}>{r[2]}</div>
+<div style={{fontSize:10,textAlign:"center"}}>{r[3]}</div>
+<div style={{fontSize:10,textAlign:"center"}}>{r[4]}</div>
+</div>})}
+<div style={{marginTop:10,fontSize:11,lineHeight:1.5}}>
+<strong>Severity:</strong> Mild {'<'}6 (Q4H) · Moderate 6–11 (Q2H) · Severe 12–18 (continuous nebs, early PICU)
+</div>
+</div></Card>
+</Pad>)}
+
+function RefDecisions({teaching,doses}){return(<Pad>
+<Q text="Decision Tree" sub="AST severity-driven management"/>
+<Card title="Mild — AST <6" color={C.greenMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>ESI IV · SpO₂ ≥93% · No distress, may have end-expiratory wheezing, mild accessory use<br/><strong>Albuterol MDI 4–8 puffs</strong> with spacer · Repeat × 1 in 30–60 min if needed<br/><strong>Dex</strong> {doses?doses.dex+" mg":"0.6 mg/kg (max 16 mg)"} PO × 1<br/>Oral hydration · Review rescue inhaler/spacer technique<br/><strong>Discharge</strong> ± 2nd dose dex in 24h · Follow-up 1 week</div><TeachBox id="steroids" teaching={teaching}/></Card>
+<Card title="Moderate — AST 6–11" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>ESI III · SpO₂ ≥90% · Moderate accessory use · Insp/exp wheezing with good aeration · Tachypnea/tachycardia<br/><strong>3 stacked Duo nebs</strong> within 20 min<br/><strong>Dex</strong> {doses?doses.dex+" mg":"0.6 mg/kg (max 16 mg)"} PO × 1 (IM/IV if unable to tolerate PO)<br/>Consider <strong>MgSO₄</strong> {doses?doses.mag25+"–"+doses.mag50+" mg":"25–50 mg/kg"} IV (max 2 g)<br/>Oral hydration if improved, otherwise IV<br/>Q2H albuterol nebs with AST assessments<br/>Consider CXR<br/><div style={{marginTop:8,padding:"8px 10px",background:C.amberBg,border:"1px solid "+C.amberBorder,borderRadius:6,fontSize:12}}><strong>1st Hr Re-Score:</strong> AST {'>'}8 → consider admit/transfer<br/><strong>2nd Hr Re-Score:</strong> AST 6–8 or Q2H → consider transfer. Can space Q4H MDI → consider discharge</div></div><TeachBox id="duonebs" teaching={teaching}/></Card>
+<Card title="Severe — AST 12–18" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>ESI II · SpO₂ ≤90% · Severe accessory use · Insp/exp wheezing with poor aeration · Abnormal HR/RR<br/><strong>Continuous albuterol</strong> {doses?doses.contAlb+" mg/hr":"10–20 mg/hr by weight"}<br/><strong>Dex</strong> {doses?doses.dex+" mg":"0.6 mg/kg (max 16 mg)"} PO/IM/IV × 1<br/>IV hydration · VBG · CXR<br/>Consider adjuncts: MgSO₄, Terbutaline, Epi, Heliox, Ketamine<br/><strong>Call EARLY for PICU transfer</strong><br/>Worsening → give MgSO₄ or Terbutaline prior to transfer</div></Card>
+<Card title="Non-Invasive Ventilation" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>CPAP/BiPAP:</strong> EPAP 5 cmH₂O · IPAP 15 cmH₂O as initial settings<br/><strong>HFNC:</strong> 21–100% humidified warmed O₂ · 1–2 L/kg initiation recommended · Flow based on cannula size and WOB</div><TeachBox id="niv" teaching={teaching}/></Card>
+<Card title="Weaning Continuous Nebs" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Do NOT stop abruptly unless deteriorating or in respiratory failure<br/><strong>Step 1:</strong> Decrease dose in half for 1 hour<br/><strong>Step 2:</strong> If tolerated → stop continuous, resume Q2H nebs per protocol</div><TeachBox id="weaning" teaching={teaching}/></Card>
+<PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+<Q text="Medications & Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+{!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+<Card title="Dexamethasone (All Severities)" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Dexamethasone PO (0.6 mg/kg, max 16 mg)" value={doses?doses.dex:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>PO × 1 (use IV formulation orally to minimize volume). IM/IV if unable to tolerate PO. Optional 2nd dose in 24h for mild. May give IM/IV for moderate/severe.</div></div><TeachBox id="steroids" teaching={teaching}/></Card>
+<Card title="Bronchodilators" color={C.primary}><div style={{marginTop:8}}><div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Mild</div><div style={{fontSize:12,marginBottom:8}}>Albuterol MDI with spacer 4–8 puffs · Repeat × 1 in 30–60 min if needed</div><div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Moderate</div><div style={{fontSize:12,marginBottom:8}}>3 stacked Duo nebs (albuterol + ipratropium) within 20 min · Then Q2H albuterol nebs</div><div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Severe — Continuous Albuterol</div><DoseRow label="5–10 kg" value="10" unit="mg/hr"/><DoseRow label="10–20 kg" value="15" unit="mg/hr"/><DoseRow label=">20 kg" value="20" unit="mg/hr"/>{doses&&<DoseRow label={"Patient dose ("+doses.w+" kg)"} value={doses.contAlb} unit="mg/hr"/>}<div style={{fontSize:12,color:C.muted,marginTop:6}}>Younger children may be dosed at 0.3–0.5 mg/kg/hr. Administer with air, use O₂ as needed for SpO₂.</div></div><TeachBox id="continuous" teaching={teaching}/></Card>
+<Card title="Magnesium Sulfate" color={C.primary}><div style={{marginTop:8}}><DoseRow label="MgSO₄ IV (25–50 mg/kg)" value={doses?doses.mag25+"–"+doses.mag50:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Max infusion rate 150 mg/min · Over 15–30 min · May repeat × 2 doses, max 2 g total</div></div><TeachBox id="magnesium" teaching={teaching}/></Card>
+<Card title="Terbutaline" color={C.primary}><div style={{marginTop:8}}><DoseRow label="IV loading (10 mcg/kg over 10 min)" value={doses?doses.terbLoad:"—"} unit={doses?"mcg":""}/><div style={{fontSize:12,color:C.muted,marginTop:4}}>Then infusion 0.1–10 mcg/kg/min IV pending PICU</div><DoseRow label="SQ/IM (0.005–0.01 mg/kg, max 0.4 mg)" value={doses?doses.terbSQ_lo+"–"+doses.terbSQ_hi:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:4}}>Q15–20 min × 3 doses</div></div><TeachBox id="terbutaline" teaching={teaching}/></Card>
+<Card title="Epinephrine" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Epi SQ/IM (0.01 mg/kg, 1:1000, max 0.5 mg)" value={doses?doses.epi:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:4}}>Q20 min × 3 doses if refractory to all other methods</div></div></Card>
+<Card title="Ketamine (Rescue)" color={C.purple}><div style={{marginTop:8}}><DoseRow label="Loading (0.3–0.5 mg/kg IV over 1–2 min)" value={doses?doses.ketLoad_lo+"–"+doses.ketLoad_hi:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:4}}>Then infusion 0.3–0.5 mg/kg/hr IV</div></div><TeachBox id="ketamine" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+<Q text="Disposition & References"/>
+<Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU / TRANSFER</div><div style={{fontSize:12,marginTop:2}}>Severe (AST 12–18) · Continuous albuterol · Terbutaline infusion · Not responding to therapy · Signs of deterioration / fatigue</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT / TRANSFER</div><div style={{fontSize:12,marginTop:2}}>Moderate with AST {'>'}8 after 1st hour · AST 6–8 after 2nd hour · Continued Q2H neb requirement · Unable to space to Q4H MDI</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>MAY DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Mild: good response to albuterol MDI · Moderate: able to space to Q4H MDI after 2nd hour · Dex given · Rescue inhaler + spacer · Follow-up in 1 week</div></div>
+</div><TeachBox id="disposition" teaching={teaching}/></Card>
+<Card title="Discharge Checklist" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Dexamethasone given (± 2nd dose to take in 24h)<br/>Rescue inhaler + spacer reviewed — technique verified<br/>Asthma Action Plan reviewed or provided<br/>Follow-up with PCP or asthma specialist within 1 week<br/>Return precautions: worsening breathing, increased rescue inhaler use, decreased activity, poor oral intake</div></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Griffiths B, Ducharme FM. Combined inhaled anticholinergics and short-acting beta2-agonists for initial treatment of acute asthma in children. <em>Cochrane Database Syst Rev</em> 2013; CD000060.<br/>2. Keeney GE et al. Dexamethasone for acute asthma exacerbations in children: a meta-analysis. <em>Pediatrics</em> 2014; 133:493.<br/>3. Cronin JJ et al. A Randomized Trial of Single-Dose Oral Dexamethasone Versus Multidose Prednisolone for Acute Exacerbations of Asthma in Children. <em>Ann Emerg Med</em> 2016; 67:593.<br/>4. Zemek R et al. Triage nurse initiation of corticosteroids in pediatric asthma. <em>Pediatrics</em> 2012; 129:671.<br/>5. Cheuk DK et al. A meta-analysis on IV magnesium sulphate for treating acute asthma. <em>Arch Dis Child</em> 2005; 90:74.<br/>6. Camargo CA et al. Continuous versus intermittent beta-agonists in the treatment of acute asthma. <em>Cochrane Database Syst Rev</em> 2003; CD001115.<br/>7. Kim IK et al. Helium/oxygen-driven albuterol nebulization in children with moderate to severe asthma exacerbations. <em>Pediatrics</em> 2005; 116:1127.<br/>8. Denmark TK et al. Ketamine to avoid mechanical ventilation in severe pediatric asthma. <em>J Emerg Med</em> 2006; 30:163.</div></Card>
+</Pad>)}
+
+
+// ═══════════════════════════════
+// APP
+// ═══════════════════════════════
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+
+  var refTabs=[{key:"triage",label:"Triage"},{key:"scoring",label:"AST Scoring"},{key:"decision",label:"Decisions"},{key:"meds",label:"Meds"},{key:"dispo",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (years)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="8" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="25" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+
+      {mode==="wizard"&&<Wizard teaching={teaching} weightKg={weightKg} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="scoring"&&<RefScoring teaching={teaching}/>}
+      {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Asthma Clinical Pathway · February 2021
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
