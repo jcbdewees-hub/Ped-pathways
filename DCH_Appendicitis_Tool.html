@@ -16,10 +16,10 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useCallback, useMemo } = React;
+const { useState, useCallback, useMemo, useEffect } = React;
 
 const C = {
-  primary: "#92400e", pLight: "#fffbeb", pBorder: "#fcd34d",
+  primary: "#166534", pLight: "#f0fdf4", pBorder: "#86efac",
   red: "#b91c1c", redBg: "#fef2f2", redBorder: "#fca5a5",
   amber: "#92400e", amberBg: "#fffbeb", amberBorder: "#fcd34d", amberMid: "#d97706",
   green: "#166534", greenBg: "#f0fdf4", greenBorder: "#86efac", greenMid: "#16a34a",
@@ -121,8 +121,11 @@ const ALV_ITEMS = [
   { label: "ANC > 7,500", pts: 1 },
 ];
 
+// ── Responsive Width ──
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
 // ── Primitives ──
-function Header({ teaching, onToggleTeach }) {
+function Header({ teaching, onToggleTeach, mode, onToggleMode }) {
   return (
     <div style={{ background: C.primary, color: C.white, padding: "16px 20px", borderRadius: "12px 12px 0 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -131,13 +134,18 @@ function Header({ teaching, onToggleTeach }) {
           <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4, lineHeight: 1.2 }}>Suspected Acute Appendicitis</div>
           <div style={{ fontSize: 14, opacity: 0.85, marginTop: 2 }}>Clinical Decision Tool · Ages 3–18 · January 2022</div>
         </div>
-        <button onClick={onToggleTeach} style={{
-          background: teaching ? "#ffffff30" : "#ffffff15", border: `1.5px solid ${teaching ? "#fff" : "#ffffff40"}`,
-          color: C.white, borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 11,
-          fontWeight: 700, letterSpacing: "0.03em", marginTop: 2, whiteSpace: "nowrap", transition: "all 0.2s",
-        }}>
-          {teaching ? "📖 ON" : "📖 Teach"}
-        </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+          <button onClick={onToggleMode} style={{
+            background: mode === "wizard" ? "#ffffff30" : "#ffffff15", border: "1.5px solid " + (mode === "wizard" ? "#fff" : "#ffffff40"),
+            color: C.white, borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 11,
+            fontWeight: 700, whiteSpace: "nowrap",
+          }}>{mode === "wizard" ? "🔀 Walk-Through" : "📋 Reference"}</button>
+          <button onClick={onToggleTeach} style={{
+            background: teaching ? "#ffffff30" : "#ffffff15", border: "1.5px solid " + (teaching ? "#fff" : "#ffffff40"),
+            color: C.white, borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 11,
+            fontWeight: 700, whiteSpace: "nowrap",
+          }}>{teaching ? "📖 Teaching ON" : "📖 Teach"}</button>
+        </div>
       </div>
     </div>
   );
@@ -201,8 +209,245 @@ function Card({ title, color, children, defaultOpen = true }) {
   );
 }
 
+// ── Wizard Choice Button ──
+function WizBtn({ label, sub, color, bg, border, onClick, selected }) {
+  return (<button onClick={onClick} style={{ display: "block", width: "100%", textAlign: "left", background: selected ? bg : C.white, border: "2px solid " + (selected ? color : C.rule), borderRadius: 10, padding: "14px 16px", marginBottom: 8, cursor: "pointer", transition: "all 0.15s" }}><div style={{ fontSize: 14, fontWeight: 700, color: selected ? color : C.ink }}>{label}</div>{sub && <div style={{ fontSize: 12, color: selected ? color : C.muted, marginTop: 2, opacity: 0.85 }}>{sub}</div>}</button>);
+}
+
+// ── Shared Flowchart ──
+function PathwayFlowchart() {
+  const gC = "#16a34a", gBg = "#f0fdf4", gBd = "#86efac";
+  const aC = "#d97706", aBg = "#fffbeb", aBd = "#fcd34d";
+  const rC = "#b91c1c", rBg = "#fef2f2", rBd = "#fca5a5";
+  const bC = "#1d4ed8", bBg = "#eff6ff", bBd = "#93c5fd";
+  const pC = "#6b21a8", pBg = "#faf5ff", pBd = "#c4b5fd";
+  const mC = "#6b7280";
+  const Arrow = ({x1,y1,x2,y2,color="#94a3b8"}) => (<g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5} /><polygon points={`${x2},${y2} ${x2-3.5},${y2-6} ${x2+3.5},${y2-6}`} fill={color} /></g>);
+  const Box = ({x,y,w,h,fill,stroke,sw=1,radius=6,children}) => (<g><rect x={x} y={y} width={w} height={h} rx={radius} fill={fill} stroke={stroke} strokeWidth={sw} />{children}</g>);
+  const T = ({x,y,size=9,weight=600,color="#1a1d21",anchor="middle",children}) => (<text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={color} fontFamily="'IBM Plex Sans',sans-serif">{children}</text>);
+  return (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 4 }}>Full Algorithm</div>
+      <div style={{ fontSize: 11, color: C.muted, marginBottom: 6 }}>Suspected appendicitis · Ages 3–18</div>
+      <div style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: 6, overflow: "hidden" }}>
+        <svg viewBox="0 0 480 440" style={{ width: "100%", display: "block" }}>
+          <rect width={480} height={440} fill="#fafaf8" rx={6} />
+          <Box x={115} y={6} w={250} h={28} fill={bBg} stroke={bBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={bC}>ARRIVAL — TRIAGE ESI III</T><T x={240} y={28} size={6} weight={400} color={mC}>Vitals · Ondansetron ODT · LMX · Labs + IV</T></Box>
+          <Arrow x1={240} y1={34} x2={240} y2={46} />
+          <Box x={130} y={46} w={220} h={22} fill={pBg} stroke={pBd} sw={1.5}><T x={240} y={56} size={8} weight={700} color={pC}>APPLY CLINICAL SCORE</T><T x={240} y={64} size={6} color={mC}>PAS · Alvarado · pARC</T></Box>
+          <Arrow x1={240} y1={68} x2={240} y2={80} />
+          <g transform="translate(240,96)"><polygon points="0,-16 70,0 0,16 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2} /><T x={0} y={-2} size={7} weight={700}>Risk Level?</T></g>
+          <Arrow x1={170} y1={96} x2={60} y2={118} color={gC} />
+          <Arrow x1={240} y1={112} x2={240} y2={118} color={aC} />
+          <Arrow x1={310} y1={96} x2={404} y2={118} color={rC} />
+          <Box x={10} y={118} w={120} h={22} fill={gBg} stroke={gBd} sw={1.5}><T x={70} y={127} size={8} weight={700} color={gC}>LOW RISK</T><T x={70} y={136} size={6} color={mC}>PAS/Alv ≤3 · pARC {'<'}5%</T></Box>
+          <Arrow x1={70} y1={140} x2={70} y2={150} color={gC} />
+          <Box x={10} y={150} w={120} h={18} fill={gBg} stroke={gBd}><T x={70} y={161} size={6} weight={600} color={gC}>D/C · PCP f/u 24h</T></Box>
+          <Box x={155} y={118} w={170} h={22} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={127} size={8} weight={700} color={aC}>INTERMEDIATE</T><T x={240} y={136} size={6} color={mC}>PAS/Alv 4–6 · pARC 15–74%</T></Box>
+          <Arrow x1={240} y1={140} x2={240} y2={150} color={aC} />
+          <Box x={160} y={150} w={160} h={18} fill={C.white} stroke={aBd}><T x={240} y={160} size={6} weight={600} color={aC}>NPO · IV · Pain · US abdomen</T></Box>
+          <Box x={340} y={118} w={128} h={22} fill={rBg} stroke={rBd} sw={1.5}><T x={404} y={127} size={8} weight={700} color={rC}>HIGH RISK</T><T x={404} y={136} size={6} color={mC}>PAS/Alv ≥7 · pARC ≥75%</T></Box>
+          <Arrow x1={404} y1={140} x2={404} y2={150} color={rC} />
+          <Box x={346} y={150} w={116} h={18} fill={C.white} stroke={rBd}><T x={404} y={160} size={6} weight={600} color={rC}>NPO · IV · Pain · Bolus · US</T></Box>
+          <Arrow x1={240} y1={168} x2={240} y2={188} color={aC} />
+          <Arrow x1={404} y1={168} x2={404} y2={188} color={rC} />
+          <g transform="translate(300,200)"><polygon points="0,-12 60,0 0,12 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2} /><T x={0} y={2} size={7} weight={700}>US Result?</T></g>
+          <Arrow x1={240} y1={200} x2={80} y2={220} color={gC} />
+          <Arrow x1={300} y1={212} x2={240} y2={220} color={aC} />
+          <Arrow x1={360} y1={200} x2={400} y2={220} color={rC} />
+          <Box x={20} y={220} w={120} h={22} fill={gBg} stroke={gBd}><T x={80} y={229} size={7} weight={700} color={gC}>US NEGATIVE</T><T x={80} y={238} size={6} color={mC}>Appendix seen, normal</T></Box>
+          <Arrow x1={80} y1={242} x2={80} y2={252} color={gC} />
+          <Box x={20} y={252} w={120} h={18} fill={gBg} stroke={gBd}><T x={80} y={263} size={6} weight={600} color={gC}>Alt dx · PO challenge · D/C</T></Box>
+          <Box x={168} y={220} w={144} h={22} fill={aBg} stroke={aBd}><T x={240} y={229} size={7} weight={700} color={aC}>INCONCLUSIVE</T><T x={240} y={238} size={6} color={mC}>Appendix not seen</T></Box>
+          <Arrow x1={240} y1={242} x2={240} y2={254} color={aC} />
+          <Box x={168} y={254} w={144} h={18} fill={pBg} stroke={pBd}><T x={240} y={265} size={7} weight={700} color={pC}>MRI (preferred) or CT</T></Box>
+          <Arrow x1={195} y1={272} x2={148} y2={286} color={gC} />
+          <Arrow x1={240} y1={272} x2={240} y2={286} color={aC} />
+          <Arrow x1={285} y1={272} x2={332} y2={286} color={rC} />
+          <Box x={108} y={286} w={76} h={18} fill={gBg} stroke={gBd}><T x={146} y={297} size={6} weight={700} color={gC}>MR NEG</T></Box>
+          <Box x={202} y={286} w={76} h={18} fill={aBg} stroke={aBd}><T x={240} y={297} size={6} weight={700} color={aC}>EQUIVOCAL</T></Box>
+          <Box x={296} y={286} w={76} h={18} fill={rBg} stroke={rBd}><T x={334} y={297} size={6} weight={700} color={rC}>MR POS</T></Box>
+          <Arrow x1={240} y1={304} x2={240} y2={318} color={aC} />
+          <Arrow x1={334} y1={304} x2={400} y2={318} color={rC} />
+          <Box x={184} y={318} w={112} h={18} fill={aBg} stroke={aBd}><T x={240} y={329} size={6} weight={600} color={aC}>Consult Peds Surgery</T></Box>
+          <Box x={340} y={220} w={120} h={22} fill={rBg} stroke={rBd}><T x={400} y={229} size={7} weight={700} color={rC}>US POSITIVE</T><T x={400} y={238} size={6} color={mC}>Appendicitis</T></Box>
+          <Arrow x1={400} y1={242} x2={400} y2={318} color={rC} />
+          <Box x={340} y={318} w={120} h={34} fill={rBg} stroke={rBd} sw={2}><T x={400} y={329} size={8} weight={700} color={rC}>APPENDICITIS</T><T x={400} y={340} size={6} color={C.ink}>Consult Peds Surgery</T><T x={400} y={349} size={6} color={mC}>Abx if perf or per surgery</T></Box>
+          <T x={404} y={178} size={5} weight={400} color={rC} anchor="middle">⚠ 19% false-neg US in high risk</T>
+          <Box x={30} y={370} w={420} h={24} fill={bBg} stroke={bBd} radius={8}><T x={240} y={380} size={7} weight={700} color={bC}>SCORING DRIVES IMAGING · US FIRST · MRI PREFERRED OVER CT</T><T x={240} y={390} size={6} color={mC}>pARC has best test characteristics · Avoid empiric abx unless perforation suspected</T></Box>
+          <Box x={30} y={406} w={420} h={24} fill="#f1f5f9" stroke="#e2e8f0" radius={6}><T x={130} y={416} size={7} weight={700} color={rC}>CONFIRMED: Peds Surgery consult</T><T x={130} y={426} size={6} color={mC}>Abx: Ceftri 50 + Flagyl 30 mg/kg/day</T><T x={370} y={416} size={7} weight={700} color={gC}>LOW RISK: D/C with PCP f/u</T><T x={370} y={426} size={6} color={mC}>Return if worsening pain/fever/vomiting</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ── Walk-Through Wizard ──
+function AppyWizard({ teaching, doses, ageYears }) {
+  const [scoreTool, setScoreTool] = useState("pas");
+  const [pasChecked, setPasChecked] = useState([]);
+  const [alvChecked, setAlvChecked] = useState([]);
+  const [scored, setScored] = useState(false);
+  const [usResult, setUsResult] = useState(null);
+  const [mrResult, setMrResult] = useState(null);
+
+  const pasTotal = useMemo(() => pasChecked.reduce((s, i) => s + PAS_ITEMS[i].pts, 0), [pasChecked]);
+  const alvTotal = useMemo(() => alvChecked.reduce((s, i) => s + ALV_ITEMS[i].pts, 0), [alvChecked]);
+  const togglePas = useCallback(i => setPasChecked(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]), []);
+  const toggleAlv = useCallback(i => setAlvChecked(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]), []);
+
+  const activeTotal = scoreTool === "pas" ? pasTotal : scoreTool === "alv" ? alvTotal : 0;
+  const risk = !scored ? null 
+    : scoreTool === "parc" ? "low"
+    : scoreTool === "parc_int" ? "intermediate"
+    : scoreTool === "parc_high" ? "high"
+    : activeTotal <= 3 ? "low" : activeTotal <= 6 ? "intermediate" : "high";
+  const riskInfo = risk === "low" ? { text: "Low Risk (0–3)", color: C.greenMid, bg: C.greenBg, border: C.greenBorder }
+    : risk === "intermediate" ? { text: "Intermediate (4–6)", color: C.amberMid, bg: C.amberBg, border: C.amberBorder }
+    : risk === "high" ? { text: "High Risk (≥7)", color: C.red, bg: C.redBg, border: C.redBorder }
+    : null;
+
+  function reset() { setPasChecked([]); setAlvChecked([]); setScored(false); setUsResult(null); setMrResult(null); }
+
+  return (<Pad>
+    <Q text="Walk-Through" sub="Score the patient, then follow the pathway step by step" />
+    <TeachBox id="epidemiology" teaching={teaching} />
+
+    {/* ── STEP 1: SCORING ── */}
+    <Card title="Step 1 — Clinical Appendicitis Score" color={C.primary}>
+      <div style={{ fontSize: 13, marginBottom: 10 }}><strong>Select a scoring tool and check all findings that apply.</strong></div>
+      <TeachBox id="scoring" teaching={teaching} />
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+        {[{ id: "pas", label: "PAS" }, { id: "alv", label: "Alvarado" }, { id: "parc", label: "pARC ↗" }].map(t => (
+          t.id === "parc" ?
+            <a key={t.id} href="https://www.mdcalc.com/calc/10085/pediatric-appendicitis-risk-calculator-parc" target="_blank" rel="noopener" style={{
+              flex: 1, padding: "10px", borderRadius: 8, border: `1.5px solid ${C.blueBorder}`, background: C.blueBg,
+              color: C.blue, fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "center", textDecoration: "none", display: "block",
+            }}>{t.label}</a>
+          :
+            <button key={t.id} onClick={() => { setScoreTool(t.id); setScored(false); }} style={{
+              flex: 1, padding: "10px", borderRadius: 8,
+              border: `1.5px solid ${scoreTool === t.id ? C.primary : C.rule}`,
+              background: scoreTool === t.id ? C.primary : C.white,
+              color: scoreTool === t.id ? C.white : C.ink,
+              fontSize: 13, fontWeight: 700, cursor: "pointer",
+            }}>{t.label}</button>
+        ))}
+      </div>
+
+      {scoreTool === "pas" && (<>
+        {PAS_ITEMS.map((item, i) => (
+          <Toggle key={i} label={item.label} sub={`+${item.pts} point${item.pts > 1 ? "s" : ""}`} checked={pasChecked.includes(i)} onToggle={() => { togglePas(i); setScored(false); }} color={C.primary} />
+        ))}
+        <div style={{ background: "#f8faf8", border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: "14px", marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.04em" }}>PAS Total</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: C.ink, fontFamily: "'IBM Plex Mono', monospace" }}>{pasTotal}</div>
+          </div>
+          {!scored && pasChecked.length > 0 && (
+            <button onClick={() => setScored(true)} style={{ background: C.primary, color: C.white, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Score → Next Step</button>
+          )}
+        </div>
+      </>)}
+
+      {scoreTool === "alv" && (<>
+        {ALV_ITEMS.map((item, i) => (
+          <Toggle key={i} label={item.label} sub={`+${item.pts} point${item.pts > 1 ? "s" : ""}`} checked={alvChecked.includes(i)} onToggle={() => { toggleAlv(i); setScored(false); }} color={C.primary} />
+        ))}
+        <div style={{ background: "#f8faf8", border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: "14px", marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.04em" }}>Alvarado Total</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: C.ink, fontFamily: "'IBM Plex Mono', monospace" }}>{alvTotal}</div>
+          </div>
+          {!scored && alvChecked.length > 0 && (
+            <button onClick={() => setScored(true)} style={{ background: C.primary, color: C.white, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Score → Next Step</button>
+          )}
+        </div>
+      </>)}
+
+      {scoreTool === "parc" && (
+        <div style={{ fontSize: 13, lineHeight: 1.7 }}>
+          <Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🔗" title="Use pARC Calculator">
+            The pARC requires a dedicated calculator. Open MDCalc (linked above), calculate the risk, then select the result below.
+          </Alert>
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            <WizBtn label="Very Low / Low (<15%)" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={scored && risk === "low"} onClick={() => { setScoreTool("parc"); setPasChecked([]); setAlvChecked([]); setScored(true); setUsResult(null); setMrResult(null); }} />
+            <WizBtn label="Intermediate (15–74%)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={scored && risk === "intermediate"} onClick={() => { setScoreTool("parc_int"); setScored(true); setUsResult(null); setMrResult(null); }} />
+            <WizBtn label="High (≥75%)" color={C.red} bg={C.redBg} border={C.redBorder} selected={scored && risk === "high"} onClick={() => { setScoreTool("parc_high"); setScored(true); setUsResult(null); setMrResult(null); }} />
+          </div>
+        </div>
+      )}
+    </Card>
+
+    {/* ── RISK RESULT BANNER ── */}
+    {scored && riskInfo && scoreTool !== "parc" && (
+      <div style={{ background: riskInfo.bg, border: `2px solid ${riskInfo.color}`, borderRadius: 10, padding: "14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>Risk Stratification</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: riskInfo.color, marginTop: 2 }}>{riskInfo.text}</div>
+        </div>
+        <div style={{ background: riskInfo.color, color: C.white, padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700 }}>{scoreTool.toUpperCase()} {activeTotal}</div>
+      </div>
+    )}
+
+    {/* ── LOW RISK DISPOSITION ── */}
+    {scored && risk === "low" && (<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Low Risk — Discharge">
+      <strong>Discharge home</strong> with PCP follow-up within 24 hours.<br />Return precautions: worsening pain, persistent vomiting, fever, inability to tolerate PO.
+    </Alert>)}
+
+    {/* ── STEP 2: ULTRASOUND (intermediate + high) ── */}
+    {scored && (risk === "intermediate" || risk === "high") && (<Card title={"Step 2 — Ultrasound Result"} color={C.blue}>
+      <div style={{ fontSize: 13, marginBottom: 10 }}>
+        <strong>NPO · IV access · {risk === "high" ? "IV pain meds + fluid bolus · " : "Consider IV pain meds · "}Obtain US abdomen</strong>
+        {risk === "high" && <><br /><span style={{ fontSize: 12, color: C.red }}>⚠ High-risk caveat: 19% false-neg, 45% equivocal → appy</span></>}
+      </div>
+      <WizBtn label="US Positive — Appendicitis" color={C.red} bg={C.redBg} border={C.redBorder} selected={usResult === "positive"} onClick={() => { setUsResult("positive"); setMrResult(null); }} />
+      <WizBtn label="US Negative — Appendix seen, normal" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={usResult === "negative"} onClick={() => { setUsResult("negative"); setMrResult(null); }} />
+      <WizBtn label="Inconclusive — Appendix not seen" sub="→ Consider MRI or CT" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={usResult === "inconclusive"} onClick={() => { setUsResult("inconclusive"); setMrResult(null); }} />
+      <TeachBox id="ultrasound" teaching={teaching} />
+    </Card>)}
+
+    {usResult === "positive" && (<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Appendicitis Confirmed">
+      1. <strong>Consult Pediatric Surgery</strong><br />
+      2. Broad-spectrum antibiotics if surgery requests or perforation:<br />
+      <strong>Ceftriaxone</strong> {doses ? doses.ceftri + " mg" : "50 mg/kg"} IV q24h + <strong>Metronidazole</strong> {doses ? doses.flagyl + " mg" : "30 mg/kg/day"} IV q24h<br />
+      3. Maintenance IV fluids · <strong>→ Admit</strong>
+    </Alert>)}
+
+    {usResult === "negative" && (<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Likely NOT Appendicitis">
+      1. Repeat PE · Consider alternative diagnoses<br />2. PO challenge<br />3. Consider discharge vs observation
+    </Alert>)}
+
+    {/* ── STEP 3: ADVANCED IMAGING ── */}
+    {usResult === "inconclusive" && (<Card title="Step 3 — Advanced Imaging" color={C.purple}>
+      <div style={{ fontSize: 13, marginBottom: 10 }}><strong>MRI abdomen</strong> (preferred — avoids radiation, 10–15 min)<br /><strong>CT abdomen</strong> if: age {'<'}5, cannot hold still, suspected rupture, obese</div>
+      <WizBtn label="MR/CT Positive — Appendicitis confirmed" sub="Wall thickening, appendix >6mm, appendicolith, fat stranding" color={C.red} bg={C.redBg} border={C.redBorder} selected={mrResult === "positive"} onClick={() => setMrResult("positive")} />
+      <WizBtn label="MR/CT Negative — No appendicitis" sub="Normal appendix or not seen with no RLQ fat stranding/free fluid" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={mrResult === "negative"} onClick={() => setMrResult("negative")} />
+      <WizBtn label="MR/CT Equivocal — Diagnosis uncertain" sub="Appendix not visualized AND RLQ fat stranding or free fluid" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={mrResult === "equivocal"} onClick={() => setMrResult("equivocal")} />
+      <TeachBox id="mrResults" teaching={teaching} />
+    </Card>)}
+
+    {mrResult === "positive" && (<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Appendicitis Confirmed">
+      1. <strong>Consult Pediatric Surgery</strong><br />
+      2. Antibiotics: <strong>Ceftriaxone</strong> {doses ? doses.ceftri + " mg" : "50 mg/kg"} + <strong>Metronidazole</strong> {doses ? doses.flagyl + " mg" : "30 mg/kg/day"}<br />
+      <strong>→ Admit</strong>
+    </Alert>)}
+    {mrResult === "negative" && (<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Appendicitis Unlikely">Repeat PE · Consider alternative diagnoses · PO challenge · Consider discharge vs observation</Alert>)}
+    {mrResult === "equivocal" && (<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Diagnosis Uncertain">
+      <strong>Consult Pediatric Surgery</strong><br />Avoid empiric antibiotics unless suspected perforation.<br />Disposition per surgical recommendation.
+    </Alert>)}
+
+    {/* RESET */}
+    {scored && (<div style={{ textAlign: "center", marginTop: 8 }}><button onClick={reset} style={{ padding: "10px 24px", background: C.white, border: "1.5px solid " + C.rule, borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, color: C.muted }}>↻ Reset Walk-Through</button></div>)}
+
+    <PathwayFlowchart />
+  </Pad>);
+}
+
 // ── Main App ──
 function App() {
+  const [mode, setMode] = useState("wizard");
   const [tab, setTab] = useState("triage");
   const [teaching, setTeaching] = useState(false);
   const [weightKg, setWeightKg] = useState("");
@@ -227,6 +472,8 @@ function App() {
     return { text: "High Risk (≥7)", color: C.red, bg: C.redBg, border: C.redBorder };
   }
 
+  const { maxW } = useResponsive();
+
   const tabs = [
     { key: "triage", label: "Triage" },
     { key: "score", label: "Scoring" },
@@ -237,9 +484,9 @@ function App() {
   ];
 
   return (
-    <div style={{ maxWidth: 520, margin: "0 auto", fontFamily: "'IBM Plex Sans', -apple-system, sans-serif", background: C.paper, minHeight: "100vh" }}>
-      <Header teaching={teaching} onToggleTeach={() => setTeaching(t => !t)} />
-      <TabBar current={tab} tabs={tabs} onChange={setTab} />
+    <div style={{ maxWidth: maxW, margin: "0 auto", fontFamily: "'IBM Plex Sans', -apple-system, sans-serif", background: C.paper, minHeight: "100vh", transition: "max-width 0.2s" }}>
+      <Header teaching={teaching} onToggleTeach={() => setTeaching(t => !t)} mode={mode} onToggleMode={() => setMode(m => m === "wizard" ? "reference" : "wizard")} />
+      {mode === "reference" && <TabBar current={tab} tabs={tabs} onChange={setTab} />}
 
       {/* ── PERSISTENT PATIENT BAR ── */}
       <div style={{ background: C.white, borderBottom: `1px solid ${C.rule}`, padding: "10px 20px", display: "flex", gap: 10, alignItems: "center" }}>
@@ -258,8 +505,10 @@ function App() {
         {wt > 0 && <div style={{ fontSize: 11, color: C.greenMid, fontWeight: 600, alignSelf: "flex-end", paddingBottom: 8 }}>✓</div>}
       </div>
 
+      {mode === "wizard" && <AppyWizard teaching={teaching} doses={doses} ageYears={ageYears} />}
+
       {/* ── TAB: TRIAGE ── */}
-      {tab === "triage" && (
+      {mode === "reference" && tab === "triage" && (
         <Pad>
           <Q text="Triage & Initial Interventions" sub="Ages 3–18 with RLQ pain and/or suspected appendicitis" />
           <TeachBox id="epidemiology" teaching={teaching} />
@@ -301,7 +550,7 @@ function App() {
       )}
 
       {/* ── TAB: SCORING ── */}
-      {tab === "score" && (
+      {mode === "reference" && tab === "score" && (
         <Pad>
           <Q text="Clinical Appendicitis Scoring" sub="Apply a scoring tool to guide risk stratification and imaging" />
           <TeachBox id="scoring" teaching={teaching} />
@@ -382,7 +631,7 @@ function App() {
       )}
 
       {/* ── TAB: DECISIONS ── */}
-      {tab === "decision" && (
+      {mode === "reference" && tab === "decision" && (
         <Pad>
           <Q text="Decision Tree by Risk" sub="Actions based on clinical scoring result" />
 
@@ -489,172 +738,12 @@ function App() {
             </div>
           </Card>
 
-          {/* ── PATHWAY OVERVIEW FLOWCHART ── */}
-          {(() => {
-            const gC = "#16a34a", gBg = "#f0fdf4", gBd = "#86efac";
-            const aC = "#d97706", aBg = "#fffbeb", aBd = "#fcd34d";
-            const rC = "#b91c1c", rBg = "#fef2f2", rBd = "#fca5a5";
-            const bC = "#1d4ed8", bBg = "#eff6ff", bBd = "#93c5fd";
-            const pC = "#6b21a8", pBg = "#faf5ff", pBd = "#c4b5fd";
-            const mC = "#6b7280";
-
-            const Arrow = ({x1,y1,x2,y2,color="#94a3b8"}) => (
-              <g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5} /><polygon points={`${x2},${y2} ${x2-3.5},${y2-6} ${x2+3.5},${y2-6}`} fill={color} /></g>
-            );
-            const Box = ({x,y,w,h,fill,stroke,sw=1,radius=6,children}) => (
-              <g><rect x={x} y={y} width={w} height={h} rx={radius} fill={fill} stroke={stroke} strokeWidth={sw} />{children}</g>
-            );
-            const T = ({x,y,size=9,weight=600,color="#1a1d21",anchor="middle",children}) => (
-              <text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={color} fontFamily="'IBM Plex Sans',sans-serif">{children}</text>
-            );
-
-            return (
-              <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 4 }}>Pathway Overview</div>
-                <div style={{ fontSize: 11, color: C.muted, marginBottom: 6 }}>Suspected appendicitis · Ages 3–18</div>
-                <div style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: 6, overflow: "hidden" }}>
-                  <svg viewBox="0 0 480 440" style={{ width: "100%", display: "block" }}>
-                    <rect width={480} height={440} fill="#fafaf8" rx={6} />
-
-                    {/* ── ROW 1: Arrival ── */}
-                    <Box x={115} y={6} w={250} h={28} fill={bBg} stroke={bBd} sw={1.5} radius={14}>
-                      <T x={240} y={18} size={9} weight={700} color={bC}>ARRIVAL — TRIAGE ESI III</T>
-                      <T x={240} y={28} size={6} weight={400} color={mC}>Vitals · Ondansetron ODT · LMX · Labs + IV</T>
-                    </Box>
-                    <Arrow x1={240} y1={34} x2={240} y2={46} />
-
-                    {/* ── ROW 2: Score ── */}
-                    <Box x={130} y={46} w={220} h={22} fill={pBg} stroke={pBd} sw={1.5}>
-                      <T x={240} y={56} size={8} weight={700} color={pC}>APPLY CLINICAL SCORE</T>
-                      <T x={240} y={64} size={6} color={mC}>PAS · Alvarado · pARC</T>
-                    </Box>
-                    <Arrow x1={240} y1={68} x2={240} y2={80} />
-
-                    {/* ── ROW 3: Risk diamond ── */}
-                    <g transform="translate(240,94)">
-                      <polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2} />
-                      <T x={0} y={1} size={7} weight={700}>Risk Level?</T>
-                    </g>
-
-                    {/* Branch lines */}
-                    <line x1={185} y1={94} x2={72} y2={94} stroke="#94a3b8" strokeWidth={1} />
-                    <Arrow x1={72} y1={94} x2={72} y2={118} color={gC} />
-                    <Arrow x1={240} y1={108} x2={240} y2={118} color={aC} />
-                    <line x1={295} y1={94} x2={408} y2={94} stroke="#94a3b8" strokeWidth={1} />
-                    <Arrow x1={408} y1={94} x2={408} y2={118} color={rC} />
-
-                    {/* ── LOW RISK ── */}
-                    <Box x={10} y={118} w={124} h={22} fill={gBg} stroke={gBd} sw={1.5}>
-                      <T x={72} y={127} size={8} weight={700} color={gC}>LOW RISK</T>
-                      <T x={72} y={136} size={6} color={mC}>PAS/Alv ≤3 · pARC &lt;5%</T>
-                    </Box>
-                    <Arrow x1={72} y1={140} x2={72} y2={150} color={gC} />
-                    <Box x={10} y={150} w={124} h={22} fill={gBg} stroke={gBd} sw={1.5}>
-                      <T x={72} y={160} size={8} weight={700} color={gC}>DISCHARGE</T>
-                      <T x={72} y={169} size={5} color={mC}>PCP f/u &lt;24h · Return precautions</T>
-                    </Box>
-
-                    {/* ── INTERMEDIATE ── */}
-                    <Box x={152} y={118} w={176} h={22} fill={aBg} stroke={aBd} sw={1.5}>
-                      <T x={240} y={127} size={8} weight={700} color={aC}>INTERMEDIATE / HIGH</T>
-                      <T x={240} y={136} size={6} color={mC}>PAS/Alv 4+ · pARC 15%+</T>
-                    </Box>
-                    <Arrow x1={240} y1={140} x2={240} y2={150} color={aC} />
-
-                    <Box x={152} y={150} w={176} h={20} fill={C.white} stroke={aBd}>
-                      <T x={240} y={160} size={7} weight={600} color={aC}>NPO · IV · Pain meds · Fluid bolus</T>
-                      <T x={240} y={168} size={6} color={mC}>Consider IV analgesia</T>
-                    </Box>
-                    <Arrow x1={240} y1={170} x2={240} y2={182} color={aC} />
-
-                    {/* US */}
-                    <Box x={165} y={182} w={150} h={18} fill={bBg} stroke={bBd} sw={1.5}>
-                      <T x={240} y={193} size={8} weight={700} color={bC}>US ABDOMEN</T>
-                    </Box>
-                    <Arrow x1={195} y1={200} x2={80} y2={218} color={gC} />
-                    <Arrow x1={240} y1={200} x2={240} y2={218} color={aC} />
-                    <Arrow x1={285} y1={200} x2={400} y2={218} color={rC} />
-
-                    {/* US Results */}
-                    <Box x={20} y={218} w={120} h={22} fill={gBg} stroke={gBd}>
-                      <T x={80} y={227} size={7} weight={700} color={gC}>US NEGATIVE</T>
-                      <T x={80} y={236} size={6} color={mC}>Appendix seen, normal</T>
-                    </Box>
-                    <Arrow x1={80} y1={240} x2={80} y2={250} color={gC} />
-                    <Box x={20} y={250} w={120} h={18} fill={gBg} stroke={gBd}>
-                      <T x={80} y={261} size={6} weight={600} color={gC}>Alt dx · PO challenge · D/C vs obs</T>
-                    </Box>
-
-                    <Box x={168} y={218} w={144} h={22} fill={aBg} stroke={aBd}>
-                      <T x={240} y={227} size={7} weight={700} color={aC}>INCONCLUSIVE</T>
-                      <T x={240} y={236} size={6} color={mC}>Appendix not seen</T>
-                    </Box>
-                    <Arrow x1={240} y1={240} x2={240} y2={252} color={aC} />
-
-                    {/* MRI/CT */}
-                    <Box x={168} y={252} w={144} h={18} fill={pBg} stroke={pBd}>
-                      <T x={240} y={263} size={7} weight={700} color={pC}>MRI (preferred) or CT</T>
-                    </Box>
-                    <Arrow x1={195} y1={270} x2={148} y2={284} color={gC} />
-                    <Arrow x1={240} y1={270} x2={240} y2={284} color={aC} />
-                    <Arrow x1={285} y1={270} x2={332} y2={284} color={rC} />
-
-                    {/* MRI results */}
-                    <Box x={108} y={284} w={76} h={18} fill={gBg} stroke={gBd}>
-                      <T x={146} y={295} size={6} weight={700} color={gC}>MR NEG</T>
-                    </Box>
-                    <Box x={202} y={284} w={76} h={18} fill={aBg} stroke={aBd}>
-                      <T x={240} y={295} size={6} weight={700} color={aC}>EQUIVOCAL</T>
-                    </Box>
-                    <Box x={296} y={284} w={76} h={18} fill={rBg} stroke={rBd}>
-                      <T x={334} y={295} size={6} weight={700} color={rC}>MR POS</T>
-                    </Box>
-
-                    <Arrow x1={240} y1={302} x2={240} y2={316} color={aC} />
-                    <Arrow x1={334} y1={302} x2={400} y2={316} color={rC} />
-
-                    {/* Equivocal → surgery consult */}
-                    <Box x={184} y={316} w={112} h={18} fill={aBg} stroke={aBd}>
-                      <T x={240} y={327} size={6} weight={600} color={aC}>Consult Peds Surgery</T>
-                    </Box>
-
-                    {/* US POSITIVE */}
-                    <Box x={340} y={218} w={120} h={22} fill={rBg} stroke={rBd}>
-                      <T x={400} y={227} size={7} weight={700} color={rC}>US POSITIVE</T>
-                      <T x={400} y={236} size={6} color={mC}>Appendicitis</T>
-                    </Box>
-                    <Arrow x1={400} y1={240} x2={400} y2={316} color={rC} />
-
-                    {/* Appendicitis confirmed block */}
-                    <Box x={340} y={316} w={120} h={34} fill={rBg} stroke={rBd} sw={2}>
-                      <T x={400} y={327} size={8} weight={700} color={rC}>APPENDICITIS</T>
-                      <T x={400} y={338} size={6} color={C.ink}>Consult Peds Surgery</T>
-                      <T x={400} y={347} size={6} color={mC}>Abx if perf or per surgery</T>
-                    </Box>
-
-                    {/* High risk — appendix not seen path */}
-                    <Box x={340} y={118} w={128} h={22} fill={rBg} stroke={rBd} sw={1.5}>
-                      <T x={404} y={127} size={8} weight={700} color={rC}>HIGH RISK</T>
-                      <T x={404} y={136} size={6} color={mC}>PAS/Alv ≥7 · pARC ≥75%</T>
-                    </Box>
-                    <Arrow x1={404} y1={140} x2={404} y2={150} color={rC} />
-                    <Box x={346} y={150} w={116} h={18} fill={C.white} stroke={rBd}>
-                      <T x={404} y={160} size={6} weight={600} color={rC}>NPO · IV · Pain · Bolus · US</T>
-                    </Box>
-
-                    {/* Note about high-risk false neg */}
-                    <T x={404} y={178} size={5} weight={400} color={rC} anchor="middle">⚠ 19% false-neg US in high risk</T>
-
-                  </svg>
-                </div>
-              </div>
-            );
-          })()}
+          <PathwayFlowchart />
         </Pad>
       )}
 
       {/* ── TAB: MEDS ── */}
-      {tab === "meds" && (
+      {mode === "reference" && tab === "meds" && (
         <Pad>
           <Q text="Medication Dosing" sub={doses ? `Calculated for ${doses.w} kg` : "Enter weight above for calculations"} />
 
@@ -710,7 +799,7 @@ function App() {
       )}
 
       {/* ── TAB: IMAGING ── */}
-      {tab === "imaging" && (
+      {mode === "reference" && tab === "imaging" && (
         <Pad>
           <Q text="Imaging Evidence Summary" sub="Modality selection and test characteristics" />
 
@@ -767,7 +856,7 @@ function App() {
       )}
 
       {/* ── TAB: SPECIAL ── */}
-      {tab === "special" && (
+      {mode === "reference" && tab === "special" && (
         <Pad>
           <Q text="Special Considerations" sub="Atypical presentations in younger children" />
           <TeachBox id="youngChildren" teaching={teaching} />
