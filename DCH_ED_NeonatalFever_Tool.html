@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neonatal Fever — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#b91c1c",pLight:"#fef2f2",pBorder:"#fca5a5",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{title:"Pathway Rationale",content:"Infants ≤28 days with fever have the highest rates of invasive bacterial infection among all febrile infants. This pathway stratifies by age (0–21 vs 22–28 days) and uses inflammatory markers (ANC and procalcitonin) to guide LP necessity, antibiotic selection, and disposition. Per AAP 2021, infants 8–21 days have bacteremia rates of 4.1% and meningitis incidence of 0.5–1.3%, while 22–28 day infants have a marginally lower bacteremia rate of 2.8%."},
+temperature:{title:"Temperature Measurement",content:"Rectal thermometry is the gold standard. Studies show greatest discordance in young children between rectal and temporal measurements. Parental report of tactile fever is likely accurate (sensitivity 82–89%, specificity 76–86%). Fever above 38.5°C increases likelihood of invasive bacterial infection."},
+urine:{title:"Urine Collection",content:"Bladder catheterization or suprapubic aspiration is required per AAP — bag collection has a false-positive rate up to 67%. UA is positive if LE trace+, nitrites+, or >5 WBC or bacteria on micro. Recent studies show UA with micro has excellent sensitivity (LE ≥94%)."},
+lp:{title:"LP Decision by Age",content:"0–21 days: LP should be performed regardless of inflammatory markers — meningitis incidence 0.5–1.3%. 22–28 days: LP required when ANC >4000 or PCT >0.5. LP MAY be performed when markers are negative. If LP not performed and no HSV risk: observe in hospital, may give ceftriaxone."},
+hsv:{title:"HSV Risk Factors",content:"Neonatal HSV incidence ~2–10/100,000 live births, but disseminated disease has 29% 1-year mortality and 70% of CNS disease patients develop abnormal neurologic outcomes. Risk factors: vesicular lesions, ill appearance, maternal HSV, HSV exposure, hypothermia, seizures/abnl neuro, thrombocytopenia, hepatitis, CSF pleocytosis with negative gram stain. Empiric acyclovir for all febrile neonates is not cost-effective — use risk factors to guide testing and treatment."},
+antibiotics:{title:"Antibiotic Selection",content:"0–21d without meningitis/HSV: Ampicillin + Gentamicin covers GBS, E. coli, Listeria. With meningitis/HSV concern: add Acyclovir, meningitic-dose Ampicillin (75 mg/kg) + cephalosporin. Ceftazidime replaces ceftriaxone ≤14 days or with hyperbilirubinemia (kernicterus risk). 22–28d: ceftriaxone monotherapy. NNT ~50–100 for occult bacteremia in well-appearing 22–28d group."},
+disposition:{title:"Disposition Logic",content:"All 0–21d infants admitted. 22–28d: positive markers → LP + ceftriaxone + admit. Negative markers + normal LP → may observe, may give ceftriaxone, or may D/C with ceftriaxone dose and 24h follow-up. CSF pleocytosis or HSV risk → full triple therapy + admit. Toxic/ill → resuscitate, full workup + HSV, admit NICU/PICU."},
+pathogens:{title:"Neonatal Pathogens",content:"Early-onset: E. coli (+++), GBS (+++), Klebsiella (+), Enterobacter (+), Listeria (+). Late-onset adds Staph aureus (+++) and Enterococcus (+)."},
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,amp50:Math.round(wt*50),amp75:Math.round(wt*75),gent:Math.round(wt*5*10)/10,ceftri50:Math.round(wt*50),ceftaz50:Math.round(wt*50),acyclovir:Math.round(wt*20),apapPO:Math.round(wt*12.5*10)/10,apapPR:Math.round(wt*15),d10:Math.round(wt*5),bolus:Math.round(wt*10)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+// ── PRIMITIVES ──
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Neonatal Fever / Suspected Sepsis</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · March 2022</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;var t=TEACH[id];return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink}}>{t.content}</div></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+
+// ── WIZARD CHOICE BUTTON ──
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+function WizNav({step,total,onBack,onNext,canNext}){return(<div style={{display:"flex",gap:10,marginTop:16,alignItems:"center"}}>{step>0&&<button onClick={onBack} style={{padding:"10px 20px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>← Back</button>}<div style={{flex:1,textAlign:"center",fontSize:11,color:C.muted}}>Step {step+1} of {total}</div>{canNext&&<button onClick={onNext} style={{padding:"10px 20px",background:C.primary,border:"none",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,color:C.white}}>Next →</button>}</div>)}
+
+// ═══════════════════════════════
+// FLOWCHART (shared between Wizard and Reference)
+// ═══════════════════════════════
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-3.5)+","+(p.y2-6)+" "+(p.x2+3.5)+","+(p.y2-6)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Infant ≤28 days · Temp ≥38.0°C</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 440" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={440} fill="#fafaf8" rx={6}/>
+          <Box x={120} y={6} w={240} h={28} fill={rBg} stroke={rBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={rC}>FEBRILE NEONATE ≤28 DAYS</T><T x={240} y={28} size={6} color={mC}>CBG · SpO₂ · Cath UA · IV · Labs · LP setup</T></Box>
+          <Arrow x1={240} y1={34} x2={240} y2={48}/>
+          <g transform="translate(240,62)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Exclusions?</T></g>
+          <line x1={295} y1={62} x2={410} y2={62} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={410} y1={62} x2={410} y2={78} color={mC}/>
+          <Box x={370} y={78} w={80} h={24} fill="#f1f5f9" stroke="#e2e8f0"><T x={410} y={92} size={7} weight={600} color={mC}>OFF PATH</T></Box>
+          <Arrow x1={240} y1={76} x2={240} y2={92}/>
+          <g transform="translate(240,106)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Toxic/Ill?</T></g>
+          <line x1={295} y1={106} x2={410} y2={106} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={410} y1={106} x2={410} y2={122} color={rC}/>
+          <Box x={360} y={122} w={100} h={36} fill={rBg} stroke={rBd} sw={2}><T x={410} y={133} size={7} weight={700} color={rC}>RESUSCITATE</T><T x={410} y={143} size={6}>Acy+Amp+Ceph</T><T x={410} y={153} size={6} weight={700} color={rC}>→ NICU/PICU</T></Box>
+          <Arrow x1={240} y1={120} x2={240} y2={140}/>
+          <T x={240} y={137} size={6} color={gC} weight={600}>Well-appearing</T>
+          <g transform="translate(240,156)"><polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Home non-rectal,</T><T x={0} y={7} size={6} weight={700}>afebrile in ED?</T></g>
+          <line x1={305} y1={156} x2={410} y2={156} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={410} y1={156} x2={410} y2={172} color={blC}/>
+          <Box x={365} y={172} w={90} h={28} fill={blBg} stroke={blBd}><T x={410} y={184} size={6} weight={700} color={blC}>OBSERVE</T><T x={410} y={194} size={5.5} color={mC}>Serial temps, PO trial</T></Box>
+          <Arrow x1={240} y1={170} x2={240} y2={192}/>
+          <Box x={160} y={192} w={160} h={20} fill={tBg} stroke={tBd} radius={10}><T x={240} y={205} size={8} weight={700} color={tC}>AGE STRATIFICATION</T></Box>
+          <Arrow x1={190} y1={212} x2={110} y2={236} color={rC}/>
+          <Arrow x1={290} y1={212} x2={370} y2={236} color={blC}/>
+          <Box x={20} y={236} w={180} h={22} fill={rBg} stroke={rBd} sw={1.5}><T x={110} y={246} size={8} weight={700} color={rC}>0–21 DAYS</T><T x={110} y={255} size={6} color={mC}>LP all · Amp+Gent · Admit</T></Box>
+          <Arrow x1={110} y1={258} x2={110} y2={274}/>
+          <g transform="translate(110,288)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>CSF+ or</T><T x={0} y={7} size={6} weight={700}>HSV risk?</T></g>
+          <Arrow x1={55} y1={288} x2={20} y2={312} color={rC}/>
+          <Arrow x1={165} y1={288} x2={185} y2={312} color={aC}/>
+          <Box x={2} y={312} w={80} h={38} fill={rBg} stroke={rBd}><T x={42} y={323} size={6} weight={700} color={rC}>YES</T><T x={42} y={333} size={5.5}>Acy+Amp75+Ceph</T><T x={42} y={343} size={5.5} weight={700} color={rC}>Admit</T></Box>
+          <Box x={140} y={312} w={80} h={38} fill={aBg} stroke={aBd}><T x={180} y={323} size={6} weight={700} color={aC}>NO</T><T x={180} y={333} size={5.5}>Amp50 + Gent</T><T x={180} y={343} size={5.5}>Admit · Observe</T></Box>
+          <Box x={280} y={236} w={180} h={22} fill={blBg} stroke={blBd} sw={1.5}><T x={370} y={246} size={8} weight={700} color={blC}>22–28 DAYS</T><T x={370} y={255} size={6} color={mC}>Labs → markers drive LP</T></Box>
+          <Arrow x1={370} y1={258} x2={370} y2={274}/>
+          <g transform="translate(370,288)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>ANC &gt;4000 or</T><T x={0} y={7} size={6} weight={700}>PCT &gt;0.5?</T></g>
+          <Arrow x1={315} y1={288} x2={290} y2={312} color={rC}/>
+          <Arrow x1={425} y1={288} x2={445} y2={312} color={gC}/>
+          <Box x={260} y={312} w={72} h={38} fill={rBg} stroke={rBd}><T x={296} y={323} size={6} weight={700} color={rC}>YES</T><T x={296} y={333} size={5.5}>LP · Ceftri</T><T x={296} y={343} size={5.5} weight={700} color={rC}>Admit</T></Box>
+          <Box x={410} y={312} w={68} h={38} fill={gBg} stroke={gBd}><T x={444} y={323} size={6} weight={700} color={gC}>NO</T><T x={444} y={333} size={5.5}>May LP</T><T x={444} y={343} size={5.5} color={gC}>Obs / D/C</T></Box>
+          <Box x={20} y={370} w={440} h={24} fill={blBg} stroke={blBd} radius={8}><T x={240} y={380} size={7} weight={700} color={blC}>ALL 0–21d ADMITTED · 22–28d RISK-STRATIFIED BY ANC/PCT</T><T x={240} y={390} size={6} color={mC}>Meningitis 0.5–1.3% in &lt;22d · Bacteremia 2.8% in 22–28d · HSV risk guides acyclovir</T></Box>
+          <Box x={20} y={406} w={440} h={24} fill="#f1f5f9" stroke="#e2e8f0" radius={6}><T x={130} y={416} size={7} weight={700} color={rC}>ADMIT: abx within 60 min if toxic</T><T x={130} y={426} size={6} color={mC}>All 0–21d · Pos markers 22–28d · HSV/CSF+</T><T x={370} y={416} size={7} weight={700} color={gC}>MAY D/C: 22–28d neg markers</T><T x={370} y={426} size={6} color={mC}>Ceftri dose + 24hr follow-up</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════
+// WALK-THROUGH WIZARD
+// ═══════════════════════════════
+function Wizard({teaching,weightKg,doses}){
+  var s=useState(0),step=s[0],setStep=s[1];
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),toxic=s2[0],setToxic=s2[1];
+  var s3=useState(null),homeTemp=s3[0],setHomeTemp=s3[1];
+  var s4=useState(null),age=s4[0],setAge=s4[1];
+  var s5=useState(null),markers=s5[0],setMarkers=s5[1];
+  var s6=useState(null),csf=s6[0],setCsf=s6[1];
+  var s7=useState(null),hsvRisk=s7[0],setHsvRisk=s7[1];
+
+  var totalSteps=7;
+
+  // Determine which step is actually relevant based on prior answers
+  function getActiveStep(){
+    if(excl===null)return 0;
+    if(excl==="yes")return 0; // terminal
+    if(toxic===null)return 1;
+    if(toxic==="yes")return 1; // terminal
+    if(homeTemp===null)return 2;
+    if(homeTemp==="yes")return 2; // terminal
+    if(age===null)return 3;
+    if(age==="0-21"){
+      if(csf===null)return 4;
+      return 4; // terminal with recommendation
+    }
+    if(age==="22-28"){
+      if(markers===null)return 5;
+      if(markers==="positive"){
+        if(csf===null)return 6;
+        return 6;
+      }
+      if(markers==="negative")return 5; // terminal
+    }
+    return 0;
+  }
+
+  var active=getActiveStep();
+
+  function reset(){setStep(0);setExcl(null);setToxic(null);setHomeTemp(null);setAge(null);setMarkers(null);setCsf(null);setHsvRisk(null);}
+
+  return(<Pad>
+    <Q text="Walk-Through" sub="Answer each question to get a patient-specific recommendation"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* STEP 0: Exclusion */}
+    <Card title="Step 1 — Inclusion Check" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>
+        <strong>Does the patient meet exclusion criteria?</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>Prematurity &lt;37 wk · Pre-existing conditions · Indwelling catheter · Focal infection (except AOM) · Bronchiolitis · Immunizations in 48h</span>
+      </div>
+      <WizBtn label="No exclusions — ON PATHWAY" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      <WizBtn label="Meets exclusion criteria — OFF PATHWAY" color={C.red} bg={C.redBg} border={C.redBorder} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+      {excl==="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Off Pathway">Manage individually. This tool does not apply to excluded patients.</Alert>}
+    </Card>
+
+    {/* STEP 1: Toxic */}
+    {excl==="no"&&(<Card title="Step 2 — Clinical Appearance" color={C.red}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Is the infant toxic or ill-appearing?</strong></div>
+      <WizBtn label="Yes — Toxic / Ill-Appearing" color={C.red} bg={C.redBg} border={C.redBorder} selected={toxic==="yes"} onClick={function(){setToxic("yes")}}/>
+      <WizBtn label="No — Well-Appearing" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={toxic==="no"} onClick={function(){setToxic("no")}}/>
+      {toxic==="yes"&&(<div style={{marginTop:8}}>
+        <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="RESUSCITATE">
+          <strong>Aggressive fluid resuscitation</strong> (NS {doses?doses.bolus+"mL":"10 mL/kg"} PRN)<br/>
+          Full sepsis workup including HSV PCR/swabs<br/>
+          <strong>LP</strong> (CSF for gram stain, cell count, protein, glucose, culture, HSV PCR, enterovirus)<br/>
+          <strong style={{color:C.red}}>IV Acyclovir {doses?doses.acyclovir+" mg":"20 mg/kg"} + Ampicillin {doses?doses.amp75+" mg":"75 mg/kg"} + Ceftazidime {doses?doses.ceftaz50+" mg":"50 mg/kg"}</strong><br/>
+          → <strong>Admit NICU/PICU</strong>
+        </Alert>
+      </div>)}
+      <TeachBox id="temperature" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 2: Home temp */}
+    {excl==="no"&&toxic==="no"&&(<Card title="Step 3 — Temperature Confirmation" color={C.blue}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Was the home temperature measured non-rectally/non-axillary AND infant is afebrile in ED?</strong></div>
+      <WizBtn label="Yes — Non-standard home temp, afebrile in ED" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={homeTemp==="yes"} onClick={function(){setHomeTemp("yes")}}/>
+      <WizBtn label="No — Confirmed fever (rectal/axillary ≥38.0°C)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={homeTemp==="no"} onClick={function(){setHomeTemp("no")}}/>
+      {homeTemp==="yes"&&<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="👁" title="Observation Period">Consider period of observation in ED with serial temp checks and PO trial. Do not give antibiotics if full ROS not performed.</Alert>}
+    </Card>)}
+
+    {/* STEP 3: Age */}
+    {excl==="no"&&toxic==="no"&&homeTemp==="no"&&(<Card title="Step 4 — Age Stratification" color={C.primary}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>What is the infant's age?</strong></div>
+      <WizBtn label="0–21 days" sub="Higher risk — LP all, empiric abx, admit" color={C.red} bg={C.redBg} border={C.redBorder} selected={age==="0-21"} onClick={function(){setAge("0-21")}}/>
+      <WizBtn label="22–28 days" sub="Inflammatory markers drive management" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={age==="22-28"} onClick={function(){setAge("22-28")}}/>
+      <TeachBox id="lp" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 4a: 0-21 days — CSF/HSV */}
+    {excl==="no"&&toxic==="no"&&homeTemp==="no"&&age==="0-21"&&(<Card title="Step 5 — 0–21 Day Workup" color={C.amberMid}>
+      <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
+        <strong>All 0–21 day infants:</strong> Perform LP, start antibiotics, admit.<br/>
+        <strong>Does this infant have CSF pleocytosis or HSV risk factors?</strong>
+      </div>
+      <WizBtn label="Yes — CSF pleocytosis or HSV risk factors" sub="Triple therapy: Acyclovir + Ampicillin 75 + Cephalosporin" color={C.red} bg={C.redBg} border={C.redBorder} selected={csf==="positive"} onClick={function(){setCsf("positive")}}/>
+      <WizBtn label="No — Reassuring CSF, no HSV risk" sub="Ampicillin 50 + Gentamicin" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={csf==="negative"} onClick={function(){setCsf("negative")}}/>
+
+      {csf==="positive"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Triple Therapy — ADMIT">
+        <strong>Acyclovir</strong> {doses?doses.acyclovir+" mg":"20 mg/kg"} IV<br/>
+        <strong>Ampicillin</strong> {doses?doses.amp75+" mg":"75 mg/kg"} IV (meningitic dose)<br/>
+        <strong>{age==="0-21"?"Ceftazidime":"Ceftriaxone"}</strong> {doses?doses.ceftaz50+" mg":"50 mg/kg"} IV<br/>
+        <span style={{fontSize:11,color:C.muted}}>Ceftazidime if ≤14 days or hyperbilirubinemia · Ceftriaxone if &gt;14 days, no hyperbilirubinemia</span><br/>
+        <strong>→ Admit</strong>
+      </Alert>)}
+
+      {csf==="negative"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🟡" title="Standard Therapy — ADMIT">
+        <strong>Ampicillin</strong> {doses?doses.amp50+" mg":"50 mg/kg"} IV<br/>
+        <strong>Gentamicin</strong> {doses?doses.gent+" mg":"5 mg/kg"} IV<br/>
+        <strong>→ Admit for observation</strong>
+      </Alert>)}
+      <TeachBox id="hsv" teaching={teaching}/>
+      <TeachBox id="antibiotics" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 5: 22-28 days — Markers */}
+    {excl==="no"&&toxic==="no"&&homeTemp==="no"&&age==="22-28"&&(<Card title="Step 5 — Inflammatory Markers (22–28 Days)" color={C.blue}>
+      <div style={{fontSize:13,marginBottom:10}}>
+        <strong>ANC and Procalcitonin results?</strong>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:12}}>
+        <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px",textAlign:"center"}}><div style={{fontSize:12,fontWeight:700,color:C.red}}>Positive</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:700,color:C.red,marginTop:4}}>ANC &gt;4000</div><div style={{fontSize:11,color:C.muted}}>OR</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:700,color:C.red}}>PCT &gt;0.5</div></div>
+        <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px",textAlign:"center"}}><div style={{fontSize:12,fontWeight:700,color:C.greenMid}}>Negative</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:700,color:C.greenMid,marginTop:4}}>ANC ≤4000</div><div style={{fontSize:11,color:C.muted}}>AND</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:700,color:C.greenMid}}>PCT ≤0.5</div></div>
+      </div>
+      <WizBtn label="Positive — ANC >4000 or PCT >0.5" sub="LP required → Ceftriaxone → Admit" color={C.red} bg={C.redBg} border={C.redBorder} selected={markers==="positive"} onClick={function(){setMarkers("positive")}}/>
+      <WizBtn label="Negative — ANC ≤4000 AND PCT ≤0.5" sub="LP may be deferred → May discharge with follow-up" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={markers==="negative"} onClick={function(){setMarkers("negative")}}/>
+
+      {markers==="negative"&&(<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Low Risk — May Discharge">
+        Observe in hospital OR discharge with:<br/>
+        <strong>Ceftriaxone</strong> {doses?doses.ceftri50+" mg":"50 mg/kg"} IM/IV × 1<br/>
+        <strong>Follow-up within 24 hours</strong><br/>
+        <span style={{fontSize:11,color:C.muted}}>NNT ~50–100 for occult bacteremia in this group</span>
+      </Alert>)}
+
+      <TeachBox id="lp" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 6: 22-28 + positive markers — CSF */}
+    {excl==="no"&&toxic==="no"&&homeTemp==="no"&&age==="22-28"&&markers==="positive"&&(<Card title="Step 6 — CSF Result (22–28 Days, Positive Markers)" color={C.red}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>CSF result after LP?</strong></div>
+      <WizBtn label="CSF Pleocytosis (≥10 WBC) or HSV risk" sub="Triple therapy + Admit" color={C.red} bg={C.redBg} border={C.redBorder} selected={csf==="positive"} onClick={function(){setCsf("positive")}}/>
+      <WizBtn label="CSF Negative" sub="Ceftriaxone → Admit vs D/C with close follow-up" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={csf==="negative"} onClick={function(){setCsf("negative")}}/>
+      <WizBtn label="LP Not Obtained or Traumatic (≥10K RBC)" sub="Clinical judgment — observe vs admit" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={csf==="traumatic"} onClick={function(){setCsf("traumatic")}}/>
+
+      {csf==="positive"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Triple Therapy — ADMIT">
+        <strong>Acyclovir</strong> {doses?doses.acyclovir+" mg":"20 mg/kg"} IV + <strong>Ampicillin</strong> {doses?doses.amp75+" mg":"75 mg/kg"} IV + <strong>Ceftriaxone</strong> {doses?doses.ceftri50+" mg":"50 mg/kg"} IV<br/>
+        <strong>→ Admit</strong>
+      </Alert>)}
+      {csf==="negative"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🟡" title="Ceftriaxone — Admit vs D/C">
+        <strong>Ceftriaxone</strong> {doses?doses.ceftri50+" mg":"50 mg/kg"} IV daily<br/>
+        → <strong>Admit</strong> or <strong>discharge with close follow-up (12–24h)</strong>
+      </Alert>)}
+      {csf==="traumatic"&&(<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="🟣" title="Traumatic / Not Obtained">
+        <strong>Ceftriaxone</strong> {doses?doses.ceftri50+" mg":"50 mg/kg"} IV<br/>
+        If HSV risk factors → add Acyclovir + Ampicillin<br/>
+        → <strong>Admit vs discharge with close follow-up (clinical judgment)</strong>
+      </Alert>)}
+    </Card>)}
+
+    {/* RESET */}
+    {(excl!==null)&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
+
+    {/* FLOWCHART — always visible at bottom of wizard */}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+// ═══════════════════════════════
+// REFERENCE MODE TABS
+// ═══════════════════════════════
+function RefTriage({teaching}){return(<Pad>
+<Q text="Triage & Initial Assessment" sub="Infants ≤28 days with documented fever ≥38.0°C"/>
+<TeachBox id="overview" teaching={teaching}/>
+<Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Age 0–28 days with rectal or axillary temp ≥38.0°C at home, other facility, or ED. Also: afebrile in ED but home rectal/axillary temp ≥38.0°C.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Prematurity &lt;37 weeks · Pre-existing medical conditions · Indwelling foley or vascular catheter · Focal bacterial infections (except AOM) · Clinical bronchiolitis · Immunizations in last 48 hours</Alert></div></Card>
+<Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Level II</strong><br/>Full vitals including <strong>rectal temperature</strong> + naked weight<br/>Evaluate for infant warming table<br/>Continuous pulse oximetry, O₂ to maintain SpO₂ &gt;93%<br/><strong>IV with bedside CBG</strong><br/><strong>LMX to LP site</strong> + LP setup at bedside<br/><strong style={{color:C.red}}>Goal: antibiotics within 60 min for ill/toxic infants</strong></div><TeachBox id="temperature" teaching={teaching}/></Card>
+<Card title="Diagnostics — All Patients" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>CMP, POC electrolytes or <strong>CBG</strong> as needed<br/><strong>Catheter specimen UA with micro + mandatory culture</strong><br/>CBC with differential · <strong>Procalcitonin</strong> · Coagulopathy panel · Blood culture<br/><strong>CSF</strong> (gram stain, cell count, protein, glucose, culture, HSV panel, enterovirus PCR)<br/>CXR if tachypnea, hypoxia, or cough</div><TeachBox id="urine" teaching={teaching}/><TeachBox id="lp" teaching={teaching}/></Card>
+<Card title="HSV Risk Factors" color={C.amberMid}><div style={{marginTop:8}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>{["Vesicular lesions","Ill appearance","Maternal HSV infection","Exposure to HSV-infected person","Hypothermia","Seizures / abnl neuro","Thrombocytopenia","Hepatitis"].map(function(r){return <div key={r} style={{background:C.amberBg,border:"1px solid "+C.amberBorder,borderRadius:6,padding:"6px 8px",fontSize:12,fontWeight:500}}>{r}</div>})}</div><div style={{fontSize:12,color:C.muted,marginTop:6,textAlign:"center"}}>+ CSF pleocytosis with negative gram stain</div></div><TeachBox id="hsv" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+<Q text="Decision Tree" sub="Driven by age, appearance, inflammatory markers, CSF, and HSV risk"/>
+<Card title="Toxic / Ill-Appearing — Any Age" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Aggressive fluid resuscitation</strong> (NS 10 mL/kg PRN)<br/>Full sepsis workup including HSV PCR/swabs + LP<br/><strong>IV Acyclovir + Ampicillin + Ceftazidime</strong><br/><strong style={{color:C.red}}>→ Admit NICU/PICU</strong></div></Card>
+<Card title="Well-Appearing — 0–21 Days" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:C.red,fontWeight:600,marginBottom:8}}>All: Perform LP · Start antibiotics · Admit</div><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>CSF Pleocytosis or HSV Risk</div><div style={{fontSize:12,marginTop:2}}>Acyclovir 20 mg/kg + Ampicillin 75 mg/kg + Ceftazidime/Ceftriaxone → Admit</div></div><div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>No Meningitis/HSV Concern</div><div style={{fontSize:12,marginTop:2}}>Ampicillin 50 mg/kg + Gentamicin 5 mg/kg → Admit</div></div></div></Card>
+<Card title="Well-Appearing — 22–28 Days" color={C.blue}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>Positive Markers → LP → Ceftriaxone → Admit</div></div><div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>Negative Markers → LP may be deferred → Observe or D/C with ceftriaxone + 24h f/u</div></div></div><TeachBox id="antibiotics" teaching={teaching}/></Card>
+<PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+<Q text="Antibiotic Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+{!doses&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>)}
+<Card title="0–21 Days — No Meningitis/HSV" color={C.amberMid}><div style={{marginTop:8}}><DoseRow label="Ampicillin (50 mg/kg) IV" value={doses?doses.amp50:"—"} unit={doses?"mg":""}/><DoseRow label="Gentamicin (5 mg/kg) IV" value={doses?doses.gent:"—"} unit={doses?"mg":""}/></div></Card>
+<Card title="Any Age — CSF+ or HSV Concern" color={C.red}><div style={{marginTop:4}}><DoseRow label="Acyclovir (20 mg/kg) IV" value={doses?doses.acyclovir:"—"} unit={doses?"mg":""}/><DoseRow label="Ampicillin (75 mg/kg) IV — meningitic" value={doses?doses.amp75:"—"} unit={doses?"mg":""}/><DoseRow label="Ceftazidime (50 mg/kg) IV — if ≤14d or hyperBR" value={doses?doses.ceftaz50:"—"} unit={doses?"mg":""}/><DoseRow label="OR Ceftriaxone (50 mg/kg) IV — if >14d" value={doses?doses.ceftri50:"—"} unit={doses?"mg":""}/></div><TeachBox id="antibiotics" teaching={teaching}/></Card>
+<Card title="22–28 Days — No Meningitis/HSV" color={C.blue}><div style={{marginTop:8}}><DoseRow label="Ceftriaxone (50 mg/kg) IV daily" value={doses?doses.ceftri50:"—"} unit={doses?"mg":""}/></div></Card>
+<Card title="Supportive Care" color={C.primary} defaultOpen={false}><div style={{marginTop:8}}><DoseRow label="NS bolus (10 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/><DoseRow label="D10W (5 mL/kg) for CBG <50" value={doses?doses.d10:"—"} unit={doses?"mL":""}/><DoseRow label="Acetaminophen PO (12.5 mg/kg)" value={doses?doses.apapPO:"—"} unit={doses?"mg":""}/><DoseRow label="Acetaminophen PR (15 mg/kg)" value={doses?doses.apapPR:"—"} unit={doses?"mg":""}/></div></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+<Q text="Disposition & References"/>
+<Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT — NICU/PICU</div><div style={{fontSize:12,marginTop:2}}>Toxic/ill-appearing · Hemodynamic instability · Disseminated HSV · Respiratory failure · Seizures</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT — DNCC / WARD</div><div style={{fontSize:12,marginTop:2}}>All 0–21 day infants · 22–28d with positive markers · CSF pleocytosis or HSV risk</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>MAY DISCHARGE — 22–28 Days Only</div><div style={{fontSize:12,marginTop:2}}>Negative markers · Well-appearing · No HSV risk · Ceftriaxone IM/IV · Follow-up 24h</div></div>
+</div><TeachBox id="disposition" teaching={teaching}/></Card>
+<Card title="Common Neonatal Pathogens" color={C.blue}><div style={{marginTop:8,fontSize:11}}>
+<div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:4,marginBottom:4}}><div style={{fontWeight:700,fontSize:10,color:C.muted}}>PATHOGEN</div><div style={{fontWeight:700,fontSize:10,color:C.muted,textAlign:"center"}}>EARLY</div><div style={{fontWeight:700,fontSize:10,color:C.muted,textAlign:"center"}}>LATE</div></div>
+{[["E. coli","+++","++"],["Group B Strep","+++","+++"],["Klebsiella","+","+"],["Enterobacter","+","+"],["Staph aureus","+","+++"],["Listeria","+","+"],["Enterococcus","–","+"]].map(function(r){return <div key={r[0]} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:4,padding:"3px 0",borderBottom:"1px dashed "+C.rule}}><div style={{fontSize:12}}>{r[0]}</div><div style={{fontSize:12,textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{r[1]}</div><div style={{fontSize:12,textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{r[2]}</div></div>})}
+</div><TeachBox id="pathogens" teaching={teaching}/></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Pantell RH et al. AAP CPG: Febrile infants 8–60 days. <em>Pediatrics</em> 2021; 148(2).<br/>2. Kuppermann N et al. JAMA Pediatr 2019; 173(4):342-351.<br/>3. Gomez B et al. Pediatrics 2016; 138(2).<br/>4. Bruno E et al. J Emerg Med 2018; 54(2):261-265.<br/>5. Keuning M et al. Hosp Pediatr 2019; 9(10):808-812.<br/>6. Flagg EW et al. Pediatrics 2011; 127:e1-8.</div></Card>
+</Pad>)}
+
+// ═══════════════════════════════
+// APP
+// ═══════════════════════════════
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageDays=s5[0],setAgeDays=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decision",label:"Decisions"},{key:"meds",label:"Antibiotics"},{key:"special",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (days)</label><input type="number" inputMode="decimal" value={ageDays} onChange={function(e){setAgeDays(e.target.value)}} placeholder="7" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="3.5" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+
+      {mode==="wizard"&&<Wizard teaching={teaching} weightKg={weightKg} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="special"&&<RefDispo teaching={teaching}/>}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Neonatal Fever / Suspected Sepsis Clinical Pathway · March 2022
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
