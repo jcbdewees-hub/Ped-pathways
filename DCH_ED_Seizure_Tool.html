@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seizure / Status Epilepticus — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#c2410c",pLight:"#fff7ed",pBorder:"#fdba74",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{title:"Status Epilepticus — Why Minutes Matter",
+patho:"Status epilepticus (SE) is defined as a single seizure lasting >5 minutes or repetitive seizures without return to neurological baseline. The 5-minute threshold reflects the point at which self-termination becomes unlikely and excitotoxic neuronal injury begins.\n\nDuring sustained seizure activity, excessive glutamate release activates NMDA receptors, causing massive calcium influx into neurons. This triggers mitochondrial dysfunction, free radical production, and activation of apoptotic cascades. Simultaneously, the metabolic demand of seizing neurons outstrips cerebral blood flow, creating a supply-demand mismatch that worsens ischemic injury. The longer the seizure persists, the more resistant it becomes to treatment (benzo resistance) and the greater the neuronal damage.",
+pearls:"Refractory status epilepticus (RSE) has a mortality rate of 32–77% and can cause irreversible brain injury. Delay in benzodiazepine initiation is associated with higher mortality, longer seizure duration, and more frequent hypotension. This pathway is built around a strict escalation ladder: 1st line (benzos) → 2nd line (levetiracetam) → 3rd line (phenobarbital) → 4th line (midazolam infusion).\n\nEvery minute counts — have the 2nd line agent ordered concurrently with the 2nd benzo dose so it's ready immediately if benzos fail.",
+evidence:"The ESETT trial (Kapur 2019, NEJM) compared fosphenytoin, levetiracetam, and valproic acid for benzodiazepine-refractory SE — all achieved seizure cessation in ~50% of patients. Time to treatment is the single most important modifiable factor in SE outcomes. (Gaínza-Lein 2018, JAMA Neurol; Glauser 2016, AES Guideline)"},
+benzos:{title:"Benzodiazepines — 1st Line GABA Agonists",
+patho:"Benzodiazepines bind to the gamma subunit of the GABA-A receptor, a ligand-gated chloride channel. Binding increases the frequency of chloride channel opening, hyperpolarizing the postsynaptic neuron and inhibiting excitatory neurotransmission. This terminates the sustained depolarization driving seizure activity.\n\nCritically, during prolonged seizures, GABA-A receptors undergo internalization (endocytosis from the synaptic membrane into the cytoplasm). This is the molecular basis of benzodiazepine resistance — fewer surface receptors means less drug-receptor interaction. This process begins within minutes of seizure onset, which is why early benzo administration is essential.",
+pearls:"WITH IV access: Lorazepam 0.1 mg/kg IV (max 4 mg) or Midazolam 0.2 mg/kg IV (max 10 mg). WITHOUT IV: Midazolam 0.2 mg/kg IM (max 10 mg) or 0.3–0.4 mg/kg IN (max 10 mg).\n\nRepeat ONE TIME at 5 minutes if seizure continues. After 2 adequate benzo doses, further benzos are unlikely to terminate the seizure and will primarily cause respiratory depression. Move to 2nd line immediately.\n\nOrder the 2nd line agent CONCURRENT with the 2nd benzo dose — don't wait for the benzo to fail before ordering.",
+evidence:"The RAMPART trial (Silbergleit 2012) demonstrated that IM midazolam is non-inferior to IV lorazepam for prehospital SE termination, and superior when IV access time is factored in. All three benzo routes (IV, IM, IN) have good efficacy. (Silbergleit 2012, NEJM; Glauser 2016)"},
+secondLine:{title:"Levetiracetam — Preferred 2nd Line",
+patho:"Levetiracetam binds to synaptic vesicle protein 2A (SV2A), modulating neurotransmitter vesicle release. Unlike traditional antiseizure medications, it does not act on sodium channels, calcium channels, or GABA receptors directly. Its unique mechanism means it is effective even when GABA-A receptors have been internalized (benzo-resistant state).\n\nLevetiracetam has several pharmacologic advantages: no hepatic metabolism (renal excretion), minimal drug interactions, no need for serum level monitoring, wide therapeutic index, and rapid IV infusion capability.",
+pearls:"Dose: 60 mg/kg IV (max 4500 mg) — infuse over 10 minutes. This is a HIGHER dose than many providers are accustomed to. The ConSEPT, ESETT, and EcLiPSE trials all used 40–60 mg/kg doses.\n\nAlternatives (if levetiracetam unavailable or contraindicated): Fosphenytoin 20 mg/kg IV (max 1500 mg), Valproic acid 40 mg/kg IV (max 3000 mg), or Lacosamide 10 mg/kg IV (max 400 mg).\n\nLevetiracetam is preferred at DCH for its safety profile and ease of administration.",
+evidence:"ConSEPT (Dalziel 2019, Lancet): levetiracetam non-inferior to phenytoin (50% vs 60% cessation). ESETT (Kapur 2019, NEJM): levetiracetam, fosphenytoin, and valproic acid all ~50% effective — fosphenytoin had numerically higher hypotension/intubation rates. EcLiPSE (Lyttle 2019): levetiracetam vs phenytoin → 70% vs 64% cessation. Given equivalent efficacy and superior safety, levetiracetam is the preferred 2nd line."},
+thirdLine:{title:"Phenobarbital — 3rd Line",
+patho:"Phenobarbital binds to a distinct site on the GABA-A receptor (the barbiturate binding site), increasing the DURATION of chloride channel opening (vs benzos which increase frequency). Because it acts at a different binding site than benzodiazepines, it retains efficacy even when benzo-mediated receptor internalization has occurred.\n\nHowever, phenobarbital is a potent respiratory and CNS depressant. It also causes significant hypotension through both direct myocardial depression and peripheral vasodilation. By the time a patient reaches 3rd line therapy, they have already received 2 benzos + a 2nd line agent — the additive sedation and respiratory depression make intubation increasingly likely.",
+pearls:"Dose: 20 mg/kg IV (max 1000 mg) — infuse over 10 minutes. Strongly consider intubation at this point if not already done. Have airway equipment and vasopressors at bedside.\n\nAlternatively, if the clinical situation is deteriorating rapidly, you can skip phenobarbital and go directly to the 4th line midazolam infusion. This is a judgment call based on the patient's respiratory status and the trajectory of the resuscitation.",
+evidence:"Phenobarbital has decades of evidence supporting its use in SE but carries significant respiratory and hemodynamic side effects. Its role has shifted to 3rd line as newer agents with better safety profiles (levetiracetam) have become available as 2nd line. (Glauser 2016)"},
+fourthLine:{title:"Midazolam Infusion — Refractory SE",
+patho:"Refractory status epilepticus (RSE) — seizure activity persisting despite 2 adequate medication classes — indicates widespread, sustained excitotoxic activity with massive GABA receptor internalization. At this stage, the blood-brain barrier is disrupted, cerebral autoregulation is failing, and the metabolic crisis is severe.\n\nContinuous midazolam infusion provides steady-state GABA-A receptor agonism at the highest possible concentration, attempting to overcome the reduced receptor density through sheer pharmacologic pressure. The infusion is titrated to seizure cessation (or burst suppression on continuous EEG).",
+pearls:"Midazolam bolus 0.2 mg/kg IV, then infusion at 0.1 mg/kg/hr. If seizure persists >10 min, rebolus and increase by 0.1 mg/kg/hr. Repeat Q10 min up to 0.5 mg/kg/hr.\n\nAt this point the patient MUST be intubated, on continuous EEG, and in a PICU setting. Arrange PICU admission and EEG immediately when 3rd line therapy is initiated — don't wait for 4th line.\n\nPropofol is used with extreme caution in pediatric SE due to propofol infusion syndrome risk (metabolic acidosis, rhabdomyolysis, cardiac failure) — especially with prolonged infusions.",
+evidence:"RSE mortality is 32–77%. Continuous midazolam infusion is the most commonly used agent for pediatric RSE. Propofol infusion syndrome was first described in 1992 (Parke et al.) and has been associated with significant mortality in children, particularly with prolonged use and in those on the ketogenic diet. (Gaínza-Lein 2018; Hanna 1998)"},
+glucose:{title:"Glucose — Don't Miss Hypoglycemia",
+patho:"Seizures cause massive neuronal glucose consumption — the metabolic rate of seizing brain tissue increases 2–3 fold. Simultaneously, the systemic catecholamine surge drives hepatic glycogenolysis, but this can be rapidly exhausted in young children with limited glycogen stores. Hypoglycemia both mimics and perpetuates seizure activity.\n\nHypoglycemic seizures will NOT respond to benzodiazepines because the problem is substrate deficiency, not excessive excitatory neurotransmission. Giving glucose is the specific treatment.",
+pearls:"Check CBG immediately — BEFORE or concurrent with the first benzo dose. If CBG <50 → D10W 5 mL/kg IV. This is a treatable cause of seizures that is catastrophic if missed.\n\nDo NOT delay benzo administration to wait for a glucose result — give the benzo AND check glucose simultaneously. But if the seizure doesn't stop after benzos, always recheck the glucose.",
+evidence:"Hypoglycemia is a reversible cause of seizures in children and should be excluded in every seizing patient. Dextrose administration for hypoglycemic seizures results in rapid seizure termination without the need for anticonvulsants. (Glauser 2016)"},
+intubation:{title:"Airway Management in SE",
+patho:"Prolonged seizure activity progressively compromises the airway through multiple mechanisms: loss of protective reflexes (aspiration risk), masseter spasm (trismus preventing oral airway), excessive secretions, hypoxia from apnea during tonic phase, and respiratory depression from accumulating anticonvulsant medications.\n\nBy the time a patient reaches 3rd or 4th line therapy, they have received 2 benzos + levetiracetam ± phenobarbital — the cumulative respiratory depression makes spontaneous ventilation increasingly unreliable.",
+pearls:"Strongly consider intubation when reaching 3rd and 4th line therapies. Have the airway setup ready from the start — don't wait until the patient is apneic to prepare.\n\nInduction considerations: the seizing patient's brain is already in a state of maximal excitation. Propofol and thiopental have anticonvulsant properties but carry hemodynamic risks. Ketamine is increasingly used for RSE (NMDA antagonism may help break the seizure cycle). Rocuronium for paralysis — note that paralytics eliminate the clinical seizure manifestation but do NOT stop the electrical seizure activity. You MUST have continuous EEG to monitor.",
+evidence:"There is no RCT guidance on optimal intubation timing in pediatric SE. Expert consensus recommends considering intubation by 3rd line therapy and mandating it for 4th line (continuous infusion). (Davis 2017; Glauser 2016)"},
+workup:{title:"Diagnostic Workup — What and When",
+patho:"The etiology of SE influences both acute management and long-term outcomes. The most common causes in children are febrile seizures (prolonged), subtherapeutic AED levels in known epilepsy patients, CNS infection (meningitis/encephalitis), metabolic derangements (hypoglycemia, hyponatremia, hypocalcemia), toxic ingestion, and structural lesions (tumor, hemorrhage, stroke).",
+pearls:"Immediate: CBG (rule out hypoglycemia), CMP (electrolytes), CBC. Consider: blood gas (metabolic acidosis from prolonged seizure), blood culture (if febrile — concern for meningitis), urine studies (toxicology).\n\nHead CT: if trauma suspected, first-time seizure without clear etiology, focal seizure, or not returning to baseline. LP: if CNS infection suspected — but only after the patient is hemodynamically stable and the seizure is controlled. Never delay abx for LP if meningitis is suspected.\n\nFor known epilepsy patients: check AED levels (often subtherapeutic levels are the trigger).",
+evidence:"Febrile SE has the best prognosis. SE secondary to acute symptomatic causes (CNS infection, stroke, metabolic) has the worst prognosis. Identifying the underlying etiology is essential for directed treatment. (Shinnar 2001; Glauser 2016)"},
+disposition:{title:"Disposition — Almost All Admit",
+pearls:"If seizure terminated with 1st line benzo only AND patient returns to neurological baseline → observe in ED, consider discharge for known epilepsy patients with clear trigger (missed medication, febrile).\n\nIf 2nd line agent required → admit. Consult Neurology.\n\nIf 3rd or 4th line required → PICU admission. Consult Neurology + PICU. Arrange continuous EEG.\n\nAll first-time seizures should have follow-up with Pediatric Neurology, regardless of ED disposition.",
+evidence:"Patients requiring 2nd line agents have a significant risk of seizure recurrence within 24 hours and require inpatient monitoring. Patients with RSE requiring continuous infusions need ICU-level care with continuous EEG to titrate therapy and detect non-convulsive SE. (Gaínza-Lein 2018)"},
+};
+
+function calcDoses(w){
+  var wt=parseFloat(w)||0;if(wt<=0)return null;
+  return{w:wt,
+    loraz:Math.min(Math.round(wt*0.1*100)/100,4),
+    diaz:Math.min(Math.round(wt*0.2*10)/10,10),
+    midIV:Math.min(Math.round(wt*0.2*10)/10,10),
+    midIM:Math.min(Math.round(wt*0.2*10)/10,10),
+    midIN:Math.round(wt*0.4*10)/10,midINlo:Math.round(wt*0.3*10)/10,
+    lev:Math.min(Math.round(wt*60),4500),
+    fosPHT:Math.min(Math.round(wt*20),1500),
+    vpa:Math.min(Math.round(wt*40),3000),
+    lacosam:Math.min(Math.round(wt*10),400),
+    phenobarb:Math.min(Math.round(wt*20),1000),
+    midBolus:Math.round(wt*0.2*10)/10,
+    midGtt:Math.round(wt*0.1*10)/10,
+    d10:Math.round(wt*5),
+    bolus:Math.round(wt*20),
+  };
+}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+// ── PRIMITIVES ──
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Seizure — Status Epilepticus</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · January 2022</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function TeachBox({id,teaching}){var s=useState("pearls"),tab=s[0],setTab=s[1];if(!teaching||!TEACH[id])return null;var t=TEACH[id];if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;var activeTab=tab;if(!t[activeTab])activeTab=tabs[0].key;return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden"}}><div style={{background:"#ccfbf1",padding:"8px 12px",borderBottom:"1px solid "+C.tealBorder,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13,fontWeight:700,color:C.teal}}>📖 {t.title}</span></div>{tabs.length>1&&(<div style={{display:"flex",background:C.white,borderBottom:"1px solid "+C.rule}}>{tabs.map(function(tb){var act=activeTab===tb.key;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{flex:1,padding:"8px 0",background:act?C.tealBg:"#f8fafc",border:"none",borderBottom:act?"2.5px solid "+C.teal:"2.5px solid transparent",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted}}>{tb.label}</button>)})}</div>)}<div style={{padding:"12px 14px",fontSize:12,lineHeight:1.65,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeTab]}</div></div>);}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+// ═══════════════════════════════
+// FLOWCHART
+// ═══════════════════════════════
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#c2410c",pBg="#fff7ed",pBd="#fdba74",puC="#6b21a8",puBg="#faf5ff",puBd="#c4b5fd",mC="#6b7280";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Age ≥29 days · Seizure {'>'}5 min or repetitive without return to baseline</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 440" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={440} fill="#fafaf8" rx={6}/>
+          <Box x={100} y={6} w={280} h={28} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={pC}>STATUS EPILEPTICUS</T><T x={240} y={28} size={6} color={mC}>Seizure {'>'}5 min · IV/IO · O₂ · Monitor · CBG</T></Box>
+          <Arrow x1={240} y1={34} x2={240} y2={50}/>
+
+          {/* 1st line */}
+          <Box x={60} y={50} w={360} h={40} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={60} size={9} weight={700} color={aC}>1ST LINE — BENZODIAZEPINE</T><T x={150} y={74} size={6} color={mC}>IV: Lorazepam 0.1 mg/kg</T><T x={330} y={74} size={6} color={mC}>No IV: Midazolam 0.2 mg/kg IM</T><T x={240} y={84} size={6} weight={700} color={aC}>Repeat × 1 at 5 min · Order 2nd line NOW</T></Box>
+          <Arrow x1={240} y1={90} x2={240} y2={104}/>
+          <g transform="translate(240,118)"><polygon points="0,-14 50,0 0,14 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Stopped?</T></g>
+          <Arrow x1={190} y1={118} x2={50} y2={136} color={gC}/>
+          <Box x={10} y={136} w={80} h={18} fill={gBg} stroke={gBd} radius={8}><T x={50} y={147} size={6} weight={700} color={gC}>OBSERVE</T></Box>
+          <Arrow x1={290} y1={118} x2={340} y2={136} color={rC}/>
+
+          {/* 2nd line */}
+          <Box x={100} y={140} w={360} h={36} fill={blBg} stroke={blBd} sw={1.5}><T x={280} y={150} size={9} weight={700} color={blC}>2ND LINE — LEVETIRACETAM</T><T x={280} y={162} size={6} color={mC}>60 mg/kg IV (max 4500 mg) over 10 min</T><T x={280} y={172} size={6} color={mC}>Alt: Fosphenytoin · Valproic acid · Lacosamide</T></Box>
+          <Arrow x1={280} y1={176} x2={280} y2={192}/>
+          <g transform="translate(280,206)"><polygon points="0,-14 50,0 0,14 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Stopped?</T></g>
+          <Arrow x1={230} y1={206} x2={50} y2={224} color={gC}/>
+          <Box x={10} y={224} w={80} h={18} fill={gBg} stroke={gBd} radius={8}><T x={50} y={235} size={6} weight={700} color={gC}>ADMIT</T></Box>
+          <Arrow x1={330} y1={206} x2={380} y2={224} color={rC}/>
+
+          {/* 3rd line */}
+          <Box x={140} y={228} w={320} h={32} fill={puBg} stroke={puBd} sw={1.5}><T x={300} y={238} size={9} weight={700} color={puC}>3RD LINE — PHENOBARBITAL</T><T x={300} y={250} size={6} color={mC}>20 mg/kg IV (max 1000 mg) · OR direct to infusion</T><T x={300} y={258} size={6} weight={700} color={rC}>Consider intubation</T></Box>
+          <Arrow x1={300} y1={260} x2={300} y2={276}/>
+          <g transform="translate(300,290)"><polygon points="0,-14 50,0 0,14 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Stopped?</T></g>
+          <Arrow x1={250} y1={290} x2={50} y2={308} color={gC}/>
+          <Box x={10} y={308} w={80} h={18} fill={aBg} stroke={aBd} radius={8}><T x={50} y={319} size={6} weight={700} color={aC}>PICU</T></Box>
+          <Arrow x1={350} y1={290} x2={400} y2={308} color={rC}/>
+
+          {/* 4th line */}
+          <Box x={160} y={312} w={300} h={38} fill={rBg} stroke={rBd} sw={2}><T x={310} y={322} size={9} weight={700} color={rC}>4TH LINE — MIDAZOLAM INFUSION</T><T x={310} y={334} size={6} color={mC}>0.2 mg/kg bolus → 0.1 mg/kg/hr gtt</T><T x={310} y={344} size={6} color={mC}>Rebolus + increase Q10 min up to 0.5 mg/kg/hr</T></Box>
+          <Arrow x1={310} y1={350} x2={310} y2={366} color={rC}/>
+          <Box x={240} y={366} w={140} h={24} fill={rBg} stroke={rBd} sw={2} radius={8}><T x={310} y={376} size={8} weight={700} color={rC}>INTUBATE · PICU · EEG</T></Box>
+
+          {/* Bottom bar */}
+          <Box x={20} y={400} w={440} h={20} fill={pBg} stroke={pBd} radius={8}><T x={240} y={411} size={7} weight={700} color={pC}>CHECK CBG IMMEDIATELY · D10W 5 mL/kg IF {'<'}50 · INFUSE ALL IV MEDS OVER 10 MIN</T></Box>
+          <Box x={20} y={426} w={440} h={10} fill="#f1f5f9" stroke="#e2e8f0" radius={4}><T x={240} y={433} size={5.5} weight={600} color={mC}>Exclude: {'<'}29 days · Labs: CBG, CMP, CBC · Consider: CT, LP, blood gas, cultures, AED levels</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════
+// WALK-THROUGH WIZARD
+// ═══════════════════════════════
+function Wizard({teaching,doses}){
+  var s1=useState(null),ivAccess=s1[0],setIvAccess=s1[1];
+  var s2=useState(null),benzo1=s2[0],setBenzo1=s2[1];
+  var s3=useState(null),benzo2=s3[0],setBenzo2=s3[1];
+  var s4=useState(null),line2=s4[0],setLine2=s4[1];
+  var s5=useState(null),line3=s5[0],setLine3=s5[1];
+  var s6=useState(null),line4=s6[0],setLine4=s6[1];
+
+  function reset(){setIvAccess(null);setBenzo1(null);setBenzo2(null);setLine2(null);setLine3(null);setLine4(null);}
+
+  return(<Pad>
+    <Q text="Walk-Through" sub="Escalation ladder: Benzo → Levetiracetam → Phenobarbital → Midazolam gtt"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* IMMEDIATE */}
+    <Card title="IMMEDIATE — Stabilize" color={C.red}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="ESI II — On Arrival">
+        Ensure <strong>ventilation</strong> · Supplemental <strong>O₂</strong><br/>
+        <strong>IV / IO access</strong> (IO if 3 attempts or 90 sec)<br/>
+        <strong>POC glucose</strong> — if CBG {'<'}50 → <strong>D10W {doses?doses.d10+" mL":"5 mL/kg"}</strong><br/>
+        Cardiac + SpO₂ monitoring<br/>
+        <strong>Labs:</strong> CBG, CMP, CBC · Consider blood gas, blood culture, urine studies<br/>
+        <strong>NS bolus {doses?doses.bolus+" mL":"20 mL/kg"}</strong> if indicated
+      </Alert>
+      <TeachBox id="glucose" teaching={teaching}/>
+    </Card>
+
+    {/* 1ST LINE */}
+    <Card title="1st Line — Benzodiazepine" color={C.amberMid}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>IV / IO access available?</strong></div>
+      <WizBtn label="Yes — IV / IO access" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={ivAccess==="yes"} onClick={function(){setIvAccess("yes")}}/>
+      <WizBtn label="No — No IV access" sub="Use IM or IN midazolam" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={ivAccess==="no"} onClick={function(){setIvAccess("no")}}/>
+
+      {ivAccess==="yes"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="💉" title="IV Benzodiazepine">
+        <strong>Lorazepam</strong> {doses?doses.loraz+" mg":"0.1 mg/kg"} IV (max 4 mg) — slow push<br/>
+        <em>OR</em> <strong>Midazolam</strong> {doses?doses.midIV+" mg":"0.2 mg/kg"} IV (max 10 mg)<br/>
+        <em>OR</em> <strong>Diazepam</strong> {doses?doses.diaz+" mg":"0.2 mg/kg"} IV (max 10 mg)
+      </Alert>)}
+      {ivAccess==="no"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="💉" title="IM / IN Midazolam">
+        <strong>Midazolam</strong> {doses?doses.midIM+" mg":"0.2 mg/kg"} <strong>IM</strong> (max 10 mg)<br/>
+        <em>OR</em> <strong>Midazolam</strong> {doses?doses.midINlo+"–"+doses.midIN+" mg":"0.3–0.4 mg/kg"} <strong>IN</strong> (max 10 mg)
+      </Alert>)}
+      <TeachBox id="benzos" teaching={teaching}/>
+
+      {ivAccess&&(<div>
+        <div style={{fontSize:13,marginBottom:10,marginTop:8}}><strong>Seizure stopped after 1st dose?</strong></div>
+        <WizBtn label="Yes — Seizure terminated" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={benzo1==="stopped"} onClick={function(){setBenzo1("stopped")}}/>
+        <WizBtn label="No — Continues at 5 min" sub="Repeat benzo × 1 AND order 2nd line agent NOW" color={C.red} bg={C.redBg} border={C.redBorder} selected={benzo1==="continues"} onClick={function(){setBenzo1("continues")}}/>
+      </div>)}
+
+      {benzo1==="stopped"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Seizure Terminated — Observe">Post-ictal monitoring. Labs. Consider etiology workup. Observe for recurrence.</Alert>}
+
+      {benzo1==="continues"&&(<div>
+        <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔁" title="Repeat Benzo at 5 Minutes">
+          Repeat same benzo dose × 1.<br/>
+          <strong>Simultaneously order 2nd line agent</strong> so it's ready when benzo fails.
+        </Alert>
+        <div style={{fontSize:13,marginBottom:10}}><strong>Seizure stopped after 2nd benzo?</strong></div>
+        <WizBtn label="Yes — Terminated" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={benzo2==="stopped"} onClick={function(){setBenzo2("stopped")}}/>
+        <WizBtn label="No — Benzo-refractory" sub="→ Proceed to 2nd line" color={C.red} bg={C.redBg} border={C.redBorder} selected={benzo2==="refractory"} onClick={function(){setBenzo2("refractory")}}/>
+        {benzo2==="stopped"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Terminated After 2 Benzos">Observe. Labs. Etiology workup. Consider admission based on clinical picture.</Alert>}
+      </div>)}
+    </Card>
+
+    {/* 2ND LINE */}
+    {benzo2==="refractory"&&(<Card title="2nd Line — Levetiracetam (Keppra)" color={C.blue}>
+      <Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="💊" title="Levetiracetam — Preferred 2nd Line">
+        <strong>Levetiracetam {doses?doses.lev+" mg":"60 mg/kg"} IV</strong> (max 4500 mg) over 10 min<br/><br/>
+        <strong>Alternatives:</strong><br/>
+        Fosphenytoin {doses?doses.fosPHT+" mg":"20 mg/kg"} IV (max 1500 mg)<br/>
+        Valproic acid {doses?doses.vpa+" mg":"40 mg/kg"} IV (max 3000 mg)<br/>
+        Lacosamide {doses?doses.lacosam+" mg":"10 mg/kg"} IV (max 400 mg)<br/><br/>
+        <strong>Consult Neurology ± PICU</strong>
+      </Alert>
+      <TeachBox id="secondLine" teaching={teaching}/>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Seizure stopped after 2nd line?</strong></div>
+      <WizBtn label="Yes — Terminated" sub="Admit. Consult Neurology." color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={line2==="stopped"} onClick={function(){setLine2("stopped")}}/>
+      <WizBtn label="No — Continues" sub="→ 3rd line" color={C.red} bg={C.redBg} border={C.redBorder} selected={line2==="continues"} onClick={function(){setLine2("continues")}}/>
+      {line2==="stopped"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="🏥" title="Admit">Admit to ward or PICU. Consult Neurology. Continue monitoring.</Alert>}
+    </Card>)}
+
+    {/* 3RD LINE */}
+    {line2==="continues"&&(<Card title="3rd Line — Phenobarbital" color={C.purple}>
+      <Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="💊" title="Phenobarbital">
+        <strong>Phenobarbital {doses?doses.phenobarb+" mg":"20 mg/kg"} IV</strong> (max 1000 mg) over 10 min<br/>
+        <em>OR</em> skip directly to 4th line (midazolam infusion)<br/><br/>
+        <strong style={{color:C.red}}>⚠ Strongly consider intubation at this point</strong><br/>
+        Have airway equipment and vasopressors at bedside
+      </Alert>
+      <TeachBox id="thirdLine" teaching={teaching}/>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Seizure stopped?</strong></div>
+      <WizBtn label="Yes — Terminated" sub="PICU admission" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={line3==="stopped"} onClick={function(){setLine3("stopped")}}/>
+      <WizBtn label="No — Refractory SE" sub="→ 4th line: continuous infusion" color={C.red} bg={C.redBg} border={C.redBorder} selected={line3==="continues"} onClick={function(){setLine3("continues")}}/>
+      {line3==="stopped"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🏥" title="PICU Admission">Admit PICU. Consult Neurology. Arrange continuous EEG.</Alert>}
+    </Card>)}
+
+    {/* 4TH LINE */}
+    {line3==="continues"&&(<Card title="4th Line — Midazolam Infusion (Refractory SE)" color={C.red}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Refractory Status — Continuous Infusion">
+        <strong>INTUBATE</strong> if not already done<br/><br/>
+        <strong>Midazolam bolus</strong> {doses?doses.midBolus+" mg":"0.2 mg/kg"} IV<br/>
+        Then <strong>infusion</strong> at {doses?doses.midGtt+" mg/hr":"0.1 mg/kg/hr"}<br/>
+        If seizure persists {'>'}10 min: <strong>rebolus + increase by 0.1 mg/kg/hr</strong><br/>
+        Repeat Q10 min up to <strong>0.5 mg/kg/hr</strong><br/><br/>
+        <strong>Arrange continuous EEG</strong><br/>
+        <strong>→ PICU admission</strong>
+      </Alert>
+      <TeachBox id="fourthLine" teaching={teaching}/>
+      <TeachBox id="intubation" teaching={teaching}/>
+    </Card>)}
+
+    {ivAccess!==null&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+
+// ═══════════════════════════════
+// REFERENCE MODE TABS
+// ═══════════════════════════════
+function RefTriage({teaching}){return(<Pad>
+<Q text="Triage & Stabilization" sub="Age ≥29 days · Seizure >5 min or repetitive without baseline"/>
+<TeachBox id="overview" teaching={teaching}/>
+<Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Patients {'<'}18 years with a single prolonged convulsive seizure lasting {'>'}5 minutes or repetitive seizures without return to neurological baseline</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Age {'<'}29 days</Alert></div></Card>
+<Card title="Immediate Actions — ESI II" color={C.red}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>Ensure ventilation · Supplemental O₂<br/>Establish <strong>IV / IO access</strong> (IO if 3 attempts or 90 sec)<br/><strong>POC glucose</strong> — correct hypoglycemia immediately<br/>Cardiac + SpO₂ monitoring<br/>Consider intubation as seizure duration progresses</div></Card>
+<Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Immediate:</strong> CBG, CMP, CBC<br/><strong>Consider:</strong> blood gas, blood culture, urine studies, AED levels<br/><strong>Head CT:</strong> if trauma, first-time seizure, focal seizure, not returning to baseline<br/><strong>LP:</strong> if CNS infection suspected (after stabilization)</div><TeachBox id="workup" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching,doses}){return(<Pad>
+<Q text="Escalation Ladder" sub="1st → 2nd → 3rd → 4th line"/>
+<Card title="1st Line — Benzodiazepine" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>WITH IV:</strong> Lorazepam {doses?doses.loraz+" mg":"0.1 mg/kg"} IV (max 4 mg) or Diazepam {doses?doses.diaz+" mg":"0.2 mg/kg"} IV (max 10 mg)<br/><strong>NO IV:</strong> Midazolam {doses?doses.midIM+" mg":"0.2 mg/kg"} IM or {doses?doses.midINlo+"–"+doses.midIN+" mg":"0.3–0.4 mg/kg"} IN (max 10 mg)<br/><strong>Repeat × 1 at 5 min.</strong> Order 2nd line concurrent with 2nd benzo dose.</div><TeachBox id="benzos" teaching={teaching}/></Card>
+<Card title="2nd Line — Levetiracetam (Preferred)" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Levetiracetam {doses?doses.lev+" mg":"60 mg/kg"} IV</strong> (max 4500 mg) over 10 min<br/><strong>Alternatives:</strong> Fosphenytoin {doses?doses.fosPHT+" mg":"20 mg/kg"} · Valproic acid {doses?doses.vpa+" mg":"40 mg/kg"} · Lacosamide {doses?doses.lacosam+" mg":"10 mg/kg"}<br/>Consult Neurology ± PICU</div><TeachBox id="secondLine" teaching={teaching}/></Card>
+<Card title="3rd Line — Phenobarbital" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Phenobarbital {doses?doses.phenobarb+" mg":"20 mg/kg"} IV</strong> (max 1000 mg) over 10 min<br/>OR skip to continuous infusion<br/><strong style={{color:C.red}}>Strongly consider intubation</strong></div><TeachBox id="thirdLine" teaching={teaching}/></Card>
+<Card title="4th Line — Midazolam Infusion (Refractory SE)" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Midazolam bolus {doses?doses.midBolus+" mg":"0.2 mg/kg"}</strong> → infusion {doses?doses.midGtt+" mg/hr":"0.1 mg/kg/hr"}<br/>If persists {'>'}10 min: rebolus + increase by 0.1 mg/kg/hr · Repeat Q10 min up to 0.5 mg/kg/hr<br/><strong>Intubate · Continuous EEG · PICU</strong></div><TeachBox id="fourthLine" teaching={teaching}/></Card>
+<Card title="Hypoglycemia" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>CBG {'<'}50 → <strong>D10W {doses?doses.d10+" mL":"5 mL/kg"}</strong> IV<br/>Check glucose BEFORE or concurrent with first benzo — do not delay either</div><TeachBox id="glucose" teaching={teaching}/></Card>
+<PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+<Q text="Medications & Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+{!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+<Card title="1st Line — Benzodiazepines" color={C.amberMid}><div style={{marginTop:8}}><DoseRow label="Lorazepam IV (0.1 mg/kg, max 4 mg)" value={doses?doses.loraz:"—"} unit={doses?"mg":""}/><DoseRow label="Diazepam IV (0.2 mg/kg, max 10 mg)" value={doses?doses.diaz:"—"} unit={doses?"mg":""}/><DoseRow label="Midazolam IV (0.2 mg/kg, max 10 mg)" value={doses?doses.midIV:"—"} unit={doses?"mg":""}/><DoseRow label="Midazolam IM (0.2 mg/kg, max 10 mg)" value={doses?doses.midIM:"—"} unit={doses?"mg":""}/><DoseRow label="Midazolam IN (0.3–0.4 mg/kg, max 10 mg)" value={doses?doses.midINlo+"–"+doses.midIN:"—"} unit={doses?"mg":""}/></div></Card>
+<Card title="2nd Line" color={C.blue}><div style={{marginTop:8}}><DoseRow label="Levetiracetam IV (60 mg/kg, max 4500 mg)" value={doses?doses.lev:"—"} unit={doses?"mg":""}/><DoseRow label="Fosphenytoin IV (20 mg/kg, max 1500 mg)" value={doses?doses.fosPHT:"—"} unit={doses?"mg":""}/><DoseRow label="Valproic acid IV (40 mg/kg, max 3000 mg)" value={doses?doses.vpa:"—"} unit={doses?"mg":""}/><DoseRow label="Lacosamide IV (10 mg/kg, max 400 mg)" value={doses?doses.lacosam:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Infuse all IV medications over 10 minutes.</div></div></Card>
+<Card title="3rd Line" color={C.purple}><div style={{marginTop:8}}><DoseRow label="Phenobarbital IV (20 mg/kg, max 1000 mg)" value={doses?doses.phenobarb:"—"} unit={doses?"mg":""}/></div></Card>
+<Card title="4th Line — Continuous Infusion" color={C.red}><div style={{marginTop:8}}><DoseRow label="Midazolam bolus (0.2 mg/kg)" value={doses?doses.midBolus:"—"} unit={doses?"mg":""}/><DoseRow label="Midazolam gtt start (0.1 mg/kg/hr)" value={doses?doses.midGtt:"—"} unit={doses?"mg/hr":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>If persists {'>'}10 min: rebolus and increase by 0.1 mg/kg/hr. Repeat Q10 min. Max 0.5 mg/kg/hr.</div></div></Card>
+<Card title="Corrections" color={C.primary}><div style={{marginTop:8}}><DoseRow label="D10W (5 mL/kg) for CBG <50" value={doses?doses.d10:"—"} unit={doses?"mL":""}/><DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/></div></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+<Q text="Disposition & References"/>
+<Card title="Disposition" color={C.primary}><div style={{marginTop:8}}>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>OBSERVE / DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Terminated with 1st line benzo only · Returns to baseline · Known epilepsy with clear trigger (missed meds, febrile) · Neurology follow-up arranged</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT — WARD</div><div style={{fontSize:12,marginTop:2}}>Required 2nd line agent · First-time seizure requiring workup · Consult Neurology</div></div>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU</div><div style={{fontSize:12,marginTop:2}}>Required 3rd or 4th line therapy · Refractory SE · Continuous infusion · Intubated · Arrange continuous EEG</div></div>
+</div><TeachBox id="disposition" teaching={teaching}/></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Gaínza-Lein M et al. Association of Time to Treatment With Outcomes for Pediatric Refractory Convulsive SE. <em>JAMA Neurol</em> 2018; 75:410.<br/>2. Glauser T et al. AES Evidence-Based Guideline: Treatment of Convulsive SE. <em>Epilepsy Curr</em> 2016; 16:48.<br/>3. Dalziel SR et al. ConSEPT: Levetiracetam vs phenytoin for 2nd-line SE in children. <em>Lancet</em> 2019; 393:2135-2145.<br/>4. Kapur J et al. ESETT: Randomized Trial of Three Anticonvulsant Medications for SE. <em>NEJM</em> 2019; 381:2103-2113.<br/>5. Silbergleit R et al. RAMPART: IM vs IV lorazepam for prehospital SE. <em>NEJM</em> 2012; 366:591-600.<br/>6. Hanna JP et al. Rhabdomyolysis and hypoxia associated with prolonged propofol infusion in children. <em>Neurology</em> 1998; 50:301.</div></Card>
+</Pad>)}
+
+
+// ═══════════════════════════════
+// APP
+// ═══════════════════════════════
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decision",label:"Escalation"},{key:"meds",label:"Meds"},{key:"dispo",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="5 yr" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="20" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Seizure / Status Epilepticus · January 2022
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
