@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gastrostomy Tube Displacement — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#166534",pLight:"#f0fdf4",pBorder:"#86efac",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+/* ═══════════════════════════════
+   TEACH — Tiered Teaching
+   ═══════════════════════════════ */
+const TEACH={
+overview:{
+  title:"Pathway Rationale — G-Tube Displacement",
+  patho:"Gastrostomy tubes create a fistulous tract between the anterior abdominal wall and the gastric lumen. Tract maturation requires approximately 8 weeks of continuous epithelialization with fibroblast deposition and collagen cross-linking. During this period, the tract is lined only by granulation tissue and has no structural integrity — if the tube is dislodged, the tract can close within hours and the peritoneal cavity may be accessed during blind reinsertion, risking peritonitis.\n\nAfter maturation, the tract becomes a well-formed sinus lined with squamous epithelium continuous with the skin surface. Mature tracts are more resistant to closure (though they will still narrow over 12–24 hours without a tube in place) and permit bedside replacement with lower risk of intraperitoneal misplacement.",
+  pearls:"The single most important question in ED evaluation is the age of the tract — immature (<8 weeks) versus mature (≥8 weeks). This determines whether the tube can be replaced at bedside or requires surgical consultation. Time is critical: even mature tracts begin to close within hours of tube removal, so preserving the stoma with a Foley catheter is the immediate priority if the correct replacement tube is not available.\n\nAlways document: time of displacement, mechanism, tube type and size, tract age, and whether the child is tube-dependent for feeds and medications.",
+  evidence:"CHOP G/J-tube displacement clinical pathway provides the basis for the mature vs immature tract approach. The 8-week maturation threshold is supported by multiple pediatric surgery series showing decreased complication rates after this period. (CHOP 2021, Verger & Lebet AACN Procedure Manual 2008)"
+},
+tubeTypes:{
+  title:"G-Tube Types & Replacement Considerations",
+  patho:"Three main gastrostomy tube designs are used in pediatric practice. MIC long balloon tubes have an external bumper with an internal water-filled balloon — they are easily dislodged due to their length and the balloon may deflate with a small leak. Low-profile balloon tubes (MIC-KEY) sit flush with the skin using an internal balloon and are the preferred type at OHSU — they are more secure but still depend on balloon integrity. Low-profile non-balloon tubes (BARD/AMT) use a mushroom-shaped internal bumper that must be pulled through the tract — replacement is painful and requires physician-only replacement with anxiolysis.",
+  pearls:"MIC-KEY (low-profile balloon) tubes are the most commonly encountered in the ED and are the easiest to replace at bedside. Always check the balloon before reinsertion by inflating with the manufacturer-recommended volume of sterile water and inspecting for leaks. BARD tubes are physician-only replacements — never attempt RN replacement. For any G-J tube, call IR directly (4-7660 or EPIC page IR resident on call) — these require fluoroscopic guidance for the jejunal component.",
+  evidence:"OHSU Pediatric Surgery preference is low-profile balloon (MIC-KEY) tubes for most patients. BARD/AMT tubes are special-order and generally managed in clinic settings. (OHSU DCH ED Pathway, July 2021)"
+},
+foleyBridge:{
+  title:"Foley Catheter as Tract Preservation",
+  patho:"When the correct replacement tube is unavailable, a Foley catheter serves as a temporary stent to maintain stoma patency. The Foley's smooth tip and tapered design allow atraumatic passage through the tract. The balloon is NOT inflated because: (1) the Foley balloon volume differs from G-tube balloons and may cause gastric mucosal injury, (2) if the Foley is inadvertently in the peritoneum, balloon inflation could enlarge a false tract, and (3) an uninflated Foley secured with tape is sufficient to maintain the stoma opening.",
+  pearls:"Use a 10 or 14 Fr Foley — adjust size based on patient and tract diameter. Apply water-soluble lubricant generously. Insert approximately 2 inches (5 cm). If you meet resistance, try the next smaller size — never force. Do NOT inflate the balloon. Tape the Foley securely to the abdomen. A patient may be discharged home with a Foley in place if clinic follow-up is available within 24 hours.\n\nIf the Foley will be used for feeds (rare, only for tube-dependent patients with prolonged delay), placement must be confirmed with a dye study first.",
+  evidence:"Foley catheter bridging is standard practice across major pediatric centers (CHOP, BCH, OHSU). The no-balloon-inflation rule is universal in pediatric guidelines to prevent peritoneal injury. (AACN Procedure Manual 2008, OHSU DCH ED Pathway July 2021)"
+},
+dyeStudy:{
+  title:"Dye Study for Placement Confirmation",
+  patho:"Contrast radiography (dye study) confirms intragastric positioning by demonstrating contrast opacification of the gastric lumen. Omnipaque (iohexol) is a non-ionic, low-osmolality water-soluble contrast agent chosen because aspiration of small volumes is relatively safe compared to high-osmolality agents (which can cause pulmonary edema) or barium (which causes granulomatous peritonitis if there is a perforation).",
+  pearls:"Dye study is required for: (1) ALL immature tract (<8 weeks) replacements, (2) any tube that required multiple attempts to place, (3) any Foley that will be used for feeds. Order as 'Abd Tube Cath Eval with Contrast' (NOT fluoroscopy) for GT Placement Confirmation. The physician (not RN) pushes 10 mL Omnipaque through the tube up to 15 minutes before the x-ray. If contrast is not in the stomach, the tube is malpositioned — do NOT use for feeds.",
+  evidence:"Non-ionic low-osmolality contrast (iohexol/Omnipaque) is recommended over barium for enteral tube confirmation due to lower aspiration risk and absence of granulomatous peritonitis risk. (ACR Appropriateness Criteria, OHSU DCH ED Pathway July 2021)"
+},
+tractMaturation:{
+  title:"Tract Maturation — Immature vs Mature",
+  patho:"The gastrocutaneous fistula tract undergoes a predictable healing sequence. In the first 1–2 weeks, the tract is composed of fibrin and inflammatory infiltrate with no structural integrity. By 3–4 weeks, granulation tissue with neovascularization forms but remains fragile. Full epithelialization with mature collagen typically completes by 6–8 weeks. The 8-week threshold used in clinical practice provides a safety margin — some tracts, particularly in immunocompromised or malnourished children, may take longer to mature.",
+  pearls:"Immature tracts (<8 weeks) are surgical emergencies — call Peds Surgery immediately. The risk of peritoneal entry during blind reinsertion is significant. Even if a tube appears to pass easily into an immature tract, placement MUST be confirmed with a dye study. For mature tracts (≥8 weeks), RN may replace the tube after conferring with the attending, provided there are no contraindications (immature tract, non-patent site, BARD tube). Confirm placement by aspirating gastric contents.",
+  evidence:"The 8-week maturation threshold is widely used in pediatric surgery (Verger & Lebet 2008, CHOP pathway). Immunocompromised patients or those on chronic steroids may have delayed maturation. (OHSU DCH ED Pathway July 2021)"
+},
+complications:{
+  title:"Complications & Troubleshooting",
+  patho:"Granulation tissue forms as a normal wound-healing response at the stoma site — excess growth creates a moist, friable, bleeding mound of capillary-rich tissue. Chemical cautery with silver nitrate destroys the excess granulation tissue through protein denaturation and coagulation. Topical triamcinolone (a medium-potency corticosteroid) suppresses the inflammatory cascade driving continued granulation tissue formation.\n\nClogged tubes most commonly result from inadequately flushed formula or crushed medications. Warm water is first-line because it dissolves most protein-carbohydrate residues. Coca-Cola is NOT recommended because carbonic acid can precipitate casein (the primary milk protein), worsening the clog.",
+  pearls:"For clogged tubes: use warm (not hot) water with a 60 mL syringe, push-pull technique for 20 minutes. If that fails, mix a Creon capsule (lipase-protease-amylase) with one 325 mg sodium bicarbonate tablet dissolved in 5 mL water — instill and clamp for 5 minutes, then flush. For granulation tissue: silver nitrate application and/or triamcinolone 0.5% TID for 2 weeks. For leakage: check balloon integrity, tube fit (3–4 mm clearance between skin and device), and look for tract enlargement or obstruction.",
+  evidence:"Enzymatic declogging with pancrelipase (Creon) + sodium bicarbonate has been shown effective in multiple case series. Coca-Cola for tube declogging is not recommended due to casein precipitation. (AACN Procedure Manual 2008, Elsevier Clinical Skills 2020)"
+},
+exclusions:{
+  title:"Exclusion Criteria",
+  pearls:"This pathway does NOT apply to patients with: abdominal pain associated with G-tube removal, moderate or brisk bleeding at the stoma site, traumatic removal mechanism, or recent abdominal surgery or trauma. These patients require direct surgical evaluation as they may have associated visceral injury, fascial disruption, or intra-abdominal pathology that makes blind tube replacement unsafe."
+}
+};
+
+/* ═══════════════════════════════
+   calcDoses — minimal for this pathway
+   ═══════════════════════════════ */
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,omnipaque:10,bolus:Math.round(wt*20)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+/* ═══════════════════════════════
+   PRIMITIVES
+   ═══════════════════════════════ */
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Gastrostomy Tube Displacement</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · July 2021</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+/* ═══════════════════════════════
+   TIERED TEACHBOX
+   ═══════════════════════════════ */
+function TeachBox({id,teaching}){
+  var s=useState("pearls"),tab=s[0],setTab=s[1];
+  if(!teaching||!TEACH[id])return null;
+  var t=TEACH[id];
+  if(t.content&&!t.patho&&!t.pearls&&!t.evidence){
+    return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);
+  }
+  var tabs=[];
+  if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});
+  if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});
+  if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});
+  if(tabs.length===0)return null;
+  var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;
+  var activeContent=t[activeKey]||"";
+  return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}>
+    <div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div>
+    <div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>
+      {tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}
+    </div>
+    <div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{activeContent}</div>
+  </div>);
+}
+
+/* ═══════════════════════════════
+   FLOWCHART
+   ═══════════════════════════════ */
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>G-tube displaced or removed · Identify tract maturity · Replace or preserve stoma</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 520" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={520} fill="#fafaf8" rx={6}/>
+
+          {/* Entry */}
+          <Box x={115} y={8} w={250} h={30} fill={gBg} stroke={gBd} sw={1.5} radius={14}>
+            <T x={240} y={20} size={9} weight={700} color={gC}>G-TUBE DISPLACED / REMOVED</T>
+            <T x={240} y={31} size={6} color={mC}>ESI III–IV · Vitals · Document tube type & size</T>
+          </Box>
+
+          <Arrow x1={240} y1={38} x2={240} y2={54}/>
+
+          {/* Exclusion diamond */}
+          <g transform="translate(240,68)">
+            <polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={7} weight={700}>Exclusions?</T>
+          </g>
+          <line x1={305} y1={68} x2={410} y2={68} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={410} y1={68} x2={410} y2={84} color={rC}/>
+          <Box x={355} y={84} w={110} h={30} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={410} y={95} size={7} weight={700} color={rC}>OFF PATHWAY</T>
+            <T x={410} y={107} size={5.5} color={mC}>Abd pain · Bleeding · Trauma</T>
+          </Box>
+
+          <Arrow x1={240} y1={82} x2={240} y2={100}/>
+
+          {/* Immediate action */}
+          <Box x={130} y={100} w={220} h={36} fill={tBg} stroke={tBd} sw={1.5}>
+            <T x={240} y={112} size={8} weight={700} color={tC}>IMMEDIATE ACTION</T>
+            <T x={240} y={123} size={6} color={mC}>Locate replacement tube → bedside</T>
+            <T x={240} y={132} size={6} color={mC}>If unavailable → Foley to bedside</T>
+          </Box>
+
+          <Arrow x1={240} y1={136} x2={240} y2={154}/>
+
+          {/* Tube type diamond */}
+          <g transform="translate(240,168)">
+            <polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={7} weight={700}>Tube Type?</T>
+          </g>
+
+          {/* G-J branch right */}
+          <line x1={305} y1={168} x2={410} y2={168} stroke={pC} strokeWidth={1.5}/>
+          <Arrow x1={410} y1={168} x2={410} y2={186} color={pC}/>
+          <T x={358} y={162} size={6} weight={600} color={pC}>G-J Tube</T>
+          <Box x={355} y={186} w={110} h={36} fill={pBg} stroke={pBd} sw={1.5}>
+            <T x={410} y={198} size={7} weight={700} color={pC}>IR CONSULT</T>
+            <T x={410} y={209} size={6} color={mC}>4-7660 or EPIC page</T>
+            <T x={410} y={218} size={6} color={mC}>IR resident on call</T>
+          </Box>
+
+          {/* G-tube branch down */}
+          <Arrow x1={240} y1={182} x2={240} y2={200}/>
+          <T x={240} y={196} size={6} weight={600} color={gC}>G-Tube</T>
+
+          {/* Tract maturity diamond */}
+          <g transform="translate(240,216)">
+            <polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={7} weight={700}>Tract Age?</T>
+          </g>
+
+          {/* Immature branch left */}
+          <Arrow x1={170} y1={216} x2={85} y2={242} color={rC}/>
+          <T x={115} y={226} size={6} weight={600} color={rC}>{"<"}8 wk</T>
+          <Box x={20} y={242} w={130} h={40} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={85} y={254} size={8} weight={700} color={rC}>IMMATURE TRACT</T>
+            <T x={85} y={265} size={6} color={mC}>Call Peds Surgery</T>
+            <T x={85} y={275} size={6} color={mC}>Foley to preserve stoma</T>
+          </Box>
+          <Arrow x1={85} y1={282} x2={85} y2={300} color={rC}/>
+          <Box x={20} y={300} w={130} h={30} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={85} y={312} size={7} weight={700} color={aC}>DYE STUDY REQUIRED</T>
+            <T x={85} y={324} size={6} color={mC}>10 mL Omnipaque → X-ray</T>
+          </Box>
+
+          {/* Mature branch right */}
+          <Arrow x1={310} y1={216} x2={350} y2={242} color={gC}/>
+          <T x={342} y={226} size={6} weight={600} color={gC}>≥8 wk</T>
+          <Box x={285} y={242} w={145} h={40} fill={gBg} stroke={gBd} sw={1.5}>
+            <T x={358} y={254} size={8} weight={700} color={gC}>MATURE TRACT</T>
+            <T x={358} y={265} size={6} color={mC}>RN confers with attending</T>
+            <T x={358} y={275} size={6} color={mC}>Check contraindications</T>
+          </Box>
+
+          <Arrow x1={358} y1={282} x2={358} y2={300} color={gC}/>
+
+          {/* Contraindications diamond */}
+          <g transform="translate(358,314)">
+            <polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6} weight={700}>Contraindications?</T>
+          </g>
+
+          {/* No contraindications */}
+          <Arrow x1={288} y1={314} x2={210} y2={340} color={gC}/>
+          <T x={238} y={325} size={6} weight={600} color={gC}>None</T>
+          <Box x={130} y={340} w={160} h={46} fill={gBg} stroke={gBd} sw={1.5}>
+            <T x={210} y={352} size={7} weight={700} color={gC}>RN / MD REPLACES</T>
+            <T x={210} y={363} size={6} color={mC}>Aspirate gastric contents</T>
+            <T x={210} y={373} size={6} color={mC}>If multiple attempts → dye study</T>
+            <T x={210} y={383} size={6} weight={600} color={gC}>Confirm → Discharge</T>
+          </Box>
+
+          {/* Has contraindications */}
+          <Arrow x1={428} y1={314} x2={440} y2={340} color={aC}/>
+          <T x={445} y={325} size={5} weight={600} color={aC} anchor="start">Yes</T>
+          <Box x={385} y={340} w={90} h={40} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={430} y={352} size={6} weight={700} color={aC}>MD ONLY</T>
+            <T x={430} y={362} size={5.5} color={mC}>BARD: anxiolysis</T>
+            <T x={430} y={372} size={5.5} color={mC}>Non-patent: Surg</T>
+          </Box>
+
+          {/* Foley preservation box */}
+          <Box x={10} y={350} w={110} h={48} fill={blBg} stroke={blBd} sw={1.5}>
+            <T x={65} y={362} size={7} weight={700} color={blC}>FOLEY BRIDGE</T>
+            <T x={65} y={373} size={5.5} color={mC}>10–14 Fr · Lubricant</T>
+            <T x={65} y={383} size={5.5} color={mC}>Insert ~2 in · No balloon</T>
+            <T x={65} y={393} size={5.5} color={mC}>Tape to abdomen</T>
+          </Box>
+
+          {/* Summary bar */}
+          <Box x={10} y={415} w={460} h={44} fill={blBg} stroke={blBd} sw={1.5} radius={8}>
+            <T x={240} y={428} size={8} weight={700} color={blC}>KEY DECISION POINTS</T>
+            <T x={120} y={442} size={6} color={mC}>Immature {"<"}8 wk → Surgery + Dye study</T>
+            <T x={120} y={452} size={6} color={mC}>Mature ≥8 wk → RN/MD replace → Aspirate</T>
+            <T x={360} y={442} size={6} color={mC}>G-J → IR consult always</T>
+            <T x={360} y={452} size={6} color={mC}>Foley = bridge if no tube available</T>
+          </Box>
+
+          {/* Dispo bar */}
+          <Box x={10} y={470} w={225} h={40} fill={gBg} stroke={gBd} radius={8}>
+            <T x={122} y={484} size={7} weight={700} color={gC}>MAY DISCHARGE</T>
+            <T x={122} y={496} size={6} color={mC}>Mature tract + confirmed placement</T>
+            <T x={122} y={505} size={6} color={mC}>Foley in place + clinic F/U ≤24h</T>
+          </Box>
+          <Box x={245} y={470} w={225} h={40} fill={aBg} stroke={aBd} radius={8}>
+            <T x={358} y={484} size={7} weight={700} color={aC}>SURGICAL CONSULT / ADMIT</T>
+            <T x={358} y={496} size={6} color={mC}>Immature tract · Failed placement</T>
+            <T x={358} y={505} size={6} color={mC}>Peritoneal concern · Complications</T>
+          </Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════
+   WIZARD
+   ═══════════════════════════════ */
+function Wizard({teaching,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),tubeType=s2[0],setTubeType=s2[1];
+  var s3=useState(null),tractAge=s3[0],setTractAge=s3[1];
+  var s4=useState(null),contraind=s4[0],setContraind=s4[1];
+  var s5=useState(null),replaceEasy=s5[0],setReplaceEasy=s5[1];
+  var s6=useState(null),tubeAvail=s6[0],setTubeAvail=s6[1];
+
+  function reset(){setExcl(null);setTubeType(null);setTractAge(null);setContraind(null);setReplaceEasy(null);setTubeAvail(null);}
+
+  return(<Pad>
+    <Q text="G-Tube Displacement Walk-Through" sub="Step-by-step guided replacement pathway"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* Step 1: Exclusions */}
+    <Card title="Step 1 — Exclusion Screening" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Does the patient have any of the following?<br/><span style={{color:C.muted,fontSize:12}}>Abdominal pain with tube removal · Moderate or brisk bleeding · Traumatic removal · Recent abdominal surgery or trauma</span></div>
+      <WizBtn label="Yes — Exclusion present" sub="Off pathway → direct surgical evaluation" color={C.red} bg={C.redBg} border={C.redBorder} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+      <WizBtn label="No — No exclusions" sub="Proceed with pathway" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      {excl==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⚠️" title="Off Pathway">This patient requires direct surgical evaluation. Do not attempt blind tube replacement. Consult Pediatric Surgery.</Alert>}
+      <TeachBox id="exclusions" teaching={teaching}/>
+    </Card>
+
+    {/* Step 2: Tube availability */}
+    {excl==="no"&&<Card title="Step 2 — Locate Replacement Tube" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is the correct replacement tube available at bedside?<br/><span style={{color:C.muted,fontSize:12}}>Search Par X for size and location. Identify tube type (MIC-KEY, MIC long, BARD, G-J).</span></div>
+      <WizBtn label="Yes — Correct tube at bedside" sub="Proceed to tube type assessment" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={tubeAvail==="yes"} onClick={function(){setTubeAvail("yes")}}/>
+      <WizBtn label="No — Tube not available" sub="Place Foley catheter to preserve stoma" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={tubeAvail==="no"} onClick={function(){setTubeAvail("no")}}/>
+      {tubeAvail==="no"&&<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🔧" title="Foley Catheter Bridge">Place Foley (10–14 Fr) to preserve stoma. Use lubricant, insert ~2 inches, do NOT force, do NOT inflate balloon. Tape to abdomen. Use sequentially smaller Foleys if unable to pass same size as G-tube. Patient may be discharged with Foley if clinic follow-up within 24 hours.</Alert>}
+      <TeachBox id="foleyBridge" teaching={teaching}/>
+    </Card>}
+
+    {/* Step 3: Tube type */}
+    {excl==="no"&&(tubeAvail==="yes"||tubeAvail==="no")&&<Card title="Step 3 — Tube Type" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>What type of gastrostomy device?</div>
+      <WizBtn label="G-Tube (MIC-KEY, MIC long, or BARD)" sub="Standard gastrostomy — proceed to tract assessment" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={tubeType==="gtube"} onClick={function(){setTubeType("gtube")}}/>
+      <WizBtn label="G-J Tube (Gastrojejunostomy)" sub="Requires IR for replacement" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tubeType==="gj"} onClick={function(){setTubeType("gj")}}/>
+      {tubeType==="gj"&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="📞" title="IR Consult Required">All G-J tubes require Interventional Radiology for replacement. Call 4-7660 or EPIC page IR resident on call. Place Foley to preserve stoma while awaiting IR.</Alert>}
+      <TeachBox id="tubeTypes" teaching={teaching}/>
+    </Card>}
+
+    {/* Step 4: Tract maturity */}
+    {excl==="no"&&tubeType==="gtube"&&<Card title="Step 4 — Tract Maturity" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>How long ago was the original G-tube placed?</div>
+      <WizBtn label="< 8 weeks — Immature tract" sub="Call Pediatric Surgery · Dye study required" color={C.red} bg={C.redBg} border={C.redBorder} selected={tractAge==="immature"} onClick={function(){setTractAge("immature")}}/>
+      <WizBtn label="≥ 8 weeks — Mature tract" sub="May replace at bedside if no contraindications" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={tractAge==="mature"} onClick={function(){setTractAge("mature")}}/>
+      {tractAge==="immature"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Immature Tract — Surgical Consult">
+        <strong>Call Pediatric Surgery</strong> for replacement/consult.<br/>
+        Place Foley to preserve stoma (10–14 Fr, lubricant, ~2 inches, no balloon, tape to abdomen).<br/>
+        <strong>Dye study required</strong> to confirm all placements: order "Abd Tube Cath Eval with Contrast" — MD pushes 10 mL Omnipaque prior to x-ray.<br/>
+        If Foley will be used for feeds, confirm Foley placement with dye study first.
+      </Alert>}
+      <TeachBox id="tractMaturation" teaching={teaching}/>
+    </Card>}
+
+    {/* Step 5: Contraindications for mature tract */}
+    {excl==="no"&&tubeType==="gtube"&&tractAge==="mature"&&<Card title="Step 5 — Contraindications to RN Replacement" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Are any of the following present?<br/><span style={{color:C.muted,fontSize:12}}>BARD tube · Site not patent · Not easily replaced · Immature tract features</span></div>
+      <WizBtn label="No contraindications" sub="RN or MD may replace after conferring with attending" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={contraind==="no"} onClick={function(){setContraind("no")}}/>
+      <WizBtn label="Contraindication present" sub="MD-only replacement · Consider anxiolysis for BARD" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={contraind==="yes"} onClick={function(){setContraind("yes")}}/>
+      {contraind==="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="MD Replacement Required">Physician must replace tube. For BARD tubes, consider pain medication and/or anxiolysis prior to replacement. If site is not patent, consult Pediatric Surgery.</Alert>}
+    </Card>}
+
+    {/* Step 6: Replacement outcome */}
+    {excl==="no"&&tubeType==="gtube"&&tractAge==="mature"&&contraind!==null&&<Card title="Step 6 — Replacement & Confirmation" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Was the tube replaced successfully?</div>
+      <WizBtn label="Replaced easily — gastric contents aspirated" sub="Placement confirmed → may discharge" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={replaceEasy==="easy"} onClick={function(){setReplaceEasy("easy")}}/>
+      <WizBtn label="Multiple attempts required" sub="Dye study needed to confirm placement" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={replaceEasy==="difficult"} onClick={function(){setReplaceEasy("difficult")}}/>
+      <WizBtn label="Unable to replace" sub="Place Foley to preserve stoma, consult Surgery" color={C.red} bg={C.redBg} border={C.redBorder} selected={replaceEasy==="unable"} onClick={function(){setReplaceEasy("unable")}}/>
+      {replaceEasy==="easy"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Placement Confirmed">
+        Gastric contents aspirated — tube is in correct position.<br/>
+        Clean site with sterile water and cotton-tip swab.<br/>
+        Monitor briefly for: pain, vital sign changes, leakage, vomiting.<br/>
+        <strong>May discharge</strong> with stoma care instructions and return precautions.
+      </Alert>}
+      {replaceEasy==="difficult"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Dye Study Required">
+        Multiple attempts suggest possible false tract. Order "Abd Tube Cath Eval with Contrast" (not fluoroscopy).<br/>
+        MD pushes 10 mL Omnipaque through tube up to 15 minutes prior to x-ray.<br/>
+        If contrast is in stomach → placement confirmed.<br/>
+        If contrast is NOT in stomach → tube is malpositioned, consult Surgery.
+      </Alert>}
+      {replaceEasy==="unable"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Unable to Replace">
+        Place Foley catheter to preserve stoma (10–14 Fr, lubricant, ~2 inches, no balloon, tape).<br/>
+        Consult Pediatric Surgery for definitive replacement.<br/>
+        If patient is tube-dependent for feeds/meds, assess need for IV hydration and facilitate medication delivery via alternative route.
+      </Alert>}
+      <TeachBox id="dyeStudy" teaching={teaching}/>
+    </Card>}
+
+    {/* Reset */}
+    {excl!==null&&<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>}
+
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+/* ═══════════════════════════════
+   REFERENCE MODE TABS
+   ═══════════════════════════════ */
+function RefTriage({teaching}){return(<Pad>
+  <Q text="Triage & Initial Assessment" sub="Gastrostomy tube displaced or removed"/>
+  <TeachBox id="overview" teaching={teaching}/>
+  <Card title="Inclusion / Exclusion" color={C.primary}>
+    <div style={{marginTop:8}}>
+      <Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Pediatric patient presenting with gastrostomy tube displacement, removal, or need for replacement. Any tube type (MIC-KEY, MIC long, BARD, G-J).</Alert>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Abdominal pain with G-tube removal · Moderate or brisk bleeding at site · Traumatic removal or other recent abdominal surgery/trauma</Alert>
+    </div>
+    <TeachBox id="exclusions" teaching={teaching}/>
+  </Card>
+  <Card title="Initiate on Arrival" color={C.primary}>
+    <div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>
+      <strong>ESI Triage Level III or IV</strong> (depending on date of tube placement)<br/>
+      Full set of vitals per NPEOC<br/>
+      <strong>Document:</strong> Time/date of displacement, mechanism, tube type/size/length, date of original placement<br/>
+      Tube-dependent feeding and medication status<br/>
+      Abdominal and skin assessment<br/>
+      <strong>Locate correct replacement tube</strong> — search Par X for size and location<br/>
+      Place <strong>Foley catheter at bedside</strong> (10–14 Fr) as backup<br/>
+      If {'>'} 60-minute delay expected: facilitate medications via alternate route<br/>
+      If {'>'} 4-hour delay: assess need for IV hydration
+    </div>
+  </Card>
+  <Card title="Tube Types Reference" color={C.blue}>
+    <div style={{marginTop:8}}>
+      {[
+        {name:"MIC Long Balloon",desc:"External bumper + internal balloon. Easily dislodged due to length. RN/MD may replace (mature tract).",color:gC,bg:gBg,bd:gBd},
+        {name:"Low-Profile Balloon (MIC-KEY)",desc:"Flush with skin, internal balloon. Preferred at OHSU. RN/MD may replace (mature tract).",color:gC,bg:gBg,bd:gBd},
+        {name:"Low-Profile Non-Balloon (BARD/AMT)",desc:"Mushroom-shaped internal bumper. Painful to replace. Physician ONLY. Consider anxiolysis + pain medication.",color:aC,bg:aBg,bd:aBd},
+        {name:"G-J Tube (Gastrojejunostomy)",desc:"Requires Interventional Radiology for ALL replacements. Call 4-7660 or EPIC page IR resident.",color:pC,bg:pBg,bd:pBd}
+      ].map(function(t){return <div key={t.name} style={{background:t.bg,border:"1.5px solid "+t.bd,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:t.color}}>{t.name}</div><div style={{fontSize:12,marginTop:2,color:C.ink}}>{t.desc}</div></div>})}
+    </div>
+    <TeachBox id="tubeTypes" teaching={teaching}/>
+  </Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+  <Q text="Decision Tree" sub="Tract maturity determines replacement approach"/>
+  <Card title="Immature Tract (< 8 Weeks)" color={C.red}>
+    <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+      <strong>Call Pediatric Surgery</strong> for replacement/consult<br/>
+      Place <strong>Foley</strong> to preserve stoma while awaiting surgery (10–14 Fr, lubricant, ~2 inches, do not force, do not inflate balloon, tape to abdomen)<br/>
+      <strong>Dye study required</strong> for ALL immature tract replacements<br/>
+      If Foley will be used for feeds → confirm placement with dye study first<br/>
+      <span style={{fontSize:12,color:C.muted}}>Risk of peritoneal entry is significant with immature tracts — blind reinsertion may cause peritonitis</span>
+    </div>
+    <TeachBox id="tractMaturation" teaching={teaching}/>
+  </Card>
+  <Card title="Mature Tract (≥ 8 Weeks)" color={C.greenMid}>
+    <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+      RN confers with attending MD — if <strong>no contraindications</strong>, RN or MD may replace tube<br/>
+      <strong>Confirm placement</strong> by aspirating gastric contents<br/>
+      If RN unable to easily replace → MD to replace<br/>
+      If multiple attempts required → perform dye study<br/>
+      <div style={{marginTop:8,padding:"8px 10px",background:C.amberBg,border:"1px solid "+C.amberBorder,borderRadius:6}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.amberMid}}>Contraindications to RN Replacement:</div>
+        <div style={{fontSize:12,marginTop:2}}>Immature tract · Site not patent · BARD tube · Not easily replaced</div>
+      </div>
+    </div>
+  </Card>
+  <Card title="Foley Catheter — Stoma Preservation" color={C.blue}>
+    <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+      <strong>When to use:</strong> Correct replacement tube unavailable, delay in surgery anticipated, unable to place tube<br/>
+      <strong>Technique:</strong> 10–14 Fr Foley · Apply water-soluble lubricant · Insert approximately 2 inches · Do NOT force · Do NOT inflate balloon · Secure with tape to abdomen<br/>
+      Use sequentially smaller Foleys if unable to pass same size as G-tube<br/>
+      Patient may be sent home with Foley in place if clinic follow-up within 24 hours
+    </div>
+    <TeachBox id="foleyBridge" teaching={teaching}/>
+  </Card>
+  <Card title="Dye Study — Placement Confirmation" color={C.amberMid}>
+    <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+      <strong>Order:</strong> "Abd Tube Cath Eval with Contrast" (NOT fluoroscopy) for GT Placement Confirmation<br/>
+      <strong>Technique:</strong> MD pushes 10 mL Omnipaque through tube up to 15 minutes prior to x-ray<br/>
+      <strong>Indications:</strong><br/>
+      <div style={{paddingLeft:12,marginTop:4}}>
+        • All immature tract ({"<"}8 week) placements<br/>
+        • Multiple replacement attempts required<br/>
+        • Foley that will be used for feeds<br/>
+        • Any uncertainty about tube position
+      </div>
+    </div>
+    <TeachBox id="dyeStudy" teaching={teaching}/>
+  </Card>
+  <PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+  <Q text="Medications & Procedures" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+  {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above for dose calculations.</Alert>}
+  <Card title="Dye Study — Omnipaque" color={C.primary}>
+    <div style={{marginTop:8}}>
+      <DoseRow label="Omnipaque (iohexol) via tube" value="10" unit="mL"/>
+      <div style={{fontSize:12,color:C.muted,marginTop:6}}>Push through tube up to 15 minutes prior to x-ray. Must be administered by physician. Order "Abd Tube Cath Eval with Contrast" (not fluoroscopy).</div>
+    </div>
+    <TeachBox id="dyeStudy" teaching={teaching}/>
+  </Card>
+  <Card title="IV Fluids (if delay > 4 hours)" color={C.primary}>
+    <div style={{marginTop:8}}>
+      <DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/>
+      <div style={{fontSize:12,color:C.muted,marginTop:6}}>Assess need for IV hydration if tube-dependent patient and replacement delay exceeds 4 hours.</div>
+    </div>
+  </Card>
+  <Card title="Replacement Procedure — Balloon Tubes" color={C.blue}>
+    <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+      1. Check balloon for leaks — inject sterile water per manufacturer recommendation<br/>
+      2. Withdraw instilled water<br/>
+      3. Lubricate balloon tip with water-soluble lubricant<br/>
+      4. Hold tube perpendicular to abdomen, directed along stoma tract<br/>
+      5. Insert with steady, firm pressure — <strong>never force</strong><br/>
+      6. If unable to pass → notify MD · If excessive bleeding → stop and notify MD<br/>
+      7. Inflate balloon per manufacturer recommendations<br/>
+      8. Confirm placement by <strong>aspirating gastric contents</strong><br/>
+      9. Clean site with sterile water and cotton-tip swab<br/>
+      10. Monitor for: extreme pain, VS changes, leakage, vomiting, bleeding
+    </div>
+  </Card>
+  <Card title="Foley Placement Technique" color={C.blue}>
+    <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+      1. Select appropriate size (10–14 Fr, adjust based on patient/tract size)<br/>
+      2. Apply water-soluble lubricant generously<br/>
+      3. Insert approximately 2 inches (5 cm)<br/>
+      4. <strong>Do NOT force</strong> — try sequentially smaller sizes if resistance met<br/>
+      5. <strong>Do NOT inflate balloon</strong><br/>
+      6. Secure with tape to abdomen
+    </div>
+    <TeachBox id="foleyBridge" teaching={teaching}/>
+  </Card>
+  <Card title="Complications Management" color={C.primary} defaultOpen={false}>
+    <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+      <strong>Clogged Tube:</strong> Warm water (not hot) via 60 mL syringe, push-pull technique. Clamp × 20 min, repeat. If fails → Creon capsule + 325 mg NaHCO₃ in 5 mL water, instill, clamp × 5 min, then flush. Do NOT use Coca-Cola (causes casein precipitate).<br/><br/>
+      <strong>Granulation Tissue:</strong> Silver nitrate application and/or triamcinolone 0.5% TID × 2 weeks. Protect skin with zinc oxide barrier cream. If excessive → Peds Surgery.<br/><br/>
+      <strong>Site Infection:</strong> Erythema, tenderness, purulent drainage. Treat with systemic antibiotics.<br/><br/>
+      <strong>Leakage:</strong> Check tube fit (3–4 mm clearance), balloon integrity, tract enlargement/erosion, obstruction, granulation tissue.
+    </div>
+    <TeachBox id="complications" teaching={teaching}/>
+  </Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+  <Q text="Disposition & References"/>
+  <Card title="Disposition Summary" color={C.primary}>
+    <div style={{marginTop:8}}>
+      <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}>
+        <div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>MAY DISCHARGE</div>
+        <div style={{fontSize:12,marginTop:2}}>Mature tract + tube replaced + gastric contents aspirated (confirmed placement)<br/>Foley in place + clinic follow-up within 24 hours<br/>Immature tract + dye study confirms placement + Surgery agrees with discharge</div>
+      </div>
+      <div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}>
+        <div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>SURGICAL CONSULT / ADMIT</div>
+        <div style={{fontSize:12,marginTop:2}}>Immature tract ({"<"}8 weeks) — all require surgical involvement<br/>Unable to replace tube or Foley<br/>Dye study shows malpositioned tube<br/>Peritoneal concern (signs of peritonitis, sepsis)<br/>Complications requiring inpatient management</div>
+      </div>
+      <div style={{background:C.purpleBg,border:"1.5px solid "+C.purpleBorder,borderRadius:8,padding:"10px 12px"}}>
+        <div style={{fontSize:13,fontWeight:700,color:C.purple}}>IR CONSULT</div>
+        <div style={{fontSize:12,marginTop:2}}>All G-J tube replacements → IR (4-7660 or EPIC page IR resident on call)</div>
+      </div>
+    </div>
+  </Card>
+  <Card title="Discharge Instructions" color={C.blue}>
+    <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+      <strong>Stoma care:</strong> Clean around site with sterile water and cotton-tip swab daily<br/>
+      <strong>Protect skin</strong> from gastric contents with barrier cream (zinc oxide preferred)<br/>
+      <strong>Monitor for:</strong> extreme pain, vital sign changes, leakage, vomiting, bleeding, skin erosion, stoma enlargement, inability to feed/medicate<br/>
+      <strong>Return if:</strong> tube falls out again, signs of infection (redness, pus, warmth), inability to feed, abdominal pain or distension, fever
+    </div>
+  </Card>
+  <Card title="Key Contacts" color={C.primary}>
+    <div style={{marginTop:8}}>
+      {[
+        {role:"Pediatric Surgery",detail:"Immature tracts, failed replacements, complications"},
+        {role:"Interventional Radiology",detail:"All G-J tube replacements · 4-7660 or EPIC page IR resident"},
+        {role:"Peds Surgery Clinic",detail:"Follow-up for Foley bridge patients (within 24 hours)"},
+        {role:"Par X",detail:"Search for replacement tube size and location"}
+      ].map(function(c){return <div key={c.role} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:600}}>{c.role}</span><span style={{fontSize:12,color:C.muted,textAlign:"right",maxWidth:"55%"}}>{c.detail}</span></div>})}
+    </div>
+  </Card>
+  <Card title="References" color={C.muted} defaultOpen={false}>
+    <div style={{fontSize:12,lineHeight:1.6,marginTop:8,color:C.muted}}>
+      OHSU DCH ED Gastrostomy Tube Displacement Clinical Pathway, July 2021<br/>
+      Elsevier Clinical Skills — Feeding Tube: Balloon and Low-Profile Gastrostomy Removal and Reinsertion (2020)<br/>
+      Elsevier Clinical Skills — Feeding Tubes: Gastrostomy, Jejunostomy, and Gastrojejunostomy Care (2020)<br/>
+      Verger JT, Lebet RM (Eds). AACN Procedure Manual for Pediatric Acute and Critical Care. Saunders, 2008<br/>
+      CHOP Clinical Pathway: G/J or G-Tube Displacement<br/>
+      Authors: Melinda Hartenstein, Danielle Sullivan, Emma Liceaga
+    </div>
+  </Card>
+</Pad>)}
+
+/* ═══════════════════════════════
+   APP
+   ═══════════════════════════════ */
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decisions",label:"Decisions"},{key:"meds",label:"Procedures & Meds"},{key:"dispo",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (months)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="24" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="12" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decisions"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Gastrostomy Tube Displacement Clinical Pathway · July 2021
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
