@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sickle Cell Disease with Fever — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#6b21a8",pLight:"#faf5ff",pBorder:"#c4b5fd",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{
+  title:"Pathway Rationale — SCD with Fever",
+  patho:"Patients with sickle cell disease have functional asplenia from repeated splenic infarction, rendering them highly susceptible to serious bacterial infections by encapsulated organisms — particularly Streptococcus pneumoniae, Neisseria meningitidis, and Haemophilus influenzae. The spleen normally filters opsonized bacteria; without functional splenic tissue, these organisms can rapidly cause overwhelming sepsis. A fever ≥38.3°C in SCD is treated as a medical emergency.\n\nHistorically, bacteremia rates in febrile SCD patients were 3–5%, mandating universal admission. With widespread pneumococcal vaccination, H. influenzae vaccination, penicillin prophylaxis, and newborn screening, the bacteremia rate has decreased to approximately 0.8%. This has enabled risk stratification for safe outpatient management of low-risk patients.",
+  pearls:"Every febrile SCD patient is ESI II — place on continuous cardiac and pulse ox monitoring immediately. Draw labs and give antibiotics before risk-stratifying for disposition. The key clinical question is not whether to treat (all get antibiotics), but whether the patient can be safely discharged after a 2-hour observation period.\n\nAlways ask about: baseline hemoglobin, transfusion history, last ceftriaxone dose (critical — ceftriaxone within 8 weeks is a contraindication), prior complications (ACS, bacteremia, sequestration, stroke), penicillin prophylaxis compliance, and vaccination status.",
+  evidence:"Bacteremia rate in febrile SCD decreased from 3–5% to 0.8% with modern prophylaxis (Baskin, Pediatrics 2013). CHOP demonstrated safety of low-risk outpatient management with no adverse outcomes in 466/1118 febrile episodes (Ellison, J Pediatr Hematol Oncol 2018)."
+},
+ceftriWarning:{
+  title:"Ceftriaxone-Induced Immune Hemolytic Anemia",
+  patho:"Ceftriaxone can induce formation of drug-dependent antibodies that cause acute immune hemolytic anemia (IHA) upon re-exposure. In SCD patients who already have chronic hemolysis and limited bone marrow reserve, ceftriaxone-induced IHA can be rapidly fatal. The mechanism involves ceftriaxone binding to RBC membranes, creating neoantigens recognized by drug-dependent IgG and complement — massive intravascular hemolysis can cause hemoglobin drops of 3–5 g/dL within hours.\n\nThe 8-week window reflects the typical duration of drug-dependent antibody persistence. Risk appears highest with repeated dosing at intervals of 2–6 weeks.",
+  pearls:"ALWAYS ask when the last ceftriaxone dose was given. If within the past 8 weeks → use ampicillin instead. This is a potentially fatal drug reaction in SCD patients. Document the last ceftriaxone date prominently.\n\nFor patients <12 months: use ampicillin regardless (ceftriaxone is contraindicated in this age group for SCD per pathway).",
+  evidence:"Ceftriaxone-induced IHA: multiple fatal cases reported in SCD patients. (Neuman, Ann Pharmacother 2015). The 8-week avoidance interval is standard across major SCD centers. (OHSU DCH ED Pathway Sept 2021)"
+},
+acs:{
+  title:"Acute Chest Syndrome (ACS)",
+  patho:"ACS is defined as a new pulmonary infiltrate on CXR plus at least one of: fever, cough, hypoxia, tachypnea, or chest pain. It is the leading cause of death and second most common cause of hospitalization in SCD. The pathophysiology involves vaso-occlusion in pulmonary vasculature, fat embolism from bone marrow necrosis, and infection (Mycoplasma, Chlamydia, S. pneumoniae, and respiratory viruses). The resulting ventilation-perfusion mismatch, inflammation, and further sickling creates a vicious cycle that can rapidly progress to respiratory failure.",
+  pearls:"CXR should be obtained in any febrile SCD patient with chest pain, SOB, increased work of breathing, tachypnea, or hypoxia. ACS is frequently not clinically suspected initially — always have a low threshold for imaging.\n\nACS treatment: ampicillin (for typical organisms) + azithromycin (for Mycoplasma/Chlamydia atypical coverage). Consult Hem/Onc for transfusion considerations. Severe ACS → PICU consult.",
+  evidence:"ACS leading cause of death in SCD. Mycoplasma identified in significant proportion of ACS cases (Neumayr, Pediatrics 2003). Combined typical + atypical coverage recommended. (NHLBI SCD Management Guidelines 2014)"
+},
+lowRisk:{
+  title:"Low-Risk Discharge Criteria",
+  patho:"The low-risk stratification system identifies febrile SCD patients with minimal likelihood of serious bacterial infection or acute SCD complications who can be safely discharged after antibiotics and a brief observation period. The four domains — clinical, lab, SCD history, and social — must ALL be satisfied. A single high-risk criterion in any domain mandates admission.",
+  pearls:"ALL four domains must be LOW-RISK for discharge:\n\nCLINICAL: >12 months, well-appearing, good VS, tolerating PO, no complications (sequestration, ACS, VOC needing IV analgesia), no new hypoxia, SpO₂ ≥92% (or no >3% below baseline), no CVAD\n\nLABS: Hgb >5, retics >1% (unless Hgb >10), no Hgb drop >2g, WBC >5K and <30K, CXR without infiltrate (if obtained), UA negative (if obtained)\n\nSCD PMH: No ceftriaxone in past 8 weeks, no prior bacteremia/sepsis, no sequestration in past 4 weeks, no recent antibiotic treatment, not multiple visits for same febrile illness (splenectomy alone does NOT exclude from discharge)\n\nSOCIAL: Compliant with penicillin prophylaxis, up-to-date immunizations, reliable follow-up (phone, transportation, keeps appointments)",
+  evidence:"Low-risk criteria adapted from Baskin (Pediatrics 2013) and CHOP pathway (Ellison 2018). No adverse outcomes in low-risk discharged patients across multiple centers. (OHSU DCH ED Pathway Sept 2021)"
+},
+antibioticSelection:{
+  title:"Antibiotic Selection Logic",
+  patho:"The primary empiric antibiotic targets encapsulated organisms (S. pneumoniae, H. influenzae, N. meningitidis). Ceftriaxone provides excellent coverage with convenient once-daily dosing. Ampicillin is the alternative when ceftriaxone is contraindicated. Vancomycin is added for toxic patients or T≥40°C to cover resistant gram-positives (MRSA, penicillin-resistant pneumococcus). Levofloxacin covers the same spectrum for patients with true penicillin and cephalosporin allergy.\n\nFor ACS, azithromycin is added to ampicillin to cover atypical organisms (Mycoplasma pneumoniae, Chlamydia pneumoniae) that are common causes of ACS.",
+  pearls:"Standard: Ceftriaxone IV (if >12 months AND no ceftriaxone in past 8 weeks)\nAge <12 months or recent ceftriaxone: Ampicillin IM/IV\nPCN/ceph allergy: Levofloxacin (consider ID consult)\nACS: Ampicillin + Azithromycin\nToxic/T≥40°C: Vancomycin + Ceftriaxone\n\nObserve 2 hours after antibiotics before considering discharge.",
+  evidence:"Antibiotic selection per OHSU DCH ED Pathway Sept 2021, NHLBI 2014 guidelines, and CHOP SCD fever pathway 2017."
+},
+disposition:{
+  title:"Disposition Decision-Making",
+  pearls:"All patients receive antibiotics regardless of disposition. After a 2-hour observation period:\n\nDISCHARGE if ALL low-risk criteria met across all 4 domains AND 24-hour Hem/Onc follow-up is available. Give return precautions.\n\nADMIT if ANY high-risk criterion present in any domain. Consult Pediatric Hematology/Oncology.\n\nPICU if severe ACS, hemodynamic instability, or critical illness."
+},
+painMgmt:{
+  title:"Pain Management in Febrile SCD",
+  pearls:"Tylenol 12.5 mg/kg PO q4h for fever. Ibuprofen 10 mg/kg PO q6h for mild pain or fever. For moderate-severe pain: consider PO oxycodone, IV ketorolac, or IV morphine/hydromorphone. If pain requires IV analgesia, this is a HIGH-RISK feature — patient should be admitted (likely concurrent VOC)."
+}
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,ceftri:Math.min(Math.round(wt*50),2000),amp:Math.round(wt*50),vanc:Math.round(wt*20),bolus:Math.round(wt*20),apap:Math.round(wt*12.5),ibu:Math.round(wt*10)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Sickle Cell Disease with Fever</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · September 2021</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+function TeachBox({id,teaching}){
+  var s=useState("pearls"),tab=s[0],setTab=s[1];
+  if(!teaching||!TEACH[id])return null;var t=TEACH[id];
+  if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}
+  var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;
+  var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;
+  return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>{tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}</div><div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeKey]||""}</div></div>);
+}
+
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>SCD patient {'>'} 2 months · T ≥38.3°C · Antibiotic routing + low-risk discharge criteria</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 520" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={520} fill="#fafaf8" rx={6}/>
+          <Box x={100} y={8} w={280} h={30} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={20} size={9} weight={700} color={pC}>SCD WITH FEVER ≥38.3°C</T><T x={240} y={31} size={6} color={mC}>ESI II · Monitor · PIV · Labs · NS bolus</T></Box>
+          <Arrow x1={240} y1={38} x2={240} y2={56}/>
+
+          <g transform="translate(240,70)"><polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Ill or T≥40°C?</T></g>
+          <Arrow x1={305} y1={70} x2={410} y2={92} color={rC}/><T x={368} y={80} size={6} weight={600} color={rC}>Yes</T>
+          <Box x={350} y={92} w={120} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={104} size={7} weight={700} color={rC}>VANC + CEFTRI</T><T x={410} y={116} size={6} color={mC}>Admit · Consider PICU</T></Box>
+
+          <Arrow x1={240} y1={84} x2={240} y2={104}/><T x={250} y={100} size={6} weight={600} color={gC} anchor="start">No</T>
+
+          <g transform="translate(240,118)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Suspected ACS?</T></g>
+          <Arrow x1={310} y1={118} x2={410} y2={140} color={aC}/><T x={370} y={128} size={6} weight={600} color={aC}>Yes</T>
+          <Box x={350} y={140} w={120} h={30} fill={aBg} stroke={aBd} sw={1.5}><T x={410} y={152} size={7} weight={700} color={aC}>AMP + AZITHRO</T><T x={410} y={164} size={6} color={mC}>Admit · PICU if severe</T></Box>
+
+          <Arrow x1={240} y1={132} x2={240} y2={154}/><T x={250} y={150} size={6} weight={600} color={gC} anchor="start">No</T>
+
+          <g transform="translate(240,168)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>{"<"}12 mo OR ceftri in</T><T x={0} y={7} size={6} weight={700}>past 8 weeks?</T></g>
+          <Arrow x1={160} y1={168} x2={70} y2={196} color={blC}/><T x={102} y={182} size={6} weight={600} color={blC}>Yes</T>
+          <Box x={15} y={196} w={110} h={28} fill={blBg} stroke={blBd} sw={1.5}><T x={70} y={208} size={8} weight={700} color={blC}>AMPICILLIN</T><T x={70} y={219} size={6} color={mC}>IM/IV</T></Box>
+
+          <Arrow x1={320} y1={168} x2={370} y2={196} color={pC}/><T x={355} y={182} size={6} weight={600} color={pC}>No</T>
+          <Box x={320} y={196} w={130} h={28} fill={pBg} stroke={pBd} sw={1.5}><T x={385} y={208} size={8} weight={700} color={pC}>CEFTRIAXONE</T><T x={385} y={219} size={6} color={mC}>IM/IV</T></Box>
+
+          <Arrow x1={70} y1={224} x2={200} y2={248}/><Arrow x1={385} y1={224} x2={280} y2={248}/>
+
+          <Box x={140} y={248} w={200} h={24} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={258} size={8} weight={700} color={tC}>OBSERVE 2 HOURS</T><T x={240} y={269} size={6} color={mC}>Reassess for low-risk discharge</T></Box>
+
+          <Arrow x1={240} y1={272} x2={240} y2={292}/>
+          <g transform="translate(240,306)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>ALL low-risk criteria</T><T x={0} y={7} size={6} weight={700}>met? (4 domains)</T></g>
+
+          <Arrow x1={160} y1={306} x2={70} y2={336} color={gC}/><T x={102} y={320} size={6} weight={600} color={gC}>Yes</T>
+          <Arrow x1={320} y1={306} x2={410} y2={336} color={rC}/><T x={375} y={320} size={6} weight={600} color={rC}>No</T>
+
+          <Box x={10} y={336} w={120} h={30} fill={gBg} stroke={gBd} sw={1.5}><T x={70} y={348} size={8} weight={700} color={gC}>DISCHARGE</T><T x={70} y={360} size={6} color={mC}>24h Hem/Onc F/U</T></Box>
+          <Box x={350} y={336} w={120} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={348} size={8} weight={700} color={rC}>ADMIT</T><T x={410} y={360} size={6} color={mC}>Consult Hem/Onc</T></Box>
+
+          {/* Low risk criteria boxes */}
+          <Box x={10} y={384} w={110} h={56} fill={gBg} stroke={gBd} radius={6}><T x={65} y={396} size={7} weight={700} color={gC}>CLINICAL</T><T x={65} y={407} size={5.5} color={mC}>{'>'} 12 mo · Well-appearing</T><T x={65} y={416} size={5.5} color={mC}>Good VS · Tolerating PO</T><T x={65} y={425} size={5.5} color={mC}>No ACS/seq/VOC</T><T x={65} y={434} size={5.5} color={mC}>SpO₂ ≥92% · No CVAD</T></Box>
+          <Box x={130} y={384} w={110} h={56} fill={gBg} stroke={gBd} radius={6}><T x={185} y={396} size={7} weight={700} color={gC}>LABS</T><T x={185} y={407} size={5.5} color={mC}>Hgb {'>'} 5 · Retic {'>'} 1%</T><T x={185} y={416} size={5.5} color={mC}>No Hgb drop {'>'} 2g</T><T x={185} y={425} size={5.5} color={mC}>WBC 5K–30K</T><T x={185} y={434} size={5.5} color={mC}>CXR clear · UA neg</T></Box>
+          <Box x={250} y={384} w={110} h={56} fill={gBg} stroke={gBd} radius={6}><T x={305} y={396} size={7} weight={700} color={gC}>SCD PMH</T><T x={305} y={407} size={5.5} color={mC}>No recent ceftri</T><T x={305} y={416} size={5.5} color={mC}>No prior bacteremia</T><T x={305} y={425} size={5.5} color={mC}>No recent sequestration</T><T x={305} y={434} size={5.5} color={mC}>No recent abx</T></Box>
+          <Box x={370} y={384} w={100} h={56} fill={gBg} stroke={gBd} radius={6}><T x={420} y={396} size={7} weight={700} color={gC}>SOCIAL</T><T x={420} y={407} size={5.5} color={mC}>PCN prophylaxis</T><T x={420} y={416} size={5.5} color={mC}>Immunizations UTD</T><T x={420} y={425} size={5.5} color={mC}>Has phone/transport</T><T x={420} y={434} size={5.5} color={mC}>Keeps appointments</T></Box>
+
+          <Box x={10} y={452} w={460} h={24} fill={blBg} stroke={blBd} radius={6}><T x={240} y={467} size={7} weight={700} color={blC}>ALL 4 DOMAINS MUST BE LOW-RISK FOR DISCHARGE</T></Box>
+
+          <Box x={10} y={486} w={460} h={24} fill={aBg} stroke={aBd} radius={6}><T x={150} y={501} size={6} color={mC}>Bacteremia rate with prophylaxis: ~0.8%</T><T x={380} y={501} size={6} color={mC}>Splenectomy alone does NOT exclude D/C</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function LowRiskChecker({teaching}){
+  var CLINICAL=["Age > 12 months","Well-appearing","Good vital signs","Tolerating PO well","No sequestration concern","No ACS concern","No VOC requiring IV analgesia","No new hypoxia","SpO₂ ≥ 92% (or within 3% of baseline)","No central venous access device"];
+  var LABS=["Hgb > 5 g/dL","Reticulocyte count > 1% (unless Hgb > 10)","No significant Hgb drop (> 2g)","WBC > 5K and < 30K","CXR without infiltrate (if obtained)","UA negative (if obtained)"];
+  var PMH=["No ceftriaxone in preceding 8 weeks","No prior bacteremia or sepsis","No splenic sequestration in past 4 weeks","No recent antibiotic treatment","Not multiple visits for same febrile illness"];
+  var SOCIAL=["Compliant with penicillin prophylaxis","Immunizations up to date","Has phone for contact","Has transportation","Keeps appointments / reliable follow-up"];
+
+  var s1=useState([]),clin=s1[0],setClin=s1[1];
+  var s2=useState([]),labs=s2[0],setLabs=s2[1];
+  var s3=useState([]),pmh=s3[0],setPmh=s3[1];
+  var s4=useState([]),soc=s4[0],setSoc=s4[1];
+
+  function toggle(arr,setArr,item){setArr(function(p){return p.includes(item)?p.filter(function(x){return x!==item}):[].concat(p,[item])});}
+
+  var clinAll=clin.length===CLINICAL.length;
+  var labsAll=labs.length===LABS.length;
+  var pmhAll=pmh.length===PMH.length;
+  var socAll=soc.length===SOCIAL.length;
+  var allLow=clinAll&&labsAll&&pmhAll&&socAll;
+
+  function DomainSection(props){return(<div style={{marginBottom:12}}>
+    <div style={{fontSize:13,fontWeight:700,color:props.allMet?C.greenMid:C.ink,marginBottom:6}}>{props.allMet?"✓ ":""}{props.title} <span style={{fontSize:11,fontWeight:500,color:C.muted}}>({props.checked.length}/{props.items.length})</span></div>
+    {props.items.map(function(item){var sel=props.checked.includes(item);return <button key={item} onClick={function(){toggle(props.checked,props.setChecked,item)}} style={{display:"block",width:"100%",textAlign:"left",background:sel?C.greenBg:C.white,border:"1.5px solid "+(sel?C.greenMid:C.rule),borderRadius:8,padding:"8px 12px",marginBottom:4,cursor:"pointer"}}><div style={{fontSize:12,fontWeight:sel?600:400,color:sel?C.greenMid:C.ink}}>{sel?"✓ ":""}{item}</div></button>})}
+  </div>);}
+
+  return(<div>
+    <DomainSection title="Clinical" items={CLINICAL} checked={clin} setChecked={setClin} allMet={clinAll}/>
+    <DomainSection title="Labs / Imaging" items={LABS} checked={labs} setChecked={setLabs} allMet={labsAll}/>
+    <DomainSection title="SCD History" items={PMH} checked={pmh} setChecked={setPmh} allMet={pmhAll}/>
+    <div style={{fontSize:11,color:C.muted,fontStyle:"italic",marginBottom:8}}>Note: Splenectomy alone does NOT exclude from discharge if all other criteria are met.</div>
+    <DomainSection title="Social" items={SOCIAL} checked={soc} setChecked={setSoc} allMet={socAll}/>
+    <div style={{background:allLow?C.greenBg:C.redBg,border:"2px solid "+(allLow?C.greenMid:C.red),borderRadius:10,padding:"12px 14px",marginTop:8}}>
+      <div style={{fontSize:14,fontWeight:700,color:allLow?C.greenMid:C.red}}>{allLow?"✅ ALL LOW-RISK CRITERIA MET — May discharge with 24h Hem/Onc follow-up":"⚠️ HIGH-RISK — Not all criteria met → ADMIT"}</div>
+      {!allLow&&<div style={{fontSize:12,marginTop:4,color:C.ink}}>Missing: {!clinAll?"Clinical ":"" }{!labsAll?"Labs ":""}{!pmhAll?"SCD Hx ":""}{!socAll?"Social":""}</div>}
+    </div>
+    <TeachBox id="lowRisk" teaching={teaching}/>
+  </div>);
+}
+
+function Wizard({teaching,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),toxic=s2[0],setToxic=s2[1];
+  var s3=useState(null),acs=s3[0],setACS=s3[1];
+  var s4=useState(null),abxRoute=s4[0],setAbxRoute=s4[1];
+  function reset(){setExcl(null);setToxic(null);setACS(null);setAbxRoute(null);}
+
+  return(<Pad>
+    <Q text="SCD with Fever Walk-Through" sub="Antibiotic routing → 2-hour observation → low-risk discharge assessment"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    <Card title="Step 1 — Exclusion Screening" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Does the patient meet exclusion criteria?<br/><span style={{fontSize:12,color:C.muted}}>AMS · Severe/atypical headache · Focal neuro deficits · New seizure · Pain without fever (use VOE pathway) · Age 0–60 days (use fever pathways) · Age ≥20 years</span></div>
+      <WizBtn label="Yes — Exclusion present" sub="Off pathway" color={C.red} bg={C.redBg} border={C.redBorder} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+      <WizBtn label="No — SCD patient with fever ≥38.3°C" sub="Proceed — ESI II, monitor, PIV, draw labs, NS bolus" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      {excl==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⚠️" title="Off Pathway">Use appropriate pathway: VOE pathway for pain without fever, fever/sepsis pathway for age 0–60 days, or direct clinical evaluation for neurologic concerns.</Alert>}
+    </Card>
+
+    {excl==="no"&&<Card title="Step 2 — Ill-Appearing or T ≥ 40°C?" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is the patient toxic/ill-appearing or does the temperature reach ≥40°C?</div>
+      <WizBtn label="Yes — Toxic or T ≥ 40°C" sub="Vancomycin + Ceftriaxone → Admit, consider PICU" color={C.red} bg={C.redBg} border={C.redBorder} selected={toxic==="yes"} onClick={function(){setToxic("yes")}}/>
+      <WizBtn label="No — Well-appearing, T < 40°C" sub="Proceed to ACS screening" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={toxic==="no"} onClick={function(){setToxic("no")}}/>
+      {toxic==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Toxic / T ≥ 40°C — Admit">
+        {doses?<div><DoseRow label="Vancomycin IV (20 mg/kg)" value={doses.vanc} unit="mg"/><DoseRow label="Ceftriaxone IV (50 mg/kg)" value={doses.ceftri} unit="mg"/><DoseRow label="NS bolus (20 mL/kg)" value={doses.bolus} unit="mL"/></div>:<span>Vancomycin 20 mg/kg IV + Ceftriaxone 50 mg/kg IV · NS 20 mL/kg</span>}<br/>
+        <strong>Admit</strong> · Consult Hem/Onc · Consider PICU
+      </Alert>}
+    </Card>}
+
+    {excl==="no"&&toxic==="no"&&<Card title="Step 3 — Acute Chest Syndrome Screen" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is there clinical suspicion for ACS?<br/><span style={{fontSize:12,color:C.muted}}>New pulmonary infiltrate on CXR PLUS any: fever, cough, hypoxia, tachypnea, chest pain</span></div>
+      <WizBtn label="Yes — Suspected ACS" sub="Ampicillin + Azithromycin → Admit (PICU if severe)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={acs==="yes"} onClick={function(){setACS("yes")}}/>
+      <WizBtn label="No — No ACS" sub="Proceed to antibiotic selection" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={acs==="no"} onClick={function(){setACS("no")}}/>
+      {acs==="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🫁" title="Acute Chest Syndrome">
+        {doses?<div><DoseRow label="Ampicillin IV (50 mg/kg)" value={doses.amp} unit="mg"/><div style={{fontSize:12,color:C.muted,marginTop:2}}>+ Azithromycin PO/IV (10 mg/kg day 1, then 5 mg/kg)</div></div>:<span>Ampicillin 50 mg/kg IV + Azithromycin PO/IV</span>}<br/>
+        Consult Hem/Onc for transfusion. <strong>Admit</strong> · PICU if severe ACS.
+      </Alert>}
+      <TeachBox id="acs" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&toxic==="no"&&acs==="no"&&<Card title="Step 4 — Antibiotic Selection" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Age and ceftriaxone history determine antibiotic choice:</div>
+      <WizBtn label="Age ≥ 12 months, no ceftriaxone in past 8 weeks" sub="Ceftriaxone IM/IV" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={abxRoute==="ceftri"} onClick={function(){setAbxRoute("ceftri")}}/>
+      <WizBtn label="Age 2–12 months OR ceftriaxone in past 8 weeks" sub="Ampicillin IM/IV (ceftriaxone contraindicated)" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={abxRoute==="amp"} onClick={function(){setAbxRoute("amp")}}/>
+      <WizBtn label="PCN or cephalosporin allergy" sub="Levofloxacin — consider ID consult" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={abxRoute==="levo"} onClick={function(){setAbxRoute("levo")}}/>
+      {abxRoute==="ceftri"&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="💊" title="Ceftriaxone">
+        {doses?<DoseRow label="Ceftriaxone IM/IV (50 mg/kg, max 2g)" value={doses.ceftri} unit="mg"/>:<span>Ceftriaxone 50 mg/kg IM/IV (max 2g)</span>}<br/>Observe 2 hours → assess low-risk criteria for discharge.
+      </Alert>}
+      {abxRoute==="amp"&&<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="💊" title="Ampicillin">
+        {doses?<DoseRow label="Ampicillin IM/IV (50 mg/kg)" value={doses.amp} unit="mg"/>:<span>Ampicillin 50 mg/kg IM/IV</span>}<br/>Observe 2 hours → assess low-risk criteria for discharge.
+      </Alert>}
+      {abxRoute==="levo"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="💊" title="Levofloxacin (PCN/Ceph Allergy)">Levofloxacin — dose per pharmacy/ID recommendation. Consider Infectious Disease consult.<br/>Observe 2 hours → assess criteria.</Alert>}
+      <TeachBox id="ceftriWarning" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&toxic==="no"&&acs==="no"&&abxRoute!==null&&<Card title="Step 5 — Low-Risk Discharge Assessment (After 2-Hour Observation)" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>After 2 hours of observation, check ALL four domains. Every criterion must be met for discharge.</div>
+      <LowRiskChecker teaching={teaching}/>
+      <TeachBox id="disposition" teaching={teaching}/>
+    </Card>}
+
+    {excl!==null&&<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+function RefTriage({teaching}){return(<Pad>
+  <Q text="Triage & Initial Assessment" sub="SCD patient >2 months with T ≥38.3°C"/>
+  <TeachBox id="overview" teaching={teaching}/>
+  <Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">SCD patients {'>'} 2 months and {"<"} 20 years (or still followed by PHO) with fever symptoms and/or T ≥38.3°C.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">AMS · Severe/atypical headache · Focal neurologic findings · New seizure · Pain without fever (use VOE pathway) · Age 0–60 days (use fever/sepsis pathways) · Age ≥20 years</Alert></div></Card>
+  <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong><br/>Continuous cardiac and pulse oximetry · O₂ for SpO₂ {"<"} 92% and/or patient comfort<br/>PIV or access central line/port per CLABSI prevention bundle<br/>Draw labs and <strong>initiate NS fluid bolus</strong><br/><strong>Ask about:</strong> baseline Hgb, last ceftriaxone dose, transfusion history, prior complications, penicillin prophylaxis, vaccination status</div></Card>
+  <Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>All patients:</strong> CBC with diff, reticulocyte count, CMP, blood culture, Type & Screen<br/><strong>Directed by H&P:</strong> UA with micro if UTI suspected · CXR if chest pain, SOB, increased WOB, tachypnea, or hypoxia</div></Card>
+  <Card title="History — Key Questions" color={C.purple} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Duration of fever and other symptoms<br/>Baseline hemoglobin and transfusion history<br/>Baseline pulse oximetry reading<br/>Previous admissions and ICU stays<br/>Surgical history (splenectomy?)<br/>Vaccination history<br/>Allergies<br/><strong>Prior SCD complications:</strong> ACS, aplastic crisis, bacteremia, stroke, splenic sequestration, gallbladder disease, osteomyelitis<br/><strong>Medications:</strong> penicillin prophylaxis, hydroxyurea, folic acid, pain medications, <strong>last dose of ceftriaxone</strong></div></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+  <Q text="Decision Tree" sub="Antibiotic routing → observation → low-risk discharge criteria"/>
+  <Card title="Antibiotic Selection" color={C.primary}><div style={{marginTop:8}}>
+    {[{label:"Toxic/Ill or T ≥ 40°C",abx:"Vancomycin + Ceftriaxone",color:C.red,bg:C.redBg,bd:C.redBorder,note:"Admit, consider PICU"},
+      {label:"Suspected ACS",abx:"Ampicillin + Azithromycin",color:C.amberMid,bg:C.amberBg,bd:C.amberBorder,note:"Admit, PICU if severe"},
+      {label:"Age 2–12 mo OR ceftri in past 8 wk",abx:"Ampicillin IM/IV",color:C.blue,bg:C.blueBg,bd:C.blueBorder,note:"Observe 2h → assess"},
+      {label:"Age ≥12 mo, no recent ceftri, no allergy",abx:"Ceftriaxone IM/IV",color:C.purple,bg:C.purpleBg,bd:C.purpleBorder,note:"Observe 2h → assess"},
+      {label:"PCN / Cephalosporin allergy",abx:"Levofloxacin",color:C.amberMid,bg:C.amberBg,bd:C.amberBorder,note:"ID consult recommended"}
+    ].map(function(r){return <div key={r.label} style={{background:r.bg,border:"1.5px solid "+r.bd,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:r.color}}>{r.label}</div><div style={{fontSize:12,marginTop:2}}>{r.abx} — {r.note}</div></div>})}
+  </div><TeachBox id="antibioticSelection" teaching={teaching}/><TeachBox id="ceftriWarning" teaching={teaching}/></Card>
+  <Card title="Low-Risk Discharge Criteria (All 4 Domains)" color={C.greenMid}><div style={{marginTop:8}}>
+    <LowRiskChecker teaching={teaching}/>
+  </div></Card>
+  <PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+  <Q text="Medications & Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+  {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+  <Card title="Antibiotics" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Ceftriaxone IM/IV (50 mg/kg, max 2g)" value={doses?doses.ceftri:"—"} unit={doses?"mg":""}/><DoseRow label="Ampicillin IM/IV (50 mg/kg)" value={doses?doses.amp:"—"} unit={doses?"mg":""}/><DoseRow label="Vancomycin IV (20 mg/kg)" value={doses?doses.vanc:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Azithromycin for ACS: 10 mg/kg day 1, then 5 mg/kg days 2–5. Levofloxacin: per pharmacy/ID.</div></div><TeachBox id="antibioticSelection" teaching={teaching}/></Card>
+  <Card title="Fluids & Supportive" color={C.primary}><div style={{marginTop:8}}><DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/><DoseRow label="Acetaminophen PO (12.5 mg/kg q4h)" value={doses?doses.apap:"—"} unit={doses?"mg":""}/><DoseRow label="Ibuprofen PO (10 mg/kg q6h)" value={doses?doses.ibu:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>For moderate-severe pain: consider PO oxycodone, IV ketorolac, or IV morphine/hydromorphone. If IV analgesia needed → high-risk, admit.</div></div><TeachBox id="painMgmt" teaching={teaching}/></Card>
+  <Card title="Blood Products" color={C.red} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Consult Pediatric Hem/Onc <strong>prior to transfusion</strong> to determine number of units and whether exchange transfusion is indicated.</div></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+  <Q text="Disposition & References"/>
+  <Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+    <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>ALL low-risk criteria met across all 4 domains · 24-hour Hem/Onc follow-up available · 2-hour observation completed · Return precautions given</div></div>
+    <div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT</div><div style={{fontSize:12,marginTop:2}}>Any high-risk criterion in any domain · Consult Pediatric Hematology/Oncology</div></div>
+    <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU</div><div style={{fontSize:12,marginTop:2}}>Severe ACS · Hemodynamic instability · Critical illness</div></div>
+  </div></Card>
+  <Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Sickle Cell with Fever Clinical Pathway, September 2021<br/>Baskin MN et al. Bacteremia risk and outpatient management of febrile patients with SCD. Pediatrics 2013;131(6):1035-41<br/>Ellison AM et al. Standardized clinical pathway to decrease hospital admissions among febrile children with SCD. J Pediatr Hematol Oncol 2018;40(2):111-115<br/>NHLBI. Management of Sickle Cell Disease. 4th ed. NIH Publication 2002<br/>Yawn BP et al. Management of SCD: summary of 2014 evidence-based report. JAMA 2014;312(10):1033-48<br/>Neuman G et al. Ceftriaxone-induced immune hemolytic anemia. Ann Pharmacother 2015;49(5):616<br/>Neumayr L et al. Mycoplasma disease and ACS in SCD. Pediatrics 2003;112(1):87-95<br/>CHOP ED Pathway: SCD with Fever, 2017</div></Card>
+</Pad>)}
+
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decisions",label:"Decisions"},{key:"meds",label:"Meds"},{key:"dispo",label:"Dispo & Refs"}];
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (months)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="36" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="15" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decisions"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}><strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.<br/>Doernbecher Children's Hospital · PED · Sickle Cell Disease with Fever Clinical Pathway · September 2021</div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
