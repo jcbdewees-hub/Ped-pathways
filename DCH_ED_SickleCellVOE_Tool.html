@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sickle Cell Suspected VOE — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#3730a3",pLight:"#eef2ff",pBorder:"#a5b4fc",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{
+  title:"Pathway Rationale — Sickle Cell VOE",
+  patho:"Vaso-occlusive episodes (VOE) are caused by polymerization of deoxygenated hemoglobin S (HbS), which distorts red blood cells into rigid sickle shapes. These cells adhere to vascular endothelium via P-selectin, VCAM-1, and other adhesion molecules, occluding microvascular beds and causing tissue ischemia. The resulting pain is intense — mediated by both ischemic nerve stimulation and local inflammatory mediators (substance P, bradykinin, prostaglandins). VOE can be precipitated by cold exposure, dehydration, stress, extreme exercise, infection, menses, pregnancy, or may be idiopathic.\n\nCritically, VOE pain can mask other SCD complications: acute chest syndrome (chest/rib pain + splinting → atelectasis → ACS), splenic sequestration, osteomyelitis, sepsis, or stroke. Each of these must be screened for before attributing pain solely to VOE.",
+  pearls:"The single most important principle: the patient's report is the best method of assessing pain. There is no persuasive evidence that vital signs (tachycardia, hypertension) or labs (Hgb drop) correlate with degree of pain. Treat the patient's reported pain, not the numbers.\n\nImmediate actions on arrival: ESI II, continuous cardiac and pulse ox monitoring, offer IN fentanyl 2 mcg/kg (for patients ≥10 kg, max 100 mcg), PIV, draw labs. National guidelines recommend analgesic therapy within 30 minutes of triage or 60 minutes of registration.",
+  evidence:"NHLBI Expert Panel Report 2014: initiate parenteral opioids for severe VOE pain, NSAIDs for mild-moderate. No evidence that physical exam findings or labs correlate with pain severity. (NHLBI 2014, Bernard Emerg Med J 2006, CHOP SCD Pain Pathway 2020)"
+},
+painAssessment:{
+  title:"Pain Assessment & Self-Report",
+  patho:"SCD pain involves both nociceptive (tissue ischemia) and neuropathic (nerve damage from repeated crises) components. Chronic pain sensitization means that patients with frequent VOE may have altered pain processing — their pain thresholds are lower and their pain is real even when objective findings are minimal. Age-appropriate pain scales (FLACC for preverbal, Wong-Baker for young children, NRS 0-10 for older children) should be used consistently.",
+  pearls:"Always document: pain location, associated symptoms, quality, prior treatments that have and haven't worked, last dose and time of home pain medication. Check the PHO clinic note for a personal pain plan — if one exists, follow it. If not, use the pathway dosing.\n\nKey red flags that suggest more than simple VOE: fever ≥38.3°C (→ fever pathway), headache or focal neuro findings (→ stroke evaluation), chest pain with respiratory symptoms (→ ACS screen), abdominal pain with enlarging spleen (→ sequestration)."
+},
+painEscalation:{
+  title:"VOE Pain Escalation Algorithm",
+  patho:"The escalation algorithm mirrors WHO analgesic ladder principles adapted for VOE. PO NSAIDs (ibuprofen) provide anti-inflammatory relief targeting prostaglandin-mediated pain. PO opioids (oxycodone) add mu-receptor agonism for moderate pain. IV opioids (morphine, hydromorphone) provide rapid onset and titratable analgesia for severe pain. The 25% and 50% dose escalations allow titration to effect while maintaining safety margins.\n\nKetorolac (IV NSAID) bypasses GI absorption variability and provides potent COX-1/2 inhibition. It can be given within 1 hour of last PO NSAID as escalation — the routes are complementary. Check renal function before ketorolac (BMP) since SCD patients may have sickle nephropathy.",
+  pearls:"MILD (0–4) or no PO trial at home → Ibuprofen 10 mg/kg + Oxycodone PO → reassess 30–60 min\nMODERATE/SEVERE (5–10) and failed PO → IV Bundle: hydromorphone or morphine + IV ketorolac → reassess 15–30 min\nPersistent → IV Opioid #2: initial dose + 25% → reassess 15–30 min\nStill persistent → IV Opioid #3: initial dose + 50% → reassess 15–30 min\nStill persistent after 3 IV doses → ADMIT\n\nComfortable at any point → discharge with enough PO pain meds to reach next PHO clinic (usually Thursday).",
+  evidence:"NHLBI 2014: rapidly initiate analgesics, ideally within 30 min of triage. Parenteral opioids for severe VOE pain. NSAIDs as adjunct if no contraindications. (OHSU DCH ED Pathway Sept 2021)"
+},
+fluids:{
+  title:"Fluid Management — Use Judiciously",
+  patho:"SCD patients have impaired urinary concentrating ability (from medullary ischemia) leading to obligate free water losses. Combined with decreased oral intake during VOE, they are often volume depleted. However, over-resuscitation is dangerous in SCD: excess fluid can precipitate acute chest syndrome (pulmonary edema in already compromised vasculature), worsen cerebral edema in stroke, and cause hemodilution in aplastic crisis.",
+  pearls:"Give NS 20 mL/kg bolus ONLY if signs of dehydration or hypovolemia. Do NOT routinely bolus every VOE patient. There is no evidence that any particular fluid volume, rate, or type alleviates VOE pain. Encourage oral hydration when possible.\n\nDO NOT OVER-RESUSCITATE — can precipitate ACS, worsen aplastic crisis, cause cerebral edema with CVA.",
+  evidence:"Cochrane review found no good evidence for specific fluid regimens in VOE (Okomo 2012). Over-resuscitation risks well-documented. (OHSU DCH ED Pathway Sept 2021)"
+},
+acsScreen:{
+  title:"Acute Chest Syndrome Screening",
+  patho:"Chest and rib pain from VOE can cause splinting, which leads to hypoventilation, atelectasis, and eventually ACS — a vicious cycle. ACS diagnostic criteria: new pulmonary infiltrate PLUS any of: fever, cough, hypoxia, tachypnea. CXR (PA and lateral) should be obtained if any respiratory symptoms or chest pain are present.",
+  pearls:"If ACS is suspected: encourage incentive spirometry, supplemental O₂ for SpO₂ <92%, empiric broad-spectrum antibiotics (see SCD with Fever pathway for antibiotic selection), and consult PHO. Admit — PICU if severe ACS.\n\nRemember: splinting from rib/chest VOE pain is a direct cause of ACS. Aggressive pain control can prevent this complication."
+},
+disposition:{
+  title:"Disposition Criteria",
+  pearls:"LOW-RISK (may discharge): well-appearing, stable VS, tolerating PO well, tolerating PO pain meds, no ACS/sequestration concern, no new hypoxemia, SpO₂ ≥92%, CXR clear (if obtained), retic count at baseline, patient and family comfortable with plan.\n\nHIGH-RISK (admit): toxic/ill-appearing, oxygen requirement, multiple recent ED visits for pain, pain requiring IV analgesia beyond 3 doses, concern for ACS or sequestration.\n\nDischarge with enough pain medication to get to next PHO clinic (usually Thursday). Consult Hem/Onc for admission."
+},
+anemia:{
+  title:"Anemia Management",
+  pearls:"If anemic below baseline: consult Hematology before transfusion — SCD patients are at high risk for alloimmunization and iron overload. If anemic with inappropriately low/normal retic count: concern for aplastic crisis — consult Hematology urgently.\n\nAbsolute transfusion indications: aplastic crisis, splenic sequestration, CVA, rapidly progressing ACS. PHO should be consulted PRIOR to RBC transfusion to determine units and whether exchange transfusion is indicated."
+}
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;var age6=wt<20;var age12=wt>=20&&wt<40;return{w:wt,fentIN:Math.min(Math.round(wt*2),100),ibu:Math.round(wt*10),oxyLo:age6?Math.min(Math.round(wt*0.15*10)/10,2.5):age12?Math.min(Math.round(wt*0.2*10)/10,5):Math.min(Math.round(wt*0.2*10)/10,10),keto:Math.min(Math.round(wt*0.5*10)/10,30),morph_lo:Math.round(wt*0.1*10)/10,morph_hi:Math.min(Math.round(wt*0.15*10)/10,8),hydro_lo:Math.round(wt*0.015*100)/100,hydro_hi:Math.min(Math.round(wt*0.02*100)/100,2),bolus:Math.round(wt*20),apap:Math.round(wt*12.5)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Sickle Cell — Suspected VOE</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · September 2021</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+function TeachBox({id,teaching}){
+  var s=useState("pearls"),tab=s[0],setTab=s[1];
+  if(!teaching||!TEACH[id])return null;var t=TEACH[id];
+  if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}
+  var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;
+  var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;
+  return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>{tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}</div><div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeKey]||""}</div></div>);
+}
+
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#3730a3",pBg="#eef2ff",pBd="#a5b4fc",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>SCD with pain · Screen for complications · Pain escalation algorithm · Disposition</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 480" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={480} fill="#fafaf8" rx={6}/>
+          <Box x={100} y={8} w={280} h={30} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={20} size={9} weight={700} color={pC}>SCD — SUSPECTED VOE</T><T x={240} y={31} size={6} color={mC}>ESI II · Monitor · IN fentanyl · PIV · Labs</T></Box>
+          <Arrow x1={240} y1={38} x2={240} y2={56}/>
+
+          {/* Screening diamonds */}
+          <g transform="translate(240,70)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Fever ≥38.3?</T></g>
+          <Arrow x1={300} y1={70} x2={410} y2={70} color={rC}/><Arrow x1={410} y1={70} x2={410} y2={82} color={rC}/>
+          <Box x={360} y={82} w={100} h={22} fill={rBg} stroke={rBd}><T x={410} y={92} size={6} weight={700} color={rC}>FEVER PATHWAY</T><T x={410} y={100} size={5} color={mC}>See SCD Fever tool</T></Box>
+          <Arrow x1={240} y1={84} x2={240} y2={100}/>
+
+          <g transform="translate(240,114)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Neuro findings?</T></g>
+          <Arrow x1={300} y1={114} x2={410} y2={114} color={rC}/><Arrow x1={410} y1={114} x2={410} y2={126} color={rC}/>
+          <Box x={360} y={126} w={100} h={22} fill={rBg} stroke={rBd}><T x={410} y={136} size={6} weight={700} color={rC}>STROKE EVAL</T><T x={410} y={144} size={5} color={mC}>Neuro + PHO consult</T></Box>
+          <Arrow x1={240} y1={128} x2={240} y2={144}/>
+
+          <g transform="translate(240,158)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>ACS concern?</T></g>
+          <Arrow x1={300} y1={158} x2={410} y2={158} color={aC}/><Arrow x1={410} y1={158} x2={410} y2={170} color={aC}/>
+          <Box x={350} y={170} w={120} h={22} fill={aBg} stroke={aBd}><T x={410} y={180} size={6} weight={700} color={aC}>ACS PROTOCOL</T><T x={410} y={188} size={5} color={mC}>CXR · Abx · PHO · Admit</T></Box>
+          <Arrow x1={240} y1={172} x2={240} y2={192}/>
+
+          {/* Pain management */}
+          <Box x={100} y={192} w={280} h={22} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={202} size={8} weight={700} color={tC}>VOE PAIN MANAGEMENT</T><T x={240} y={212} size={5.5} color={mC}>Treat pain to patient-acceptable level</T></Box>
+          <Arrow x1={240} y1={214} x2={240} y2={230}/>
+
+          {/* Two tracks */}
+          <Arrow x1={180} y1={230} x2={100} y2={248} color={gC}/>
+          <Arrow x1={300} y1={230} x2={380} y2={248} color={rC}/>
+          <T x={130} y={238} size={6} weight={600} color={gC}>Mild (0–4)</T>
+          <T x={350} y={238} size={6} weight={600} color={rC}>Mod/Sev (5–10)</T>
+
+          <Box x={30} y={248} w={140} h={36} fill={gBg} stroke={gBd} sw={1.5}><T x={100} y={260} size={7} weight={700} color={gC}>PO ANALGESICS</T><T x={100} y={271} size={6} color={mC}>Ibuprofen + Oxycodone</T><T x={100} y={281} size={6} color={mC}>Reassess 30–60 min</T></Box>
+          <Box x={310} y={248} w={150} h={36} fill={rBg} stroke={rBd} sw={1.5}><T x={385} y={260} size={7} weight={700} color={rC}>IV BUNDLE</T><T x={385} y={271} size={6} color={mC}>Hydromorphone/Morphine</T><T x={385} y={281} size={6} color={mC}>+ IV Ketorolac · Q15–30min</T></Box>
+
+          <Arrow x1={385} y1={284} x2={385} y2={300} color={rC}/>
+          <Box x={320} y={300} w={140} h={24} fill={aBg} stroke={aBd}><T x={390} y={310} size={6} weight={700} color={aC}>ESCALATE: +25% → +50%</T><T x={390} y={320} size={6} color={mC}>Reassess Q15–30 min</T></Box>
+
+          {/* Converge to dispo */}
+          <Arrow x1={100} y1={284} x2={100} y2={344} color={gC}/>
+          <Arrow x1={385} y1={324} x2={385} y2={344} color={rC}/>
+
+          <g transform="translate(240,358)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Pain controlled with</T><T x={0} y={7} size={6} weight={700}>PO meds?</T></g>
+          <Arrow x1={160} y1={358} x2={80} y2={386} color={gC}/><T x={108} y={372} size={6} weight={600} color={gC}>Yes</T>
+          <Arrow x1={320} y1={358} x2={400} y2={386} color={rC}/><T x={370} y={372} size={6} weight={600} color={rC}>No</T>
+
+          <Box x={15} y={386} w={130} h={34} fill={gBg} stroke={gBd} radius={8}><T x={80} y={398} size={8} weight={700} color={gC}>DISCHARGE</T><T x={80} y={410} size={6} color={mC}>PO meds to next PHO</T><T x={80} y={418} size={6} color={mC}>Usually Thursday clinic</T></Box>
+          <Box x={335} y={386} w={130} h={34} fill={rBg} stroke={rBd} radius={8}><T x={400} y={398} size={8} weight={700} color={rC}>ADMIT</T><T x={400} y={410} size={6} color={mC}>Consult PHO</T><T x={400} y={418} size={6} color={mC}>IV PCA if needed</T></Box>
+
+          <Box x={10} y={436} w={460} h={34} fill={blBg} stroke={blBd} radius={6}><T x={240} y={449} size={7} weight={700} color={blC}>DO NOT OVER-RESUSCITATE</T><T x={240} y={461} size={6} color={mC}>Excess fluids can precipitate ACS, worsen aplastic crisis, or cause cerebral edema with CVA</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Wizard({teaching,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),fever=s2[0],setFever=s2[1];
+  var s3=useState(null),neuro=s3[0],setNeuro=s3[1];
+  var s4=useState(null),acs=s4[0],setACS=s4[1];
+  var s5=useState(null),severity=s5[0],setSeverity=s5[1];
+  var s6=useState(null),response=s6[0],setResponse=s6[1];
+  function reset(){setExcl(null);setFever(null);setNeuro(null);setACS(null);setSeverity(null);setResponse(null);}
+
+  return(<Pad>
+    <Q text="VOE Walk-Through" sub="Screen for complications → pain escalation → disposition"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    <Card title="Step 1 — Immediate Actions" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+        <strong>On arrival:</strong> ESI II · Continuous cardiac and pulse ox · O₂ for SpO₂ {"<"} 92%<br/>
+        <strong>Offer IN fentanyl</strong> {doses?doses.fentIN+" mcg":"2 mcg/kg"} (for patients ≥10 kg, max 100 mcg)<br/>
+        PIV · Draw labs: CBC with diff, retic count, CMP, T&S, LDH, direct bili<br/>
+        CXR if chest pain, SOB, increased WOB, or O₂ need<br/>
+        HCG in females ≥12 (or younger if menarche)<br/>
+        Consider NS bolus {doses?doses.bolus+" mL":"20 mL/kg"} ONLY if dehydrated/hypovolemic
+      </div>
+    </Card>
+
+    <Card title="Step 2 — Screen for Complications" color={C.red}>
+      <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:6}}>Fever ≥38.3°C?</div>
+      <WizBtn label="Yes — Fever present" sub="→ Use SCD with Fever pathway" color={C.red} bg={C.redBg} border={C.redBorder} selected={fever==="yes"} onClick={function(){setFever("yes")}}/>
+      <WizBtn label="No fever" sub="" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={fever==="no"} onClick={function(){setFever("no")}}/>
+      {fever==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🌡️" title="Fever — Switch Pathway">SCD patients are functionally asplenic and can devolve to severe sepsis quickly. Use the <strong>Sickle Cell with Fever pathway</strong>.</Alert>}
+
+      {fever==="no"&&<div>
+        <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:6,marginTop:12}}>Headache or neurologic findings?</div>
+        <WizBtn label="Yes — Neuro concern" sub="→ Evaluate for stroke" color={C.red} bg={C.redBg} border={C.redBorder} selected={neuro==="yes"} onClick={function(){setNeuro("yes")}}/>
+        <WizBtn label="No neuro findings" sub="" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={neuro==="no"} onClick={function(){setNeuro("no")}}/>
+        {neuro==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🧠" title="Stroke Evaluation">Careful neurologic exam. Emergently consult Peds Neurology and Peds PHO. CVA in SCD requires emergent RBC apheresis through a dialysis catheter.</Alert>}
+      </div>}
+
+      {fever==="no"&&neuro==="no"&&<div>
+        <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:6,marginTop:12}}>Chest pain or respiratory symptoms suggesting ACS?</div>
+        <WizBtn label="Yes — ACS concern" sub="CXR · Incentive spirometry · Abx · Consult PHO · Admit" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={acs==="yes"} onClick={function(){setACS("yes")}}/>
+        <WizBtn label="No — Typical VOE pain" sub="Proceed to pain management" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={acs==="no"} onClick={function(){setACS("no")}}/>
+        {acs==="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🫁" title="ACS Concern">CXR PA & lateral. Encourage incentive spirometry. Supplemental O₂ for SpO₂ {"<"} 92%. Empiric broad-spectrum abx (see SCD Fever pathway). Consult PHO. <strong>Admit</strong> — PICU if severe.</Alert>}
+        <TeachBox id="acsScreen" teaching={teaching}/>
+      </div>}
+    </Card>
+
+    {fever==="no"&&neuro==="no"&&acs==="no"&&<Card title="Step 3 — Pain Severity & Management" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>What is the pain severity and prior treatment?</div>
+      <WizBtn label="Mild (0–4) or no PO analgesic trial at home" sub="Start PO: Ibuprofen + Oxycodone → reassess 30–60 min" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={severity==="mild"} onClick={function(){setSeverity("mild")}}/>
+      <WizBtn label="Moderate/Severe (5–10) and failed PO at home" sub="IV Bundle: Hydromorphone or Morphine + IV Ketorolac" color={C.red} bg={C.redBg} border={C.redBorder} selected={severity==="severe"} onClick={function(){setSeverity("severe")}}/>
+
+      {severity==="mild"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="💊" title="PO Analgesics">
+        {doses?<div><DoseRow label="Ibuprofen PO (10 mg/kg)" value={doses.ibu} unit="mg"/><DoseRow label="Oxycodone PO" value={doses.oxyLo} unit="mg"/></div>:<div>Ibuprofen 10 mg/kg PO<br/>Oxycodone: {"<"}6yr 0.15 mg/kg (max 2.5mg) · 6–12yr 0.2 mg/kg (max 5mg) · {">"}12yr 0.2 mg/kg (max 10mg)</div>}
+        <div style={{fontSize:12,color:C.muted,marginTop:6}}>Follow personal pain plan from PHO clinic note if available. Reassess in 30–60 minutes.</div>
+      </Alert>}
+
+      {severity==="severe"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="💉" title="IV Bundle">
+        {doses?<div><DoseRow label="Morphine IV (0.1–0.15 mg/kg, max 8)" value={doses.morph_lo+"–"+doses.morph_hi} unit="mg"/><div style={{fontSize:12,color:C.muted,marginTop:2}}>OR</div><DoseRow label="Hydromorphone IV (0.015–0.02 mg/kg, max 2)" value={doses.hydro_lo+"–"+doses.hydro_hi} unit="mg"/><div style={{height:4}}/><DoseRow label="Ketorolac IV (0.5 mg/kg, max 30)" value={doses.keto} unit="mg"/></div>:<div>Morphine 0.1–0.15 mg/kg IV (max 8mg) OR Hydromorphone 0.015–0.02 mg/kg IV (max 2mg)<br/>+ Ketorolac 0.5 mg/kg IV (max 30mg)</div>}
+        <div style={{fontSize:12,color:C.muted,marginTop:6}}>Reassess in 15–30 minutes. If persistent pain:<br/>• IV Opioid #2: initial dose + 25% → reassess 15–30 min<br/>• IV Opioid #3: initial dose + 50% → reassess 15–30 min<br/>• If still persistent after 3 IV doses → <strong>ADMIT</strong></div>
+      </Alert>}
+      <TeachBox id="painEscalation" teaching={teaching}/>
+    </Card>}
+
+    {fever==="no"&&neuro==="no"&&acs==="no"&&severity!==null&&<Card title="Step 4 — Response & Disposition" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is the patient's pain controlled to an acceptable level with PO medications?</div>
+      <WizBtn label="Yes — Pain controlled, tolerating PO" sub="Well-appearing, stable VS, no complications → discharge" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={response==="controlled"} onClick={function(){setResponse("controlled")}}/>
+      <WizBtn label="No — Requires ongoing IV analgesia or complications" sub="Consult PHO → Admit" color={C.red} bg={C.redBg} border={C.redBorder} selected={response==="admit"} onClick={function(){setResponse("admit")}}/>
+      {response==="controlled"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Discharge">
+        Well-appearing · Stable VS · Tolerating PO · No ACS/sequestration concern · No new hypoxemia · SpO₂ ≥92% · CXR clear (if obtained) · Retic count at baseline · Patient and family comfortable with plan.<br/><br/>
+        <strong>Discharge with enough PO pain meds to reach next PHO clinic</strong> (usually Thursday). Return precautions: fever, worsening pain, chest pain, SOB, weakness, headache.
+      </Alert>}
+      {response==="admit"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="Admit">Consult Pediatric Hematology/Oncology. Consider IV PCA for ongoing pain management. Admit criteria: toxic/ill-appearing, O₂ requirement, multiple recent ED visits for pain, failed escalation algorithm, ACS or sequestration concern.</Alert>}
+      <TeachBox id="disposition" teaching={teaching}/>
+    </Card>}
+
+    {(excl!==null||fever!==null)&&<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+function RefTriage({teaching}){return(<Pad>
+  <Q text="Triage & Initial Assessment" sub="SCD patient with pain — screen for complications, treat pain rapidly"/>
+  <TeachBox id="overview" teaching={teaching}/>
+  <Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">SCD patients of any age still followed by OHSU Pediatric Hem/Onc, or non-OHSU SCD patients {"<"}20 years, presenting with pain.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">T ≥38.3°C → use SCD with Fever pathway</Alert></div></Card>
+  <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI II</strong> · Continuous cardiac and pulse ox · O₂ for SpO₂ {"<"} 92%<br/><strong>Offer IN fentanyl</strong> 2 mcg/kg (≥10 kg, max 100 mcg)<br/>PIV or access central line/port per CLABSI bundle<br/>Consider NS bolus if dehydrated/hypovolemic (do NOT over-resuscitate)<br/>Determine pain level, last home NSAID dose, order analgesics immediately</div></Card>
+  <Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>CBC with diff, reticulocyte count, CMP, Type & Screen, LDH total, direct bilirubin<br/>CXR if chest pain, SOB, increased WOB, or O₂ need<br/>HCG in females ≥12 or younger if menarche<br/>BMP if giving NSAIDs (check renal function)</div></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+  <Q text="Decision Tree" sub="Complication screening → pain escalation → disposition"/>
+  <Card title="Complication Screening" color={C.red}><div style={{marginTop:8}}>{[{q:"Fever ≥38.3°C?",a:"→ SCD Fever pathway",c:C.red},{q:"Headache / neuro findings?",a:"→ Stroke evaluation: Neuro + PHO emergent consult, RBC apheresis",c:C.red},{q:"Chest pain / resp symptoms?",a:"→ ACS screen: CXR, incentive spirometry, O₂, abx, PHO, admit",c:C.amberMid},{q:"Anemia below baseline?",a:"→ Consult PHO: possible aplastic crisis if retic low/normal",c:C.amberMid}].map(function(r){return <div key={r.q} style={{padding:"6px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:600}}>{r.q}</span><br/><span style={{fontSize:12,color:r.c}}>{r.a}</span></div>})}</div><TeachBox id="acsScreen" teaching={teaching}/></Card>
+  <Card title="VOE Pain Management Algorithm" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Mild (0–4) or no PO trial:</strong> Ibuprofen + Oxycodone → reassess 30–60 min<br/><strong>Moderate/Severe (5–10), failed PO:</strong> IV Bundle (morphine or hydromorphone + ketorolac) → reassess 15–30 min<br/><strong>Persistent:</strong> IV Opioid #2 (initial + 25%) → 15–30 min → IV Opioid #3 (initial + 50%) → 15–30 min<br/><strong>Still persistent after 3 IV doses → ADMIT</strong><br/><strong>Comfortable at any step → transition to PO → discharge</strong></div><TeachBox id="painEscalation" teaching={teaching}/></Card>
+  <Card title="Disposition" color={C.primary}><div style={{marginTop:8}}><div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Well-appearing · Stable VS · Tolerating PO pain meds · No ACS/sequestration · SpO₂ ≥92% · CXR clear · Retic at baseline · Family comfortable<br/>Discharge with PO meds to next PHO clinic</div></div><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT</div><div style={{fontSize:12,marginTop:2}}>Toxic/ill · O₂ requirement · Multiple recent ED visits · Failed escalation · ACS/sequestration concern</div></div></div><TeachBox id="disposition" teaching={teaching}/></Card>
+  <PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+  <Q text="Medications & Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+  {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+  <Card title="Intranasal — First-Line on Arrival" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Fentanyl IN (2 mcg/kg, max 100 mcg)" value={doses?doses.fentIN:"—"} unit={doses?"mcg":""}/><div style={{fontSize:12,color:C.muted,marginTop:4}}>For patients ≥10 kg. Offer immediately on arrival.</div></div></Card>
+  <Card title="PO Analgesics — Mild Pain" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Ibuprofen PO (10 mg/kg)" value={doses?doses.ibu:"—"} unit={doses?"mg":""}/><DoseRow label="Oxycodone PO" value={doses?doses.oxyLo:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:4}}>{"<"}6yr: 0.15 mg/kg (max 2.5mg) · 6–12yr: 0.2 mg/kg (max 5mg) · {">"}12yr: 0.2 mg/kg (max 10mg). Follow personal pain plan if available.</div></div></Card>
+  <Card title="IV Analgesics — Moderate/Severe" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Morphine IV (0.1–0.15 mg/kg, max 8)" value={doses?doses.morph_lo+"–"+doses.morph_hi:"—"} unit={doses?"mg":""}/><DoseRow label="Hydromorphone IV (0.015–0.02 mg/kg, max 2)" value={doses?doses.hydro_lo+"–"+doses.hydro_hi:"—"} unit={doses?"mg":""}/><DoseRow label="Ketorolac IV (0.5 mg/kg, max 30)" value={doses?doses.keto:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Ketorolac may be given within 1h of last PO NSAID as escalation. Check renal function. If significant dehydration, NS bolus before ketorolac. Can give without HCG results unless 3rd trimester.</div></div><TeachBox id="painEscalation" teaching={teaching}/></Card>
+  <Card title="Supportive" color={C.primary} defaultOpen={false}><div style={{marginTop:8}}><DoseRow label="NS bolus (20 mL/kg) — only if dehydrated" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/><DoseRow label="Acetaminophen PO (12.5 mg/kg q4h)" value={doses?doses.apap:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.red,fontWeight:600,marginTop:6}}>DO NOT OVER-RESUSCITATE — can precipitate ACS, worsen aplastic crisis, cause cerebral edema</div></div><TeachBox id="fluids" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+  <Q text="Disposition & References"/>
+  <Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}><div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Pain controlled with PO meds · Well-appearing · Stable VS · Tolerating PO · No complications · SpO₂ ≥92% · CXR clear · Retic at baseline · Family comfortable<br/>Discharge with enough PO meds to reach next PHO clinic (usually Thursday)</div></div><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT</div><div style={{fontSize:12,marginTop:2}}>Toxic/ill · O₂ requirement · Multiple recent ED visits for pain · Failed pain escalation · ACS or sequestration concern · Consult PHO</div></div></div></Card>
+  <Card title="Possible VOE Causes" color={C.muted} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Infection · Cold exposure · Stress · Extreme exercise · Dehydration · Alcohol · Menses · Pregnancy · Exacerbation of other medical issues · Idiopathic</div></Card>
+  <Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Sickle Cell Suspected VOE Clinical Pathway, September 2021<br/>NHLBI. Evidence-Based Management of Sickle Cell Disease. Expert Panel Report, 2014<br/>Bernard AW et al. Full blood count and reticulocyte count in painful sickle crisis. Emerg Med J 2006;23(4):302-3<br/>Okomo U, Meremikwu MM. Fluid replacement therapy for acute episodes of pain in SCD. Cochrane Database Syst Rev 2012<br/>CHOP Sickle Cell Disease with Pain Clinical Pathway, 2020</div></Card>
+</Pad>)}
+
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decisions",label:"Decisions"},{key:"meds",label:"Pain Meds"},{key:"dispo",label:"Dispo & Refs"}];
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (months)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="48" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="18" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decisions"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}><strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.<br/>Doernbecher Children's Hospital · PED · Sickle Cell Suspected VOE Clinical Pathway · September 2021</div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
