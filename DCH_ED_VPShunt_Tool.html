@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VP Shunt / ETV Evaluation — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#6b21a8",pLight:"#faf5ff",pBorder:"#c4b5fd",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{
+  title:"Pathway Rationale — Shunt/ETV Evaluation",
+  patho:"Hydrocephalus results from impaired CSF absorption, overproduction, or obstruction of flow, occurring in ~1/1000 births and with 20–70% incidence after intraventricular hemorrhage. Ventriculoperitoneal (VP) shunts divert CSF from the lateral ventricle to the peritoneal cavity via a one-way valve. Endoscopic third ventriculostomy (ETV) creates a fenestration in the floor of the third ventricle, allowing CSF to bypass an obstruction and be reabsorbed over the brain surface.\n\nShunt failure rate is 45–60% in the first year after placement, most commonly from proximal catheter obstruction (choroid plexus or brain parenchyma), valve failure, tubing disruption, or distal catheter migration/pseudocyst formation. ETV has a 2-year operation-free survival of ~58%, with most failures occurring in the first year.",
+  pearls:"The key principle is: shunt patients presenting with ANY neurologic symptoms should be presumed to have shunt failure until proven otherwise. Quick brain MRI is the imaging modality of choice at DCH (within 60 minutes of presentation) — comparable sensitivity/specificity to CT without radiation exposure. Children with shunts accumulate dozens of CTs over their lifetime.\n\nCritical immediate actions: ESI II, cardiac monitoring, elevate HOB 30°, notify radiology/MRI urgently, frequent neuro assessments, NPO status. If programmable shunt, obtain shunt series (plain films) BEFORE MRI.",
+  evidence:"Quick brain MRI comparable to CT for hydrocephalus evaluation (Yue, J Neurosurg Pediatr 2015). Shunt failure rate 45–60% first year (Piatt, Ped Emerg Care 2008). ETV 2-year survival ~58% (Kulkarni, J Pediatr 2009). (OHSU DCH ED Pathway June 2022)"
+},
+icpSigns:{
+  title:"Signs & Symptoms of Elevated ICP",
+  patho:"Elevated intracranial pressure from shunt/ETV failure manifests differently by age due to cranial compliance. In infants with open fontanelles, the skull can expand, so bulging fontanelle, increasing head circumference, and scalp vein distension may precede severe neurologic deterioration. In older children with closed sutures, pressure rises more rapidly, causing headache (worst in morning, worsened by Valsalva), projectile vomiting, personality/cognitive changes, and eventually Cushing's triad (bradycardia, hypertension, irregular respirations) signaling impending herniation.\n\nUpgaze paresis (setting sun sign) results from compression of the tectal plate by the dilated third ventricle pressing on the superior colliculi, affecting the vertical gaze center.",
+  pearls:"INFANT: bulging fontanelle, increasing head circumference, irritability, poor feeding, vomiting, scalp vein distension, setting sun sign, episodic bradycardia, apnea, excessive sleepiness.\n\nCHILD: headache, vomiting, irritability, personality change, cognitive change, lethargy, hypersomnolence, discoordination, gait disturbance, seizure, nystagmus, upgaze paresis.\n\nCushing's triad (bradycardia + hypertension + respiratory irregularity) = imminent herniation → consult neurosurgery IMMEDIATELY, consider emergent shunt tap.",
+  evidence:"Clinical diagnosis of VP shunt failure: sensitivity of individual symptoms is low, but combination of headache + vomiting + lethargy has PPV ~70%. (Piatt, Ped Emerg Care 2008)"
+},
+quickMRI:{
+  title:"Quick Brain MRI — Radiation-Free Imaging",
+  patho:"Quick (rapid) brain MRI uses heavily T2-weighted sequences (typically single-shot fast spin echo or HASTE) that can be acquired in 1–3 minutes without sedation. These sequences are optimized for detecting ventricular size changes and are compared against the patient's baseline MRI. The key finding is change in ventricular size — absolute ventricular size is less important than change from the patient's known baseline.",
+  pearls:"Quick brain MRI is first-line imaging at DCH for stable patients. Target: within 60 minutes of presentation. No sedation, no contrast, no radiation. Patient can go to MRI off monitor if stable (no bradycardia, apnea, LOC changes, or sedation).\n\nIMPORTANT: If shunt is programmable or unknown → obtain shunt series (plain films) BEFORE MRI. The MRI magnetic field can reset programmable valve settings. Consult neurosurgery after MRI to restore correct settings.\n\nHead CT without contrast if: patient unstable, MRI delayed, or MRI unavailable.",
+  evidence:"Quick brain MRI has comparable sensitivity and specificity to CT for shunt evaluation in children. (Yue, J Neurosurg Pediatr 2015). Reduces lifetime radiation exposure significantly. (OHSU DCH ED Pathway June 2022)"
+},
+infection:{
+  title:"Shunt Infection",
+  patho:"Shunt infection occurs in 5–15% of shunt placements, most within 1–3 months of surgery. Pathogens are predominantly skin flora (coagulase-negative Staphylococcus, S. aureus) introduced during surgery. Infection causes inflammation along the shunt tract and at the distal catheter site, and is almost always associated with concurrent shunt malfunction. Abdominal abscesses at the drainage site usually occur within 1–3 months of placement.",
+  pearls:"Suspect infection if: fever within 6 months of revision AND no other identifiable source, shunt site drainage or erythema, erythema tracking along shunt tubing, or signs of meningitis/ventriculitis.\n\nWorkup: CBC, CMP, ESR, CRP, blood cultures. Neurosurgery will determine if shunt tap (CSF analysis) is needed. Antipyretics as needed.\n\nShunt infection almost always requires shunt removal and external ventricular drain placement — this is a neurosurgical decision."
+},
+pseudocyst:{
+  title:"Abdominal Pseudocyst",
+  patho:"Abdominal pseudocysts are encapsulated fluid collections around the distal VP shunt catheter tip in the peritoneum. They may be sterile (from CSF accumulation due to distal obstruction) or infected. They present primarily with abdominal symptoms — distension, pain, nausea, vomiting, constipation — but half have increased ventricular size on neuroimaging, indicating concurrent proximal failure.",
+  pearls:"Consider pseudocyst in any shunt patient with abdominal symptoms (pain, distension, nausea, vomiting). Obtain abdominal ultrasound to evaluate. Quick brain MRI or CT to assess ventricular size. Consult neurosurgery — management may require shunt revision with distal catheter repositioning."
+},
+disposition:{
+  title:"Disposition",
+  pearls:"PICU: Signs of elevated ICP with ventriculomegaly on imaging.\nOR: Unstable shunt malfunction per neurosurgery.\n10N (Ward) or ED Observation: Possible failure with normal imaging — neurosurgery determines observation vs admission.\nDischarge: Only after neurosurgery attending evaluation (in person or teleconsult). Ensure alternative etiologies considered.\n\nIMPORTANT: Patients with programmable shunts who underwent MRI need neurosurgery consult to restore correct valve settings before discharge."
+}
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,ondLo:Math.round(wt*0.1*10)/10,ondHi:Math.min(Math.round(wt*0.2*10)/10,8),apap:Math.round(wt*12.5),fentIN:Math.min(Math.round(wt*2),100),fentIV:Math.round(wt*1*10)/10};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>VP Shunt / ETV Evaluation</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · June 2022</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+function TeachBox({id,teaching}){var s=useState("pearls"),tab=s[0],setTab=s[1];if(!teaching||!TEACH[id])return null;var t=TEACH[id];if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>{tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}</div><div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeKey]||""}</div></div>);}
+
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(<div style={{marginTop:20}}><div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div><div style={{fontSize:11,color:C.muted,marginBottom:6}}>Shunt or ETV patient with possible elevated ICP or infection · Quick MRI within 60 min</div><div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}><svg viewBox="0 0 480 440" style={{width:"100%",display:"block"}}><rect width={480} height={440} fill="#fafaf8" rx={6}/>
+    <Box x={90} y={8} w={300} h={30} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={20} size={9} weight={700} color={pC}>SUSPECTED SHUNT / ETV FAILURE</T><T x={240} y={31} size={6} color={mC}>ESI II · Monitor · HOB 30° · Notify MRI · NPO</T></Box>
+    <Arrow x1={240} y1={38} x2={240} y2={56}/>
+    <g transform="translate(240,70)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Bradycardia, lethargy,</T><T x={0} y={7} size={6} weight={700}>resp compromise?</T></g>
+    <Arrow x1={320} y1={70} x2={420} y2={94} color={rC}/><T x={380} y={82} size={6} weight={600} color={rC}>Yes</T>
+    <Box x={360} y={94} w={110} h={36} fill={rBg} stroke={rBd} sw={2}><T x={415} y={106} size={7} weight={700} color={rC}>EMERGENT NSG</T><T x={415} y={117} size={6} color={mC}>Rapid MRI/CT + IV</T><T x={415} y={127} size={6} color={mC}>Consider shunt tap</T></Box>
+    <Arrow x1={240} y1={84} x2={240} y2={104}/><T x={250} y={100} size={6} weight={600} color={gC} anchor="start">Stable</T>
+
+    <g transform="translate(240,118)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Neuro sxs of failure?</T><T x={0} y={7} size={5} color={mC}>HA · vomiting · seizure · lethargy</T></g>
+    <Arrow x1={240} y1={132} x2={240} y2={152}/>
+    <Box x={110} y={152} w={260} h={28} fill={blBg} stroke={blBd} sw={1.5}><T x={240} y={162} size={8} weight={700} color={blC}>QUICK BRAIN MRI {"<"} 60 MIN</T><T x={240} y={175} size={6} color={mC}>Shunt series first if programmable · CT if unstable/MRI delayed</T></Box>
+    <Arrow x1={240} y1={180} x2={240} y2={198}/>
+
+    <g transform="translate(240,212)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Worsened hydrocephalus</T><T x={0} y={7} size={6} weight={700}>or pseudocyst?</T></g>
+    <Arrow x1={320} y1={212} x2={410} y2={240} color={rC}/><T x={375} y={226} size={6} weight={600} color={rC}>Yes</T>
+    <Box x={350} y={240} w={120} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={252} size={7} weight={700} color={rC}>NSG CONSULT</T><T x={410} y={264} size={6} color={mC}>OR / PICU / 10N</T></Box>
+
+    <Arrow x1={160} y1={212} x2={80} y2={240} color={gC}/><T x={108} y={226} size={6} weight={600} color={gC}>No</T>
+    <g transform="translate(80,254)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Still concerned?</T></g>
+    <Arrow x1={140} y1={254} x2={200} y2={280} color={aC}/>
+    <Box x={155} y={280} w={130} h={24} fill={aBg} stroke={aBd}><T x={220} y={295} size={7} weight={700} color={aC}>OBSERVE / ADMIT</T></Box>
+    <Arrow x1={20} y1={254} x2={-10} y2={280} color={gC}/>
+    <Box x={-40} y={280} w={100} h={24} fill={gBg} stroke={gBd}><T x={10} y={295} size={7} weight={700} color={gC}>OFF PATHWAY</T></Box>
+
+    {/* Infection branch */}
+    <Arrow x1={310} y1={118} x2={420} y2={140} color={aC}/>
+    <Box x={370} y={140} w={100} h={36} fill={aBg} stroke={aBd}><T x={420} y={152} size={6} weight={700} color={aC}>INFECTION?</T><T x={420} y={162} size={5.5} color={mC}>Fever {"<"}6mo post-rev</T><T x={420} y={172} size={5.5} color={mC}>CBC CMP ESR CRP</T></Box>
+
+    {/* Dispo bar */}
+    <Box x={10} y={320} w={145} h={40} fill={rBg} stroke={rBd} radius={8}><T x={82} y={334} size={7} weight={700} color={rC}>PICU / OR</T><T x={82} y={346} size={6} color={mC}>Elevated ICP + ventriculomegaly</T><T x={82} y={356} size={6} color={mC}>Unstable shunt malfunction</T></Box>
+    <Box x={165} y={320} w={155} h={40} fill={aBg} stroke={aBd} radius={8}><T x={243} y={334} size={7} weight={700} color={aC}>10N / ED OBS</T><T x={243} y={346} size={6} color={mC}>Possible failure, normal imaging</T><T x={243} y={356} size={6} color={mC}>Infection workup pending</T></Box>
+    <Box x={330} y={320} w={140} h={40} fill={gBg} stroke={gBd} radius={8}><T x={400} y={334} size={7} weight={700} color={gC}>DISCHARGE</T><T x={400} y={346} size={6} color={mC}>NSG attending evaluation</T><T x={400} y={356} size={6} color={mC}>Alternative dx · Reset valve</T></Box>
+
+    <Box x={10} y={374} w={460} h={28} fill={blBg} stroke={blBd} radius={6}><T x={240} y={386} size={7} weight={700} color={blC}>QUICK BRAIN MRI = FIRST CHOICE (no radiation, no sedation)</T><T x={240} y={398} size={6} color={mC}>Programmable shunt → shunt series BEFORE MRI · Consult NSG to restore settings after MRI</T></Box>
+    <Box x={10} y={410} w={460} h={22} fill={pBg} stroke={pBd} radius={6}><T x={240} y={424} size={6} color={mC}>Shunt failure rate: 45–60% in first year · ETV 2-yr operation-free survival: ~58% · Avoid NSAIDs · Avoid opioids if altered MS/elevated ICP</T></Box>
+  </svg></div></div>);
+}
+
+function Wizard({teaching,doses}){
+  var s1=useState(null),emergent=s1[0],setEmergent=s1[1];
+  var s2=useState(null),presentation=s2[0],setPresentation=s2[1];
+  var s3=useState(null),imagingResult=s3[0],setImagingResult=s3[1];
+  var s4=useState(null),stillConcerned=s4[0],setStillConcerned=s4[1];
+  function reset(){setEmergent(null);setPresentation(null);setImagingResult(null);setStillConcerned(null);}
+
+  return(<Pad>
+    <Q text="Shunt / ETV Evaluation Walk-Through" sub="Systematic evaluation for possible shunt malfunction or ETV failure"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    <Card title="Step 1 — Immediate Assessment" color={C.primary}>
+      <Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="⚡" title="Immediate Actions">
+        ESI II · Continuous cardiac monitoring · Elevate HOB 30°<br/>
+        Notify radiology/MRI of urgent imaging need<br/>
+        CBG if altered mental status · NPO<br/>
+        Frequent neuro assessments · LMX/J-tip for anticipated IV<br/>
+        Ondansetron {doses?doses.ondLo+"–"+doses.ondHi+" mg":"0.1–0.2 mg/kg"} ODT for nausea/vomiting<br/>
+        <strong>Document:</strong> last surgical revision, shunt type (programmable vs non-programmable), baseline neuro status, head circumference
+      </Alert>
+      <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:8}}>Is the patient in extremis? (Bradycardia, lethargy, respiratory compromise, Cushing's triad)</div>
+      <WizBtn label="Yes — Emergent" sub="Consult neurosurgery IMMEDIATELY · Rapid MRI/CT · IV access · Consider shunt tap" color={C.red} bg={C.redBg} border={C.redBorder} selected={emergent==="yes"} onClick={function(){setEmergent("yes")}}/>
+      <WizBtn label="No — Stable" sub="Proceed with evaluation" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={emergent==="no"} onClick={function(){setEmergent("no")}}/>
+      {emergent==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Emergent — Consult Neurosurgery NOW">Cardiac monitor. Rapid MRI or CT with RN. IV access, preoperative labs. If shunt reservoir present, LIP to consider tapping shunt to relieve pressure in consultation with neurosurgery. Prepare for OR.</Alert>}
+      <TeachBox id="icpSigns" teaching={teaching}/>
+    </Card>
+
+    {emergent==="no"&&<Card title="Step 2 — Clinical Presentation" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>What is the primary presentation pattern?</div>
+      <WizBtn label="Headache, vomiting, seizures, or other neuro signs of failure" sub="Quick brain MRI within 60 min → evaluate for ventriculomegaly" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={presentation==="neuro"} onClick={function(){setPresentation("neuro")}}/>
+      <WizBtn label="Fever within 6 months of revision, shunt drainage/redness" sub="Infection workup: CBC, CMP, ESR, CRP + quick brain MRI" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={presentation==="infection"} onClick={function(){setPresentation("infection")}}/>
+      <WizBtn label="Abdominal pain, distension, nausea/vomiting (shunt patient)" sub="Evaluate for pseudocyst: consider abd US + quick brain MRI" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={presentation==="abdominal"} onClick={function(){setPresentation("abdominal")}}/>
+
+      {presentation==="neuro"&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="🧠" title="Neuro Symptoms — Imaging">
+        <strong>Quick brain MRI</strong> within 60 minutes (first choice)<br/>
+        If programmable or unknown shunt → <strong>shunt series (plain films) BEFORE MRI</strong><br/>
+        Head CT without contrast if unstable or MRI delayed<br/>
+        Ondansetron, acetaminophen {doses?doses.apap+" mg":"12.5 mg/kg"}, consider fentanyl {doses?doses.fentIN+" mcg IN":"2 mcg/kg IN"} for pain<br/>
+        <strong>Avoid NSAIDs. Avoid opioids if altered mental status or suspected elevated ICP.</strong>
+      </Alert>}
+      {presentation==="infection"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🌡️" title="Possible Shunt Infection">
+        Labs: CBC, CMP, ESR, CRP. Antipyretics as needed.<br/>
+        Quick brain MRI or CT to assess ventricular size.<br/>
+        Consult neurosurgery — may need shunt tap for CSF analysis.<br/>
+        Consider UA and micro, evaluate for dehydration.
+      </Alert>}
+      {presentation==="abdominal"&&<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🔍" title="Possible Abdominal Pseudocyst">
+        Consider abdominal ultrasound to evaluate for pseudocyst at distal catheter tip.<br/>
+        Quick brain MRI or CT to assess ventricular size.<br/>
+        Evaluate for dehydration. UA and microscopy.<br/>
+        Consider CBC, CMP, ESR, CRP.
+      </Alert>}
+      <TeachBox id="quickMRI" teaching={teaching}/>
+    </Card>}
+
+    {emergent==="no"&&presentation!==null&&<Card title="Step 3 — Imaging Results" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>What do the imaging results show?</div>
+      <WizBtn label="Worsened hydrocephalus or abdominal pseudocyst" sub="Confirmed failure → Consult neurosurgery → Admit (OR/PICU/10N)" color={C.red} bg={C.redBg} border={C.redBorder} selected={imagingResult==="positive"} onClick={function(){setImagingResult("positive")}}/>
+      <WizBtn label="Normal imaging — no change from baseline" sub="Failure less likely, but clinical concern may persist" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={imagingResult==="normal"} onClick={function(){setImagingResult("normal")}}/>
+      {imagingResult==="positive"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="Confirmed Failure / Pseudocyst">Consult neurosurgery if not already done. Consult neurology if worsening seizures. Disposition per neurosurgery: OR for unstable malfunction, PICU for elevated ICP, 10N ward for stable failure.</Alert>}
+      {imagingResult==="normal"&&<div>
+        <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:8,marginTop:12}}>Do you remain concerned for failure, infection, or pseudocyst?</div>
+        <WizBtn label="Yes — Still concerned" sub="Admit to 10N or ED observation · NSG consult" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={stillConcerned==="yes"} onClick={function(){setStillConcerned("yes")}}/>
+        <WizBtn label="No — Alternative diagnosis or resolved" sub="Consider discharge after NSG attending evaluation" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={stillConcerned==="no"} onClick={function(){setStillConcerned("no")}}/>
+        {stillConcerned==="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🏥" title="Observe / Admit">Admit to DCH 10N or ED observation (space and acuity permitting). Consult neurosurgery if not already done. Serial neuro assessments.</Alert>}
+        {stillConcerned==="no"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Consider Discharge">Consider alternative etiologies. May require NSG attending evaluation in person or via teleconsult prior to discharge. If programmable shunt underwent MRI → consult NSG to restore correct valve settings. Admit to medical service or discharge as clinically indicated.</Alert>}
+      </div>}
+      <TeachBox id="disposition" teaching={teaching}/>
+    </Card>}
+
+    {emergent!==null&&<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+function RefTriage({teaching}){return(<Pad><Q text="Triage & Initial Assessment" sub="Shunt or ETV patient with symptoms of possible elevated ICP or infection"/><TeachBox id="overview" teaching={teaching}/><Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Patients ≤19 years with VP shunt or ETV with symptoms of possible elevated ICP or shunt infection.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Non-functional CSF-diverting shunts. Shunt/ETV patients with symptoms not referable to their neurosurgical hardware.</Alert></div></Card><Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI II</strong> · Continuous cardiac monitoring · Elevate HOB 30°<br/>Full vitals · Complete and fax MRI screening form<br/>Notify LIP if <strong>hypertension, bradycardia, or decreased LOC</strong><br/>Evaluate/consider ondansetron for nausea · Pain control PRN<br/>NPO · LMX/J-tip for anticipated PIV<br/>Document: last revision, programmable vs non-programmable shunt, head circumference, neuro baseline</div></Card><Card title="Signs of Elevated ICP by Age" color={C.red}><div style={{marginTop:8}}><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>INFANT</div><div style={{fontSize:12,marginTop:2}}>Bulging fontanelle · Increasing head circumference · Irritability · Poor feeding · Vomiting · Scalp vein distension · Setting sun sign · Episodic bradycardia · Apnea · Excessive sleepiness</div></div><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>CHILD</div><div style={{fontSize:12,marginTop:2}}>Headache · Vomiting · Irritability · Personality/cognitive change · Lethargy · Hypersomnolence · Discoordination · Gait disturbance · Seizure · Nystagmus · Upgaze paresis</div></div></div><TeachBox id="icpSigns" teaching={teaching}/></Card></Pad>)}
+
+function RefDecisions({teaching}){return(<Pad><Q text="Decision Tree" sub="Quick MRI → ventriculomegaly assessment → neurosurgery consult"/><Card title="Imaging Strategy" color={C.blue}><div style={{marginTop:8}}><div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.blue}}>Quick Brain MRI — First Choice</div><div style={{fontSize:12,marginTop:2}}>Within 60 minutes. No sedation, no radiation. Compare to baseline. Patient may go off monitor if stable.</div></div><div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>Programmable Shunt → Shunt Series BEFORE MRI</div><div style={{fontSize:12,marginTop:2}}>MRI magnetic field resets valve settings. Consult NSG after MRI to restore.</div></div><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>Head CT — If Unstable or MRI Delayed</div><div style={{fontSize:12,marginTop:2}}>Without contrast. Use only when MRI not feasible.</div></div></div><TeachBox id="quickMRI" teaching={teaching}/></Card><Card title="Shunt Infection" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Suspect if fever within 6 months of revision + no other source, drainage/redness at site, erythema tracking along tubing. Labs: CBC, CMP, ESR, CRP. NSG determines need for shunt tap. Almost always requires shunt removal.</div><TeachBox id="infection" teaching={teaching}/></Card><Card title="Abdominal Pseudocyst" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Encapsulated fluid at distal catheter tip. Abdominal symptoms ± neurologic symptoms. US to evaluate. Half have increased ventricular size. NSG consult for revision.</div><TeachBox id="pseudocyst" teaching={teaching}/></Card><PathwayFlowchart/></Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad><Q text="Medications" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>{!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight above.</Alert>}<Card title="Symptomatic Management" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Ondansetron ODT (0.1–0.2 mg/kg)" value={doses?doses.ondLo+"–"+doses.ondHi:"—"} unit={doses?"mg":""}/><DoseRow label="Acetaminophen PO/PR (12.5 mg/kg)" value={doses?doses.apap:"—"} unit={doses?"mg":""}/><DoseRow label="Fentanyl IN (2 mcg/kg, max 100)" value={doses?doses.fentIN:"—"} unit={doses?"mcg":""}/><DoseRow label="Fentanyl IV (1–2 mcg/kg)" value={doses?doses.fentIV:"—"} unit={doses?"mcg":""}/><div style={{fontSize:12,color:C.red,fontWeight:600,marginTop:6}}>AVOID NSAIDs. AVOID opioids if altered mental status or suspicion for elevated ICP.</div></div></Card></Pad>)}
+
+function RefDispo({teaching}){return(<Pad><Q text="Disposition & References"/><Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU / OR</div><div style={{fontSize:12,marginTop:2}}>Signs of elevated ICP + ventriculomegaly · Unstable shunt malfunction per NSG · In extremis</div></div><div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>10N WARD / ED OBSERVATION</div><div style={{fontSize:12,marginTop:2}}>Possible failure with normal imaging · Infection workup pending · NSG determines observation vs admission</div></div><div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Alternative diagnosis identified · NSG attending evaluation required (in person or teleconsult) · Reset programmable valve settings post-MRI</div></div></div><TeachBox id="disposition" teaching={teaching}/></Card><Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Suspected Shunt Malfunction/ETV Failure Clinical Pathway, June 2022<br/>Piatt JH, Garton HJ. Clinical Diagnosis of VP Shunt Failure Among Children. Ped Emerg Care 2008;24(4):201-210<br/>Yue EL et al. Quick brain MRI for shunt evaluation in children. J Neurosurg Pediatr 2015;15(4):420-6<br/>Kulkarni AV et al. ETV in childhood hydrocephalus. J Pediatr 2009;155(2):254-9<br/>Erwood A et al. Sterile abdominal pseudocysts related to VP shunts. J Neurosurg Pediatr 2020;25(1):57-61</div></Card></Pad>)}
+
+function App(){var s1=useState("wizard"),mode=s1[0],setMode=s1[1];var s2=useState("triage"),tab=s2[0],setTab=s2[1];var s3=useState(false),teaching=s3[0],setTeaching=s3[1];var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);var rr=useResponsive(),maxW=rr.maxW;var refTabs=[{key:"triage",label:"Triage"},{key:"decisions",label:"Decisions"},{key:"meds",label:"Meds"},{key:"dispo",label:"Dispo & Refs"}];return(<div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}><Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>{mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}<div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}><div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (years)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="5" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div><div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="20" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div></div>{mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}{mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}{mode==="reference"&&tab==="decisions"&&<RefDecisions teaching={teaching}/>}{mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}{mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}<div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}><strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.<br/>Doernbecher Children's Hospital · PED · VP Shunt/ETV Evaluation Clinical Pathway · June 2022</div></div>);}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
