@@ -215,69 +215,239 @@ function WizBtn({ label, sub, color, bg, border, onClick, selected }) {
 }
 
 // ── Shared Flowchart ──
+
 function PathwayFlowchart() {
-  const gC = "#16a34a", gBg = "#f0fdf4", gBd = "#86efac";
-  const aC = "#d97706", aBg = "#fffbeb", aBd = "#fcd34d";
-  const rC = "#b91c1c", rBg = "#fef2f2", rBd = "#fca5a5";
-  const bC = "#1d4ed8", bBg = "#eff6ff", bBd = "#93c5fd";
-  const pC = "#6b21a8", pBg = "#faf5ff", pBd = "#c4b5fd";
-  const mC = "#6b7280";
-  const Arrow = ({x1,y1,x2,y2,color="#94a3b8"}) => (<g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5} /><polygon points={`${x2},${y2} ${x2-3.5},${y2-6} ${x2+3.5},${y2-6}`} fill={color} /></g>);
-  const Box = ({x,y,w,h,fill,stroke,sw=1,radius=6,children}) => (<g><rect x={x} y={y} width={w} height={h} rx={radius} fill={fill} stroke={stroke} strokeWidth={sw} />{children}</g>);
-  const T = ({x,y,size=9,weight=600,color="#1a1d21",anchor="middle",children}) => (<text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={color} fontFamily="'IBM Plex Sans',sans-serif">{children}</text>);
+  var rC="#b91c1c", rBg="#fef2f2", rBd="#fca5a5";   
+  var aC="#d97706", aBg="#fffbeb", aBd="#fcd34d";   
+  var gC="#16a34a", gBg="#f0fdf4", gBd="#86efac";   
+  var blC="#1e40af", blBg="#eff6ff", blBd="#93c5fd"; 
+  var mC="#6b7280";                                  
+
+  var Arrow = function(p) {
+    var dx=p.x2-p.x1, dy=p.y2-p.y1, len=Math.sqrt(dx*dx+dy*dy);
+    if(len===0) return null;
+    var ux=dx/len, uy=dy/len, px=-uy, py=ux;
+    return <g>
+      <line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={p.sw||1.5}/>
+      <polygon points={
+        p.x2+","+p.y2+" "+
+        (p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+
+        (p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)
+      } fill={p.color||"#94a3b8"}/>
+    </g>;
+  };
+
+  var Box = function(p) {
+    return <g>
+      <rect x={p.x} y={p.y} width={p.w} height={p.h}
+        rx={p.radius||0} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>
+      {p.children}
+    </g>;
+  };
+
+  var T = function(p) {
+    return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"}
+      fontSize={p.size||9} fontWeight={p.weight||400}
+      fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">
+      {p.children}
+    </text>;
+  };
+
   return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 4 }}>Full Algorithm</div>
-      <div style={{ fontSize: 11, color: C.muted, marginBottom: 6 }}>Suspected appendicitis · Ages 3–18</div>
-      <div style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: 6, overflow: "hidden" }}>
-        <svg viewBox="0 0 480 460" style={{ width: "100%", display: "block" }}>
-          <rect width={480} height={460} fill="#fafaf8" rx={6} />
-          <Box x={115} y={6} w={250} h={28} fill={bBg} stroke={bBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={bC}>ARRIVAL — TRIAGE ESI III</T><T x={240} y={28} size={6} weight={400} color={mC}>Vitals · Ondansetron ODT · LMX · Labs + IV</T></Box>
-          <Arrow x1={240} y1={34} x2={240} y2={46} />
-          <Box x={130} y={46} w={220} h={22} fill={pBg} stroke={pBd} sw={1.5}><T x={240} y={56} size={8} weight={700} color={pC}>APPLY CLINICAL SCORE</T><T x={240} y={64} size={6} color={mC}>PAS · Alvarado · pARC</T></Box>
-          <Arrow x1={240} y1={68} x2={240} y2={80} />
-          <g transform="translate(240,96)"><polygon points="0,-16 70,0 0,16 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2} /><T x={0} y={-2} size={7} weight={700}>Risk Level?</T></g>
-          <Arrow x1={170} y1={96} x2={60} y2={118} color={gC} />
-          <Arrow x1={240} y1={112} x2={240} y2={118} color={aC} />
-          <Arrow x1={310} y1={96} x2={404} y2={118} color={rC} />
-          <Box x={10} y={118} w={120} h={22} fill={gBg} stroke={gBd} sw={1.5}><T x={70} y={127} size={8} weight={700} color={gC}>LOW RISK</T><T x={70} y={136} size={6} color={mC}>PAS/Alv ≤3 · pARC {'<'}5%</T></Box>
-          <Arrow x1={70} y1={140} x2={70} y2={150} color={gC} />
-          <Box x={10} y={150} w={120} h={18} fill={gBg} stroke={gBd}><T x={70} y={161} size={6} weight={600} color={gC}>D/C · PCP f/u 24h</T></Box>
-          <Box x={155} y={118} w={170} h={22} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={127} size={8} weight={700} color={aC}>INTERMEDIATE</T><T x={240} y={136} size={6} color={mC}>PAS/Alv 4–6 · pARC 15–74%</T></Box>
-          <Arrow x1={240} y1={140} x2={240} y2={150} color={aC} />
-          <Box x={160} y={150} w={160} h={18} fill={C.white} stroke={aBd}><T x={240} y={160} size={6} weight={600} color={aC}>NPO · IV · Pain · US abdomen</T></Box>
-          <Box x={340} y={118} w={128} h={22} fill={rBg} stroke={rBd} sw={1.5}><T x={404} y={127} size={8} weight={700} color={rC}>HIGH RISK</T><T x={404} y={136} size={6} color={mC}>PAS/Alv ≥7 · pARC ≥75%</T></Box>
-          <Arrow x1={404} y1={140} x2={404} y2={150} color={rC} />
-          <Box x={346} y={150} w={116} h={18} fill={C.white} stroke={rBd}><T x={404} y={160} size={6} weight={600} color={rC}>NPO · IV · Pain · Bolus · US</T></Box>
-          <Arrow x1={240} y1={168} x2={240} y2={188} color={aC} />
-          <Arrow x1={404} y1={168} x2={404} y2={188} color={rC} />
-          <g transform="translate(300,200)"><polygon points="0,-12 60,0 0,12 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2} /><T x={0} y={2} size={7} weight={700}>US Result?</T></g>
-          <Arrow x1={240} y1={200} x2={80} y2={220} color={gC} />
-          <Arrow x1={300} y1={212} x2={240} y2={220} color={aC} />
-          <Arrow x1={360} y1={200} x2={400} y2={220} color={rC} />
-          <Box x={20} y={220} w={120} h={22} fill={gBg} stroke={gBd}><T x={80} y={229} size={7} weight={700} color={gC}>US NEGATIVE</T><T x={80} y={238} size={6} color={mC}>Appendix seen, normal</T></Box>
-          <Arrow x1={80} y1={242} x2={80} y2={252} color={gC} />
-          <Box x={20} y={252} w={120} h={18} fill={gBg} stroke={gBd}><T x={80} y={263} size={6} weight={600} color={gC}>Alt dx · PO challenge · D/C</T></Box>
-          <Box x={168} y={220} w={144} h={22} fill={aBg} stroke={aBd}><T x={240} y={229} size={7} weight={700} color={aC}>INCONCLUSIVE</T><T x={240} y={238} size={6} color={mC}>Appendix not seen</T></Box>
-          <Arrow x1={240} y1={242} x2={240} y2={250} color={aC} />
-          <Box x={178} y={250} w={124} h={16} fill={C.white} stroke={aBd} sw={1.5}><T x={240} y={260} size={6} weight={700} color={aC}>Repeat PE · Consider alt dx</T></Box>
-          <Arrow x1={240} y1={266} x2={240} y2={274} color={aC} />
-          <Box x={168} y={274} w={144} h={18} fill={pBg} stroke={pBd}><T x={240} y={283} size={6} weight={700} color={pC}>If still likely → MRI / CT</T></Box>
-          <Arrow x1={195} y1={292} x2={148} y2={306} color={gC} />
-          <Arrow x1={240} y1={292} x2={240} y2={306} color={aC} />
-          <Arrow x1={285} y1={292} x2={332} y2={306} color={rC} />
-          <Box x={108} y={306} w={76} h={18} fill={gBg} stroke={gBd}><T x={146} y={317} size={6} weight={700} color={gC}>MR NEG</T></Box>
-          <Box x={202} y={306} w={76} h={18} fill={aBg} stroke={aBd}><T x={240} y={317} size={6} weight={700} color={aC}>EQUIVOCAL</T></Box>
-          <Box x={296} y={306} w={76} h={18} fill={rBg} stroke={rBd}><T x={334} y={317} size={6} weight={700} color={rC}>MR POS</T></Box>
-          <Arrow x1={240} y1={324} x2={240} y2={338} color={aC} />
-          <Arrow x1={334} y1={324} x2={400} y2={338} color={rC} />
-          <Box x={184} y={338} w={112} h={18} fill={aBg} stroke={aBd}><T x={240} y={349} size={6} weight={600} color={aC}>Consult Peds Surgery</T></Box>
-          <Box x={340} y={220} w={120} h={22} fill={rBg} stroke={rBd}><T x={400} y={229} size={7} weight={700} color={rC}>US POSITIVE</T><T x={400} y={238} size={6} color={mC}>Appendicitis</T></Box>
-          <Arrow x1={400} y1={242} x2={400} y2={338} color={rC} />
-          <Box x={340} y={338} w={120} h={34} fill={rBg} stroke={rBd} sw={2}><T x={400} y={349} size={8} weight={700} color={rC}>APPENDICITIS</T><T x={400} y={360} size={6} color={C.ink}>Consult Peds Surgery</T><T x={400} y={369} size={6} color={mC}>Abx if perf or per surgery</T></Box>
-          <T x={404} y={178} size={5} weight={400} color={rC} anchor="middle">⚠ 19% false-neg US in high risk</T>
-          <Box x={30} y={390} w={420} h={24} fill={bBg} stroke={bBd} radius={8}><T x={240} y={400} size={7} weight={700} color={bC}>SCORING DRIVES IMAGING · US FIRST · MRI PREFERRED OVER CT</T><T x={240} y={410} size={6} color={mC}>pARC has best test characteristics · Avoid empiric abx unless perforation suspected</T></Box>
-          <Box x={30} y={426} w={420} h={24} fill="#f1f5f9" stroke="#e2e8f0" radius={6}><T x={130} y={436} size={7} weight={700} color={rC}>CONFIRMED: Peds Surgery consult</T><T x={130} y={446} size={6} color={mC}>Abx: Ceftri 50 + Flagyl 30 mg/kg/day</T><T x={370} y={436} size={7} weight={700} color={gC}>LOW RISK: D/C with PCP f/u</T><T x={370} y={446} size={6} color={mC}>Return if worsening pain/fever/vomiting</T></Box>
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Patient with Suspected Appendicitis · Clinical Score Evaluation</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 700" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={700} fill="#ffffff" rx={6}/>
+
+          {/* 1. Suspected Appendicitis */}
+          <Box x={20} y={10} w={210} h={25} fill="#fef08a" stroke="#eab308">
+            <T x={125} y={26} size={8} weight={600}>Patient with Suspected Appendicitis</T>
+          </Box>
+          <Arrow x1={125} y1={35} x2={125} y2={45} color={blC} sw={2}/>
+
+          {/* 2. IV/Labs */}
+          <Box x={20} y={45} w={210} h={40} fill="#fef9c3" stroke="#fde047">
+            <T x={125} y={58} size={7}>Place peripheral IV</T>
+            <T x={125} y={68} size={7}>CBC with differential, CMP, Lipase</T>
+            <T x={125} y={78} size={7}>Urinalysis (HCG if indicated)</T>
+          </Box>
+          <Arrow x1={125} y1={85} x2={125} y2={95} color={blC} sw={2}/>
+
+          {/* 3. Apply Score */}
+          <Box x={20} y={95} w={210} h={55} fill="#e0f2fe" stroke="#7dd3fc" sw={1.5}>
+            <T x={125} y={113} size={8} weight={700}>Apply Clinical Appendicitis Score</T>
+            <T x={125} y={125} size={8} weight={700}>(PAS vs pARC vs Alvarado) —</T>
+            <T x={125} y={137} size={8} weight={700}>see next page</T>
+          </Box>
+
+          {/* Arrows from Score to Risk Nodes */}
+          <Arrow x1={230} y1={105} x2={250} y2={105} color={blC} sw={2}/>
+          <Arrow x1={230} y1={135} x2={250} y2={135} color={blC} sw={2}/>
+          
+          <line x1={210} y1={150} x2={210} y2={170} stroke="#94a3b8" strokeWidth={2}/>
+          <line x1={210} y1={170} x2={355} y2={170} stroke="#94a3b8" strokeWidth={2}/>
+          <Arrow x1={355} y1={170} x2={355} y2={190} color={blC} sw={2}/>
+
+          <Arrow x1={125} y1={150} x2={125} y2={190} color={gC} sw={3}/>
+
+          {/* 4. Low Risk / Very Low pARC */}
+          <Box x={250} y={90} w={210} h={35} fill="#ffffff" stroke={blC} sw={2}>
+            <T x={355} y={103} size={7.5} weight={700}>Low Risk PAS or Alv Score (≤3) or</T>
+            <T x={355} y={113} size={7.5} weight={700}>Very Low Risk pARC</T>
+            <T x={355} y={121} size={6}>Discharge home with PCP f/u &lt;24 hours</T>
+          </Box>
+
+          {/* 5. Low Risk pARC */}
+          <Box x={250} y={130} w={210} h={25} fill="#ffffff" stroke={blBd} sw={1.5}>
+            <T x={355} y={142} size={7.5} weight={700}>Low Risk pARC</T>
+            <T x={355} y={151} size={6}>Consider ED Observation for 6 hours, serial exams vs US abd</T>
+          </Box>
+
+          {/* 6. Intermediate Risk */}
+          <Box x={20} y={190} w={210} h={105} fill="#ffffff" stroke={gC} sw={2}>
+            <T x={125} y={205} size={7.5} weight={700}>Intermediate Risk PAS or Alv Score (4-6)</T>
+            <T x={125} y={215} size={7.5} weight={700}>or</T>
+            <T x={125} y={225} size={7.5} weight={700}>Intermediate Risk pARC</T>
+            <T x={30} y={240} anchor="start" size={6}>1. NPO</T>
+            <T x={30} y={250} anchor="start" size={6}>2. IV access (if not already obtained)</T>
+            <T x={30} y={260} anchor="start" size={6}>3. IV pain medications, fluid bolus</T>
+            <T x={30} y={270} anchor="start" size={6} weight={700}>4. Obtain US abdomen to evaluate</T>
+            <T x={40} y={280} anchor="start" size={6} weight={700}>appendicitis (also rule out ovarian torsion</T>
+            <T x={40} y={290} anchor="start" size={6} weight={700}>for females)*</T>
+          </Box>
+
+          {/* 7. High Risk */}
+          <Box x={250} y={190} w={210} h={105} fill="#f0f9ff" stroke={blBd} sw={2}>
+            <T x={355} y={205} size={7.5} weight={700}>High Risk PAS or Alv Score (≥7) or</T>
+            <T x={355} y={215} size={7.5} weight={700}>High Risk pARC</T>
+            <T x={260} y={235} anchor="start" size={6}>1. NPO</T>
+            <T x={260} y={245} anchor="start" size={6}>2. IV access (if not already obtained)</T>
+            <T x={260} y={255} anchor="start" size={6}>3. IV pain medications, fluid bolus</T>
+            <T x={260} y={265} anchor="start" size={6} weight={700}>4. Obtain US abdomen to evaluate appendicitis (also</T>
+            <T x={270} y={275} anchor="start" size={6} weight={700}>rule out ovarian torsion for females)*</T>
+          </Box>
+
+          {/* Routes from Intermediate */}
+          <Arrow x1={85} y1={295} x2={85} y2={335} color={mC} sw={2}/>
+          <Box x={60} y={305} w={50} h={14} fill="#fff" stroke={mC}>
+            <T x={85} y={315} size={6}>US Negative</T>
+          </Box>
+
+          <line x1={230} y1={280} x2={245} y2={280} stroke="#1a1d21" strokeWidth={2}/>
+          <line x1={245} y1={280} x2={245} y2={355} stroke="#1a1d21" strokeWidth={2}/>
+          <Arrow x1={245} y1={355} x2={250} y2={355} color="#1a1d21" sw={2}/>
+          <Box x={190} y={273} w={50} h={14} fill="#fff" stroke="#1a1d21">
+            <T x={215} y={283} size={6}>US Positive</T>
+          </Box>
+
+          <line x1={180} y1={295} x2={180} y2={315} stroke={mC} strokeWidth={2}/>
+          <line x1={180} y1={315} x2={235} y2={315} stroke={mC} strokeWidth={2}/>
+          <line x1={235} y1={315} x2={235} y2={475} stroke={mC} strokeWidth={2}/>
+          <Arrow x1={235} y1={475} x2={250} y2={475} color={mC} sw={2}/>
+          <Box x={155} y={308} w={75} h={14} fill="#fff" stroke={mC}>
+            <T x={192.5} y={318} size={6}>Appendix not seen</T>
+          </Box>
+
+          {/* Routes from High Risk */}
+          <Arrow x1={300} y1={295} x2={300} y2={335} color="#1a1d21" sw={2}/>
+          <Box x={275} y={308} w={50} h={14} fill="#fff" stroke="#1a1d21">
+            <T x={300} y={318} size={6}>US Positive</T>
+          </Box>
+
+          <line x1={440} y1={295} x2={440} y2={315} stroke={mC} strokeWidth={2}/>
+          <line x1={440} y1={315} x2={470} y2={315} stroke={mC} strokeWidth={2}/>
+          <line x1={470} y1={315} x2={470} y2={490} stroke={mC} strokeWidth={2}/>
+          <Arrow x1={470} y1={490} x2={460} y2={490} color={mC} sw={2}/>
+          <Box x={370} y={310} w={95} h={20} fill="#fff" stroke={mC}>
+            <T x={417.5} y={318} size={6}>Appendix not seen</T>
+            <T x={417.5} y={326} size={6}>OR appendix normal</T>
+          </Box>
+
+          {/* 8. Likely NOT Appendicitis */}
+          <Box x={20} y={335} w={210} h={75} fill="#ffffff" stroke={mC} sw={1.5}>
+            <T x={125} y={350} size={8} weight={700}>Likely NOT Appendicitis</T>
+            <T x={50} y={365} anchor="start" size={6}>1. Repeat PE</T>
+            <T x={50} y={375} anchor="start" size={6}>2. Consider alternative diagnoses</T>
+            <T x={50} y={385} anchor="start" size={6}>3. PO challenge</T>
+            <T x={50} y={395} anchor="start" size={6}>4. Consider discharge vs Observation</T>
+          </Box>
+
+          {/* 9. Diagnosis of Appendicitis */}
+          <Box x={250} y={335} w={210} h={60} fill="#ffffff" stroke="#1a1d21" sw={3}>
+            <T x={355} y={350} size={8} weight={700}>Diagnosis of Appendicitis</T>
+            <T x={270} y={365} anchor="start" size={6}>1. Consult to Pediatric Surgery</T>
+            <T x={270} y={375} anchor="start" size={6}>2. Start broad spectrum antibiotics** if</T>
+            <T x={280} y={385} anchor="start" size={6}>surgery requests or perforation detected</T>
+          </Box>
+
+          {/* 10. Inconclusive */}
+          <Box x={250} y={460} w={210} h={80} fill="#f8fafc" stroke="#cbd5e1" sw={2}>
+            <T x={355} y={475} size={8} weight={700}>Inconclusive</T>
+            <T x={260} y={490} anchor="start" size={5.5}>1. Repeat PE. Consider alternative dx</T>
+            <T x={260} y={500} anchor="start" size={5.5}>2. If appendicitis still considered likely, consider</T>
+            <T x={270} y={510} anchor="start" size={5.5} weight={700}>abdominal MRI appendicitis protocol</T>
+            <T x={260} y={520} anchor="start" size={5.5}>3. CT may be preferred in pts who cannot remain still</T>
+            <T x={270} y={530} anchor="start" size={5.5}>for 10-15 minute exam (age &lt; 5, autism, etc.) or</T>
+            <T x={270} y={540} anchor="start" size={5.5}>those with suspected rupture</T>
+          </Box>
+
+          {/* Routes from Inconclusive */}
+          <Arrow x1={300} y1={460} x2={300} y2={395} color="#1a1d21" sw={2}/>
+          <Box x={310} y={405} w={140} h={30} fill="#fff" stroke={mC}>
+            <T x={380} y={415} size={5}>MR positive (wall thickening,</T>
+            <T x={380} y={423} size={5}>appendix &gt; 6mm, + appendicolith,</T>
+            <T x={380} y={431} size={5}>fat stranding)</T>
+          </Box>
+
+          <Arrow x1={250} y1={490} x2={230} y2={490} color={mC} sw={2}/>
+          
+          {/* MR Negative Box */}
+          <Box x={120} y={465} w={110} h={55} fill="#fff" stroke={mC} sw={1.5}>
+            <T x={175} y={475} size={5}>MR Negative</T>
+            <T x={175} y={483} size={5}>(appendix NML OR</T>
+            <T x={175} y={491} size={5}>appendix not seen but</T>
+            <T x={175} y={499} size={5}>no RLQ fat stranding,</T>
+            <T x={175} y={507} size={5}>no free fluid in boys or</T>
+            <T x={175} y={515} size={5}>expected physiologic</T>
+            <T x={175} y={523} size={5}>volume in girls)</T>
+          </Box>
+          <Arrow x1={175} y1={465} x2={175} y2={410} color={mC} sw={2}/>
+
+          <Arrow x1={280} y1={540} x2={280} y2={600} color={mC} sw={2}/>
+          <Box x={300} y={545} w={155} h={50} fill="#fff" stroke={mC}>
+            <T x={305} y={555} anchor="start" size={5.5}>MR Equivocal (appendix not</T>
+            <T x={305} y={565} anchor="start" size={5.5}>visualized AND + RLQ fat stranding</T>
+            <T x={305} y={575} anchor="start" size={5.5}>OR ANY free fluid in boys OR more</T>
+            <T x={305} y={585} anchor="start" size={5.5}>than physiologic volume in girls)</T>
+          </Box>
+
+          {/* 11. Diagnosis Uncertain */}
+          <Box x={250} y={600} w={210} h={55} fill="#f8fafc" stroke="#cbd5e1" sw={1.5}>
+            <T x={355} y={615} size={8} weight={700}>Diagnosis Uncertain</T>
+            <T x={260} y={630} anchor="start" size={6}>1. Repeat PE. Consider alternative dx</T>
+            <T x={260} y={640} anchor="start" size={6}>2. Consult Pediatric Surgery.</T>
+            <T x={260} y={650} anchor="start" size={6}>3. Avoid empiric antibiotics unless suspected</T>
+          </Box>
+
+          {/* Footnotes */}
+          <Box x={20} y={530} w={210} h={45} fill="#ffffff" stroke="#1a1d21" sw={1}>
+            <T x={25} y={542} anchor="start" size={6} weight={700}>*Consider cross-sectional imaging as</T>
+            <T x={25} y={552} anchor="start" size={6} weight={700}>first line option in those in whom US is</T>
+            <T x={25} y={562} anchor="start" size={6} weight={700}>unlikely to be revealing, e.g. obese</T>
+            <T x={25} y={572} anchor="start" size={6} weight={700}>patients</T>
+          </Box>
+
+          <Box x={20} y={585} w={210} h={80} fill="#ffffff" stroke="#1a1d21" sw={1}>
+            <T x={25} y={597} anchor="start" size={6} weight={700}>**Antibiotics:</T>
+            <T x={25} y={607} anchor="start" size={6}>Ceftriaxone 50mg/kg IV q24 (max 2g)</T>
+            <T x={25} y={617} anchor="start" size={6}>Flagyl 30mg/kg/day IV q24 (max 1.5g)</T>
+            <T x={25} y={632} anchor="start" size={6} weight={700}>Cephalosporin allergy:</T>
+            <T x={25} y={642} anchor="start" size={6}>Ciprofloxacin 25mg/kg/day IV q12</T>
+            <T x={25} y={652} anchor="start" size={6}>(max 400mg) + Flagyl</T>
+          </Box>
+
         </svg>
       </div>
     </div>
