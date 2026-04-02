@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Head Injury / PECARN — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#1e40af",pLight:"#eff6ff",pBorder:"#93c5fd",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{title:"PECARN Head Injury Decision Rule",patho:"The PECARN rule was derived and validated in a prospective cohort of 42,412 children <18 years presenting to 25 EDs with GCS 14–15 after blunt head trauma. The rule identifies children at very low risk of clinically important traumatic brain injury (ciTBI) who do not require CT scanning.\n\nciTBI is defined as: intracranial injury requiring neurosurgical intervention (surgery or invasive ICP monitoring), endotracheal intubation for TBI management, hospitalization ≥2 nights directly related to head injury with abnormal CT, death from TBI, depressed skull fracture warranting operative elevation, or clinical/radiographic basilar skull fracture. The overall rate of ciTBI was 0.9% and the CT abnormality rate was 5.2%.",pearls:"PECARN uses two age-stratified algorithms (<2 years and ≥2 years) because clinical assessment differs substantially between preverbal and verbal children. The rule has a negative predictive value >99.9% for ciTBI in the lowest-risk group.\n\nThe rule is designed to identify children who do NOT need CT — it is not a rule for who DOES need CT. Children who fall into the intermediate-risk group require clinical judgment: observation vs CT based on physician experience, symptom trajectory, multiple findings, and parental preference.",evidence:"Kuppermann N et al. Identification of children at very low risk of clinically-important brain injuries after head trauma: a prospective cohort study. Lancet 2009; 374:1160-70.\n\nValidation: sensitivity 100% (95% CI 86.3–100) for <2y and 96.8% (95% CI 89.0–99.6) for ≥2y for ciTBI. NPV 100% and 99.95% respectively."},
+gcs:{title:"GCS Assessment in Children",patho:"The Glasgow Coma Scale requires age-appropriate modification for preverbal children. The verbal component is replaced by: 5=coos/babbles, 4=irritable/crying, 3=cries to pain, 2=moans to pain, 1=none. Eye and motor components are scored the same as adults.\n\nGCS 14 carries a ciTBI risk of approximately 3–4%, while GCS 15 carries a risk of approximately 0.6%. A GCS <15 at 2 hours post-injury is more clinically significant than at initial assessment.",pearls:"Assess GCS serially — initial GCS may be depressed by pain, fear, or post-ictal state. A GCS that improves to 15 within 1–2 hours is more reassuring than a persistently depressed GCS.\n\nIn infants, assess the anterior fontanelle — a tense or bulging fontanelle suggests elevated ICP. Altered mental status in children <2 can be subtle: agitation, somnolence, slow response to verbal communication, or repetitive questioning.",evidence:"Borgialli DA et al. Performance of the Pediatric GCS in children with blunt head trauma. Acad Emerg Med 2016; 23:878. Holmes JF et al. Variation in CT for children with head trauma. Pediatrics 2011; 128:e647."},
+mechanism:{title:"Severe Mechanism of Injury",patho:"Severe mechanism is defined differently by age group:\n\n<2 years: Fall >3 feet (0.9 m), head struck by high-impact object, MVC with patient ejection/rollover/fatality, pedestrian or cyclist without helmet struck by motorized vehicle.\n\n≥2 years: Fall >5 feet (1.5 m), head struck by high-impact object, MVC with patient ejection/rollover/fatality, pedestrian or cyclist without helmet struck by motorized vehicle.\n\nThe height thresholds differ because younger children have a lower center of gravity and proportionally larger head-to-body ratio.",pearls:"Mechanism alone does not mandate CT — it is one factor in the risk stratification. Many children with severe mechanisms have no TBI. However, in the intermediate-risk group, a severe mechanism should lower the threshold for CT.\n\nFor falls: measure or estimate the actual height. 'Fell off the bed' (typically 2 feet) is not severe mechanism for either age group. 'Fell off the top bunk' (typically 4–5 feet) IS severe mechanism for <2 years.",evidence:"Kuppermann N et al. Lancet 2009. In the derivation cohort, severe mechanism alone (without other risk factors) had a ciTBI rate of 0.2–0.4% — hence its placement in the intermediate risk category."},
+observation:{title:"ED Observation Period",patho:"Observation allows for serial neurological assessments and monitoring for symptom evolution. Most significant intracranial injuries declare themselves clinically within 4–6 hours of injury. The risk of delayed deterioration after a normal 4–6 hour observation period with improving symptoms is exceedingly low (<0.05%).\n\nDuring observation, reassess GCS, mental status, vomiting, headache severity, and neurological exam every 1–2 hours.",pearls:"Observation is the key tool for intermediate-risk patients. Most experts recommend 4–6 hours from time of injury (not from ED arrival). During observation:\n\n• Serial neuro checks Q1–2h\n• PO trial when appropriate\n• Reassess for worsening headache, new vomiting, increasing somnolence\n• Parental/caregiver involvement in monitoring\n\nIf symptoms are worsening or not improving at 4–6 hours → obtain CT. If improving → safe for discharge with head injury precautions.",evidence:"Nigrovic LE et al. Quality improvement effort to reduce cranial CTs for children. Pediatrics 2015; 136:e227. Schonfeld D et al. Pediatric Emergency Care Applied Research Network head injury clinical prediction rules. Pediatrics 2014; 133:e507."},
+skullfx:{title:"Skull Fractures in Young Children",patho:"Palpable skull fractures in children <2 years carry a ciTBI risk of approximately 4.4%. The thin calvarium of infants makes fractures more likely with lower-energy mechanisms. Linear parietal fractures are most common.\n\nBasilar skull fractures (≥2 years PECARN variable) present with hemotympanum, periorbital ecchymosis (raccoon eyes), retroauricular ecchymosis (Battle sign), or CSF otorrhea/rhinorrhea. These signs may take hours to develop.",pearls:"In children <2 years: palpate the entire scalp carefully for step-offs, crepitus, or boggy swelling. A large, tense scalp hematoma (especially parietal or temporal) in an infant increases the risk of underlying fracture.\n\nIn children ≥2 years: look specifically for signs of basilar skull fracture — hemotympanum is the earliest and most reliable sign. Battle sign and raccoon eyes may take 12–24 hours to appear.",evidence:"Kuppermann N et al. Lancet 2009. Dunning J et al. A meta-analysis of clinical correlates that predict significant intracranial injury in adults with minor head trauma. J Neurotrauma 2004; 21:877."},
+scalphematoma:{title:"Scalp Hematoma Location (<2 years)",patho:"In children <2 years, a non-frontal scalp hematoma (parietal, temporal, or occipital) is an independent risk factor for ciTBI in the PECARN algorithm. The temporal and parietal bones are thinner than the frontal bone, and the underlying middle meningeal artery is vulnerable in the temporal region.\n\nFrontal scalp hematomas carry lower risk because the frontal bone is thicker and there are fewer critical vascular structures in the anterior fossa.",pearls:"Assess the size and location of the hematoma:\n• Frontal hematoma in an otherwise well child <2y → lower risk\n• Parietal/temporal/occipital hematoma → intermediate risk factor in PECARN\n• Large (>3 cm), tense, boggy hematomas → higher concern for underlying fracture\n\nDocument the exact location, size, and character (firm vs boggy vs fluctuant) of any scalp hematoma.",evidence:"Kuppermann N et al. Lancet 2009. In children <2y with isolated non-frontal scalp hematoma and no other PECARN predictors, ciTBI risk was 0.4%."},
+ctrisks:{title:"CT Radiation Risk in Children",patho:"Pediatric cranial CT delivers approximately 2–4 mSv of ionizing radiation. The lifetime attributable cancer risk from a single head CT in a child <5 years is estimated at 1 in 5,000 to 1 in 10,000. This risk is higher in younger children due to greater radiosensitivity of developing tissues and longer remaining lifespan.\n\nThe cumulative risk increases with repeat exposures. Children with head injuries may require follow-up imaging, compounding the risk.",pearls:"The PECARN rule was specifically designed to safely reduce unnecessary CT use in children. Pre-PECARN, CT rates for pediatric head injury ranged from 35–50%. Post-implementation studies have shown reductions to 20–30% without missed ciTBIs.\n\nWhen discussing CT with families: frame it as 'the scan carries a very small radiation risk, and based on your child's examination, the risk of missing something important is even smaller — so we recommend observation instead.' When CT IS indicated, do not delay it.",evidence:"Miglioretti DL et al. The use of computed tomography in pediatrics and the associated radiation exposure and estimated cancer risk. JAMA Pediatr 2013; 167:700. Brenner DJ, Hall EJ. Computed tomography — an increasing source of radiation exposure. N Engl J Med 2007; 357:2277."},
+concussion:{title:"Concussion / Return to Activity",patho:"Concussion is a functional brain injury caused by biomechanical forces. Symptoms include headache, dizziness, nausea, photophobia, difficulty concentrating, and emotional lability. Most pediatric concussions resolve within 2–4 weeks, though 10–30% of children have symptoms persisting beyond 4 weeks (persistent post-concussive symptoms).\n\nThe pathophysiology involves a neurometabolic cascade: ionic flux, energy crisis, impaired neurotransmission, and altered cerebral blood flow. Physical and cognitive rest followed by gradual return to activity is the standard approach.",pearls:"Current consensus (Berlin 2023 / CDC guidelines):\n• Brief period of relative rest (24–48h), then gradual return to light activity as tolerated\n• No strict 'cocoon therapy' — complete rest beyond 48h may worsen outcomes\n• Stepwise return-to-learn before return-to-play\n• No return to contact sports until symptom-free at rest and with exertion AND cleared by provider\n• Refer to concussion clinic if symptoms persist >2 weeks",evidence:"Patricios JS et al. Consensus statement on concussion in sport: the 6th International Conference on Concussion in Sport, Amsterdam 2022. Br J Sports Med 2023; 57:695. Lumba-Brown A et al. CDC Pediatric mTBI Guideline. JAMA Pediatr 2018; 172:e182853."},
+disposition:{title:"Disposition Guidance",pearls:"CT positive with neurosurgical lesion → Neurosurgery consult → Admit (PICU if GCS ≤12 or clinical concern)\n\nCT positive, non-surgical → Admit for observation (neuro checks Q1–2h, repeat CT if worsening)\n\nCT negative + improving → Discharge with head injury precautions, 24h responsible adult supervision\n\nNo CT obtained (low/intermediate risk, observed) + improving → Discharge with head injury precautions\n\nAll discharged patients need clear return precautions: worsening headache, repeated vomiting, confusion, difficulty waking, seizure, focal weakness, clear fluid from nose/ears.",evidence:"Kuppermann N et al. Lancet 2009. Da Dalt L et al. Management of children with minor head injury. Paediatr Child Health 2019; 24:e105."},
+nat:{title:"Non-Accidental Trauma Screening",pearls:"Consider non-accidental trauma (NAT) in any child with head injury, especially:\n• Age <1 year with any significant head injury\n• Mechanism inconsistent with developmental stage\n• Delayed presentation\n• Prior injuries or multiple bruises in various stages\n• Retinal hemorrhages\n• Subdural hematomas (especially interhemispheric or bilateral)\n\nIf NAT is suspected: skeletal survey, ophthalmologic exam, social work and child protective services involvement. Follow institutional NAT pathway.",evidence:"Christian CW; AAP Committee on Child Abuse and Neglect. Pediatrics 2015; 136:e1340. Maguire SA et al. Which clinical features distinguish inflicted from non-inflicted brain injury? Arch Dis Child 2009; 94:860."},
+seizures:{title:"Early Post-Traumatic Seizures",patho:"Early post-traumatic seizures occur shortly after head injury and are relatively common in children. They are often brief and generalized. Children with mild head injury who have early post-traumatic seizures are at modestly increased risk of epilepsy (standardized incidence ratio 1.5–2.0 relative to normal population), but prophylactic anticonvulsant therapy has not shown benefit beyond the first week after injury in studies of moderate-severe TBI.\n\nImportantly, the occurrence of a seizure does NOT by itself define the severity of the head injury — many children with brief post-traumatic seizures have normal neuroimaging.",pearls:"All children who seize after head trauma should undergo neuroimaging (CT head).\n\nChildren who meet ALL of the following criteria may be discharged home after observation back to baseline:\n• No prior seizures and no family history of epilepsy\n• Seizure was brief and generalized\n• Normal neuroimaging\n• Back to baseline mental status\n\nChildren with focal or prolonged seizures, known seizure disorder, or strong family history may benefit from admission, EEG, and/or neurology consultation.",evidence:"Badawy MK et al. Prevalence of Brain Injuries and Recurrence of Seizures in Children With Posttraumatic Seizures. Acad Emerg Med 2017; 24:595. Of 457 patients with post-traumatic seizure and no TBI on CT, only 5 (1.1%) had seizure recurrence, and none required neurosurgical intervention."},
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,bolus:Math.round(wt*20),mannitol:Math.round(wt*0.5*10)/10,hs3:Math.round(wt*5),apap:Math.round(wt*15),ibu:Math.round(wt*10),ondans:Math.round(wt*0.15*10)/10,levetir:Math.round(wt*20),phenytoin:Math.round(wt*20)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+// ── PRIMITIVES ──
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Pediatric Head Injury / PECARN</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · 2024</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;var t=TEACH[id];if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});var st=useState(t.pearls?"pearls":tabs[0]?tabs[0].key:"patho"),tab=st[0],setTab=st[1];return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 6px"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",borderBottom:"1px solid "+C.tealBorder,padding:"0 10px"}}>{tabs.map(function(tb){return <button key={tb.key} onClick={function(){setTab(tb.key)}} style={{padding:"6px 10px",background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:tab===tb.key?700:500,color:tab===tb.key?C.teal:C.muted,borderBottom:tab===tb.key?"2px solid "+C.teal:"2px solid transparent",marginBottom:-1}}>{tb.label}</button>})}</div><div style={{padding:"10px 14px 12px"}}><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[tab]}</div></div></div>);}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+
+// ═══════════════════════════════
+// FLOWCHART
+// ═══════════════════════════════
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-3.5)+","+(p.y2-6)+" "+(p.x2+3.5)+","+(p.y2-6)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Blunt head trauma · GCS 14–15 · Age-stratified PECARN decision rule</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 580" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={580} fill="#fafaf8" rx={6}/>
+
+          {/* Entry */}
+          <Box x={100} y={6} w={280} h={28} fill={blBg} stroke={blBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={blC}>BLUNT HEAD TRAUMA — GCS 14–15</T><T x={240} y={28} size={6} color={mC}>Assess age · Neuro exam · Mechanism</T></Box>
+          <Arrow x1={240} y1={34} x2={240} y2={48}/>
+
+          {/* Age split */}
+          <g transform="translate(240,62)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Age?</T></g>
+          <Arrow x1={185} y1={62} x2={110} y2={86} color={rC}/>
+          <T x={138} y={74} size={6} color={rC} weight={600}>&lt;2 yr</T>
+          <Arrow x1={295} y1={62} x2={370} y2={86} color={blC}/>
+          <T x={340} y={74} size={6} color={blC} weight={600}>≥2 yr</T>
+
+          {/* ═══ LEFT COLUMN: <2 years ═══ */}
+          <Box x={20} y={86} w={180} h={18} fill={rBg} stroke={rBd} sw={1.5} radius={9}><T x={110} y={97} size={8} weight={700} color={rC}>AGE &lt;2 YEARS</T></Box>
+          <Arrow x1={110} y1={104} x2={110} y2={118}/>
+          <g transform="translate(110,132)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>GCS=14, AMS,</T><T x={0} y={7} size={6} weight={700}>palpable skull fx?</T></g>
+          <line x1={55} y1={132} x2={14} y2={132} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={14} y1={132} x2={14} y2={152} color={rC}/>
+          <T x={30} y={128} size={5.5} color={rC} weight={600}>Yes</T>
+          <Box x={2} y={152} w={60} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={32} y={164} size={6} weight={700} color={rC}>CT</T><T x={32} y={174} size={5.5} color={rC}>ciTBI 4.4%</T></Box>
+          <Arrow x1={110} y1={146} x2={110} y2={166}/>
+          <T x={110} y={162} size={5.5} color={gC} weight={600}>No</T>
+          <g transform="translate(110,182)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={5.5} weight={700}>LOC ≥5s, severe</T><T x={0} y={5} size={5.5} weight={700}>mech, non-frontal</T><T x={0} y={13} size={5.5} weight={700}>scalp hematoma?</T></g>
+          <line x1={55} y1={182} x2={14} y2={182} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={14} y1={182} x2={14} y2={204} color={aC}/>
+          <T x={30} y={178} size={5.5} color={aC} weight={600}>Yes</T>
+          <Box x={2} y={204} w={60} h={36} fill={aBg} stroke={aBd}><T x={32} y={215} size={6} weight={700} color={aC}>OBS vs CT</T><T x={32} y={225} size={5} color={aC}>ciTBI 0.9%</T><T x={32} y={234} size={5} color={mC}>Clinical judgment</T></Box>
+          <Arrow x1={110} y1={196} x2={110} y2={216}/>
+          <T x={110} y={212} size={5.5} color={gC} weight={600}>No</T>
+          <Box x={74} y={216} w={72} h={30} fill={gBg} stroke={gBd}><T x={110} y={228} size={6} weight={700} color={gC}>CT NOT</T><T x={110} y={238} size={6} weight={700} color={gC}>NEEDED</T></Box>
+          <T x={110} y={256} size={5} color={gC}>ciTBI &lt;0.02%</T>
+
+          {/* ═══ RIGHT COLUMN: ≥2 years ═══ */}
+          <Box x={280} y={86} w={180} h={18} fill={blBg} stroke={blBd} sw={1.5} radius={9}><T x={370} y={97} size={8} weight={700} color={blC}>AGE ≥2 YEARS</T></Box>
+          <Arrow x1={370} y1={104} x2={370} y2={118}/>
+          <g transform="translate(370,132)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>GCS=14, AMS,</T><T x={0} y={7} size={6} weight={700}>basilar skull fx signs?</T></g>
+          <line x1={425} y1={132} x2={466} y2={132} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={466} y1={132} x2={466} y2={152} color={rC}/>
+          <T x={448} y={128} size={5.5} color={rC} weight={600}>Yes</T>
+          <Box x={430} y={152} w={46} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={453} y={164} size={6} weight={700} color={rC}>CT</T><T x={453} y={174} size={5.5} color={rC}>ciTBI 4.3%</T></Box>
+          <Arrow x1={370} y1={146} x2={370} y2={166}/>
+          <T x={370} y={162} size={5.5} color={gC} weight={600}>No</T>
+          <g transform="translate(370,182)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={5.5} weight={700}>LOC, vomiting,</T><T x={0} y={5} size={5.5} weight={700}>severe mech,</T><T x={0} y={13} size={5.5} weight={700}>severe headache?</T></g>
+          <line x1={425} y1={182} x2={466} y2={182} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={466} y1={182} x2={466} y2={204} color={aC}/>
+          <T x={448} y={178} size={5.5} color={aC} weight={600}>Yes</T>
+          <Box x={430} y={204} w={46} h={36} fill={aBg} stroke={aBd}><T x={453} y={215} size={6} weight={700} color={aC}>OBS</T><T x={453} y={224} size={5} color={aC}>vs CT</T><T x={453} y={234} size={5} color={mC}>0.8%</T></Box>
+          <Arrow x1={370} y1={196} x2={370} y2={216}/>
+          <T x={370} y={212} size={5.5} color={gC} weight={600}>No</T>
+          <Box x={334} y={216} w={72} h={30} fill={gBg} stroke={gBd}><T x={370} y={228} size={6} weight={700} color={gC}>CT NOT</T><T x={370} y={238} size={6} weight={700} color={gC}>NEEDED</T></Box>
+          <T x={370} y={256} size={5} color={gC}>ciTBI &lt;0.05%</T>
+
+          {/* ═══ BOTTOM: Shared management ═══ */}
+          <Box x={40} y={272} w={400} h={18} fill={pBg} stroke={pBd} radius={9}><T x={240} y={283} size={8} weight={700} color={pC}>POST-ASSESSMENT MANAGEMENT</T></Box>
+
+          {/* CT Positive */}
+          <Arrow x1={120} y1={290} x2={120} y2={308}/>
+          <Box x={20} y={308} w={200} h={54} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={120} y={320} size={7} weight={700} color={rC}>CT POSITIVE</T>
+            <T x={120} y={332} size={6}>Neurosurgical lesion → NSG consult</T>
+            <T x={120} y={342} size={6}>Non-surgical → Admit for observation</T>
+            <T x={120} y={352} size={6} weight={700} color={rC}>Neuro checks Q1–2h · Repeat CT PRN</T>
+          </Box>
+
+          {/* CT Negative / No CT */}
+          <Arrow x1={360} y1={290} x2={360} y2={308}/>
+          <Box x={240} y={308} w={220} h={54} fill={gBg} stroke={gBd} sw={1.5}>
+            <T x={350} y={320} size={7} weight={700} color={gC}>CT NEGATIVE or CT NOT OBTAINED</T>
+            <T x={350} y={332} size={6}>Observation 4–6h from injury</T>
+            <T x={350} y={342} size={6}>Serial neuro checks · PO trial</T>
+            <T x={350} y={352} size={6} weight={700} color={gC}>D/C with head injury precautions</T>
+          </Box>
+
+          {/* Observation detail */}
+          <Box x={40} y={378} w={400} h={42} fill={aBg} stroke={aBd} radius={8}>
+            <T x={240} y={390} size={7} weight={700} color={aC}>OBSERVATION PERIOD — 4 to 6 HOURS FROM INJURY</T>
+            <T x={240} y={402} size={6} color={mC}>Serial GCS + neuro checks Q1–2h · Reassess vomiting, headache, mental status</T>
+            <T x={240} y={412} size={6} color={aC}>Worsening → CT · Improving → Discharge with precautions</T>
+          </Box>
+
+          {/* Concussion */}
+          <Box x={40} y={432} w={400} h={36} fill={blBg} stroke={blBd} radius={8}>
+            <T x={240} y={444} size={7} weight={700} color={blC}>CONCUSSION DISCHARGE GUIDANCE</T>
+            <T x={240} y={454} size={6} color={mC}>Relative rest 24–48h → Gradual return to activity · Return-to-learn before return-to-play</T>
+            <T x={240} y={464} size={6} color={blC}>No contact sports until symptom-free + provider clearance · Concussion clinic if sx &gt;2 weeks</T>
+          </Box>
+
+          {/* NAT */}
+          <Box x={40} y={480} w={400} h={28} fill={pBg} stroke={pBd} radius={8}>
+            <T x={240} y={492} size={7} weight={700} color={pC}>CONSIDER NAT IN ALL CHILDREN — ESPECIALLY &lt;1 YEAR</T>
+            <T x={240} y={502} size={6} color={mC}>Inconsistent mechanism · Delayed presentation · Subdural hematomas · Retinal hemorrhages</T>
+          </Box>
+
+          {/* Summary bar */}
+          <Box x={20} y={520} w={440} h={48} fill="#f1f5f9" stroke="#e2e8f0" radius={6}>
+            <T x={130} y={532} size={7} weight={700} color={rC}>CT RECOMMENDED</T>
+            <T x={130} y={542} size={6} color={mC}>GCS 14 · AMS · Skull fx signs</T>
+            <T x={130} y={552} size={6} color={mC}>ciTBI 4.3–4.4%</T>
+            <T x={240} y={532} size={7} weight={700} color={aC}>OBS vs CT</T>
+            <T x={240} y={542} size={6} color={mC}>Intermediate risk</T>
+            <T x={240} y={552} size={6} color={mC}>ciTBI 0.8–0.9%</T>
+            <T x={370} y={532} size={7} weight={700} color={gC}>CT NOT NEEDED</T>
+            <T x={370} y={542} size={6} color={mC}>No risk factors</T>
+            <T x={370} y={552} size={6} color={mC}>ciTBI &lt;0.02–0.05%</T>
+          </Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════
+// PECARN CALCULATOR (interactive)
+// ═══════════════════════════════
+function PECARNCalculator({teaching}){
+  var s1=useState(null),ageGroup=s1[0],setAgeGroup=s1[1];
+  var s2=useState({}),answers=s2[0],setAnswers=s2[1];
+
+  function setA(key,val){var n=Object.assign({},answers);n[key]=val;setAnswers(n);}
+  function resetCalc(){setAgeGroup(null);setAnswers({});}
+
+  var under2Q=[
+    {key:"gcsAms",label:"GCS = 14, other signs of AMS, or palpable skull fracture?",yColor:C.red},
+    {key:"loc",label:"Loss of consciousness ≥5 seconds?",yColor:C.amberMid},
+    {key:"mech",label:"Severe mechanism of injury?",sub:"Fall >3 ft · MVC with ejection/rollover/fatality · Struck by high-impact object · Ped/cyclist vs vehicle",yColor:C.amberMid},
+    {key:"hematoma",label:"Non-frontal scalp hematoma?",sub:"Parietal, temporal, or occipital",yColor:C.amberMid},
+    {key:"acting",label:"Not acting normally per parent?",yColor:C.amberMid},
+  ];
+  var over2Q=[
+    {key:"gcsAms",label:"GCS = 14, other signs of AMS, or signs of basilar skull fracture?",yColor:C.red},
+    {key:"loc",label:"Any loss of consciousness?",yColor:C.amberMid},
+    {key:"vomit",label:"Vomiting?",yColor:C.amberMid},
+    {key:"mech",label:"Severe mechanism of injury?",sub:"Fall >5 ft · MVC with ejection/rollover/fatality · Struck by high-impact object · Ped/cyclist vs vehicle",yColor:C.amberMid},
+    {key:"headache",label:"Severe headache?",yColor:C.amberMid},
+  ];
+
+  var questions=ageGroup==="under2"?under2Q:ageGroup==="over2"?over2Q:[];
+
+  // Determine risk
+  function getRisk(){
+    if(!ageGroup||questions.length===0)return null;
+    // Check if all answered
+    var allAnswered=questions.every(function(q){return answers[q.key]!==undefined});
+    if(!allAnswered)return null;
+    // First question (GCS/AMS/fx) = high risk if yes
+    if(answers.gcsAms===true)return "high";
+    // Any other yes = intermediate
+    var anyYes=questions.slice(1).some(function(q){return answers[q.key]===true});
+    if(anyYes)return "intermediate";
+    return "low";
+  }
+
+  var risk=getRisk();
+
+  return(<div>
+    {!ageGroup&&(<div>
+      <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>Select age group:</div>
+      <WizBtn label="Age < 2 years" sub="Uses: GCS/AMS, palpable skull fx, LOC ≥5s, severe mechanism, non-frontal hematoma, not acting normally" color={C.red} bg={C.redBg} border={C.redBorder} selected={false} onClick={function(){setAgeGroup("under2")}}/>
+      <WizBtn label="Age ≥ 2 years" sub="Uses: GCS/AMS, basilar skull fx signs, LOC, vomiting, severe mechanism, severe headache" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={false} onClick={function(){setAgeGroup("over2")}}/>
+    </div>)}
+    {ageGroup&&(<div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <div style={{fontSize:13,fontWeight:700,color:ageGroup==="under2"?C.red:C.blue}}>PECARN — {ageGroup==="under2"?"Age < 2 Years":"Age ≥ 2 Years"}</div>
+        <button onClick={resetCalc} style={{fontSize:11,color:C.muted,background:"none",border:"1px solid "+C.rule,borderRadius:6,padding:"4px 8px",cursor:"pointer"}}>Change age</button>
+      </div>
+      {questions.map(function(q,i){
+        var val=answers[q.key];
+        return(<div key={q.key} style={{marginBottom:10,padding:"10px 12px",background:val===true?C.redBg:val===false?C.greenBg:"#f9fafb",border:"1.5px solid "+(val===true?C.redBorder:val===false?C.greenBorder:C.rule),borderRadius:8}}>
+          <div style={{fontSize:13,fontWeight:600,marginBottom:2}}>{q.label}</div>
+          {q.sub&&<div style={{fontSize:11,color:C.muted,marginBottom:4}}>{q.sub}</div>}
+          <div style={{display:"flex",gap:6}}>
+            <button onClick={function(){setA(q.key,true)}} style={{flex:1,padding:"6px",borderRadius:6,border:"1.5px solid "+(val===true?q.yColor:C.rule),background:val===true?"#fff":"transparent",cursor:"pointer",fontSize:12,fontWeight:val===true?700:500,color:val===true?q.yColor:C.muted}}>Yes</button>
+            <button onClick={function(){setA(q.key,false)}} style={{flex:1,padding:"6px",borderRadius:6,border:"1.5px solid "+(val===false?C.greenMid:C.rule),background:val===false?"#fff":"transparent",cursor:"pointer",fontSize:12,fontWeight:val===false?700:500,color:val===false?C.greenMid:C.muted}}>No</button>
+          </div>
+        </div>);
+      })}
+      {risk==="high"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="HIGH RISK — CT Recommended">ciTBI risk 4.3–4.4%. CT scan of the head is recommended.</Alert>)}
+      {risk==="intermediate"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🟡" title="INTERMEDIATE RISK — Observation vs CT">ciTBI risk 0.8–0.9%. Consider observation for 4–6 hours vs CT based on: physician experience, multiple vs isolated findings, symptom trajectory, worsening on serial exams, age &lt;3 months, parental preference.</Alert>)}
+      {risk==="low"&&(<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="LOW RISK — CT Not Recommended">ciTBI risk &lt;0.02–0.05%. CT is not recommended. Discharge with head injury precautions and return precautions.</Alert>)}
+    </div>)}
+  </div>);
+}
+
+
+// ═══════════════════════════════
+// WALK-THROUGH WIZARD
+// ═══════════════════════════════
+function Wizard({teaching,weightKg,doses}){
+  var s1=useState(null),onPath=s1[0],setOnPath=s1[1];
+  var s2=useState(null),gcsLow=s2[0],setGcsLow=s2[1];
+  var s3=useState(null),ageGroup=s3[0],setAgeGroup=s3[1];
+  var s4=useState(null),highRisk=s4[0],setHighRisk=s4[1];
+  var s5=useState(null),interRisk=s5[0],setInterRisk=s5[1];
+  var s6=useState(null),obsDec=s6[0],setObsDec=s6[1];
+  var s7=useState(null),ctResult=s7[0],setCtResult=s7[1];
+
+  function reset(){setOnPath(null);setGcsLow(null);setAgeGroup(null);setHighRisk(null);setInterRisk(null);setObsDec(null);setCtResult(null);}
+
+  return(<Pad>
+    <Q text="Walk-Through" sub="Answer each question to apply the PECARN decision rule"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* STEP 1: On Pathway */}
+    <Card title="Step 1 — Inclusion Check" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>
+        <strong>Does the patient meet inclusion criteria?</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>Age &lt;18 years · Blunt head trauma · GCS 14–15 on initial assessment</span>
+      </div>
+      <WizBtn label="Yes — On Pathway" sub="GCS 14–15, blunt mechanism, age <18" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={onPath==="yes"} onClick={function(){setOnPath("yes")}}/>
+      <WizBtn label="GCS ≤13 — Off Pathway" sub="Moderate-severe TBI: CT indicated (TBI rate up to 20% at GCS 13), neurosurgery consult" color={C.red} bg={C.redBg} border={C.redBorder} selected={onPath==="gcsLow"} onClick={function(){setOnPath("gcsLow")}}/>
+      <WizBtn label="Not Applicable" sub="Penetrating trauma, trivial mechanism (ground level onto carpet, no signs/symptoms), or pre-existing shunt" color={C.muted} bg={"#f9fafb"} border={C.rule} selected={onPath==="na"} onClick={function(){setOnPath("na")}}/>
+      {onPath==="gcsLow"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="GCS ≤13 — CT Indicated">
+        <strong>CT head without contrast STAT</strong><br/>
+        Neurosurgery consult if GCS ≤12 or focal neurological deficit<br/>
+        ABCs · C-spine precautions if mechanism warrants<br/>
+        NS bolus {doses?doses.bolus+" mL":"20 mL/kg"} if hypotensive<br/>
+        <strong>→ Admit</strong> (PICU if GCS ≤12)
+      </Alert>}
+      {onPath==="na"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Off Pathway">Manage based on clinical judgment. PECARN does not apply to penetrating trauma, trivial mechanisms, or children with VP shunts.</Alert>}
+    </Card>
+
+    {/* STEP 2: Age */}
+    {onPath==="yes"&&(<Card title="Step 2 — Age Group" color={C.primary}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>What is the patient's age?</strong></div>
+      <WizBtn label="Age < 2 years" sub="PECARN uses: palpable skull fx, LOC ≥5s, non-frontal scalp hematoma, not acting normally" color={C.red} bg={C.redBg} border={C.redBorder} selected={ageGroup==="under2"} onClick={function(){setAgeGroup("under2")}}/>
+      <WizBtn label="Age ≥ 2 years" sub="PECARN uses: basilar skull fx signs, any LOC, vomiting, severe headache" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={ageGroup==="over2"} onClick={function(){setAgeGroup("over2")}}/>
+    </Card>)}
+
+    {/* STEP 3: High-risk features */}
+    {onPath==="yes"&&ageGroup!==null&&(<Card title={"Step 3 — High-Risk Features ("+(ageGroup==="under2"?"<2 yr":"≥2 yr")+")"} color={C.red}>
+      <div style={{fontSize:13,marginBottom:10}}>
+        <strong>{ageGroup==="under2"?"Does the child have GCS = 14, other signs of altered mental status, or a palpable skull fracture?":"Does the child have GCS = 14, other signs of altered mental status, or signs of basilar skull fracture?"}</strong>
+      </div>
+      {ageGroup==="under2"&&(<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:10}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.amberMid,marginBottom:4}}>AMS in children &lt;2 years</div>
+        <div style={{fontSize:11,lineHeight:1.5}}>Agitation · Somnolence · Repetitive questioning · Slow response to verbal communication · GCS 14</div>
+      </div>)}
+      {ageGroup==="over2"&&(<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:10}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.amberMid,marginBottom:4}}>Basilar Skull Fracture Signs</div>
+        <div style={{fontSize:11,lineHeight:1.5}}>Hemotympanum · Periorbital ecchymosis (raccoon eyes) · Retroauricular ecchymosis (Battle sign) · CSF otorrhea/rhinorrhea</div>
+      </div>)}
+      <WizBtn label="Yes — High-Risk Feature Present" sub="CT recommended — ciTBI risk ~4.4%" color={C.red} bg={C.redBg} border={C.redBorder} selected={highRisk==="yes"} onClick={function(){setHighRisk("yes")}}/>
+      <WizBtn label="No — None Present" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={highRisk==="no"} onClick={function(){setHighRisk("no")}}/>
+      {highRisk==="yes"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="CT Recommended">
+        <strong>CT head without contrast</strong><br/>
+        ciTBI risk ~4.3–4.4%<br/>
+        {ageGroup==="under2"&&<span>If palpable skull fracture → correlate with CT<br/></span>}
+        {ageGroup==="over2"&&<span>If basilar skull fx signs → evaluate for CSF leak<br/></span>}
+        Neurosurgery consult if positive CT with surgical lesion
+      </Alert>)}
+      <TeachBox id="gcs" teaching={teaching}/>
+      {ageGroup==="under2"&&<TeachBox id="skullfx" teaching={teaching}/>}
+    </Card>)}
+
+    {/* STEP 4: Intermediate-risk features */}
+    {onPath==="yes"&&ageGroup!==null&&highRisk==="no"&&(<Card title={"Step 4 — Intermediate-Risk Features ("+(ageGroup==="under2"?"<2 yr":"≥2 yr")+")"} color={C.amberMid}>
+      <div style={{fontSize:13,marginBottom:10}}>
+        <strong>{ageGroup==="under2"?"Does the child have any of the following?":"Does the child have any of the following?"}</strong>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:12}}>
+        {ageGroup==="under2"?
+          ["Loss of consciousness ≥5 seconds","Severe mechanism of injury","Non-frontal scalp hematoma","Not acting normally per parent"].map(function(item){return <div key={item} style={{background:C.amberBg,border:"1px solid "+C.amberBorder,borderRadius:6,padding:"6px 8px",fontSize:11,fontWeight:500}}>{item}</div>})
+          :
+          ["Any loss of consciousness","History of vomiting","Severe mechanism of injury","Severe headache"].map(function(item){return <div key={item} style={{background:C.amberBg,border:"1px solid "+C.amberBorder,borderRadius:6,padding:"6px 8px",fontSize:11,fontWeight:500}}>{item}</div>})
+        }
+      </div>
+      {ageGroup==="under2"&&(<div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"8px 10px",marginBottom:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:C.blue,marginBottom:2}}>Severe Mechanism (&lt;2 yr)</div>
+        <div style={{fontSize:11}}>Fall &gt;3 feet · MVC with ejection/rollover/fatality · Head struck by high-impact object · Ped/cyclist vs vehicle</div>
+      </div>)}
+      {ageGroup==="over2"&&(<div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"8px 10px",marginBottom:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:C.blue,marginBottom:2}}>Severe Mechanism (≥2 yr)</div>
+        <div style={{fontSize:11}}>Fall &gt;5 feet · MVC with ejection/rollover/fatality · Head struck by high-impact object · Ped/cyclist vs vehicle</div>
+      </div>)}
+      <WizBtn label="Yes — Intermediate-Risk Feature(s) Present" sub="Observation vs CT — ciTBI risk ~0.8–0.9%" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={interRisk==="yes"} onClick={function(){setInterRisk("yes")}}/>
+      <WizBtn label="No — None Present" sub="CT not recommended — ciTBI risk <0.02–0.05%" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={interRisk==="no"} onClick={function(){setInterRisk("no")}}/>
+      {interRisk==="no"&&(<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="CT Not Recommended — Low Risk">
+        ciTBI risk &lt;0.02% (&lt;2yr) / &lt;0.05% (≥2yr)<br/>
+        <strong>Discharge with head injury precautions</strong><br/>
+        Return precautions: worsening headache, repeated vomiting, confusion, difficulty waking, seizure, focal weakness, clear fluid from nose/ears
+      </Alert>)}
+      <TeachBox id="mechanism" teaching={teaching}/>
+      {ageGroup==="under2"&&<TeachBox id="scalphematoma" teaching={teaching}/>}
+    </Card>)}
+
+    {/* STEP 5: Observation vs CT decision */}
+    {onPath==="yes"&&ageGroup!==null&&highRisk==="no"&&interRisk==="yes"&&(<Card title="Step 5 — Observation vs CT (Intermediate Risk)" color={C.amberMid}>
+      <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
+        <strong>Clinical judgment zone.</strong> Consider observation vs CT based on:
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+        <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px"}}>
+          <div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4}}>Favors CT</div>
+          <div style={{fontSize:11,lineHeight:1.5}}>Multiple risk factors<br/>Worsening symptoms<br/>Age &lt;3 months<br/>Physician concern<br/>Isolated severe mechanism<br/>Large/non-frontal hematoma</div>
+        </div>
+        <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px"}}>
+          <div style={{fontSize:12,fontWeight:700,color:C.greenMid,marginBottom:4}}>Favors Observation</div>
+          <div style={{fontSize:11,lineHeight:1.5}}>Single risk factor<br/>Improving symptoms<br/>Older child (can describe sx)<br/>Reliable parent/caregiver<br/>Mild mechanism<br/>Small frontal hematoma</div>
+        </div>
+      </div>
+      <WizBtn label="Observe — 4–6 Hours from Injury" sub="Serial neuro checks Q1–2h, reassess for CT if worsening" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={obsDec==="observe"} onClick={function(){setObsDec("observe")}}/>
+      <WizBtn label="CT — Obtain CT Head" sub="Sufficient concern to image" color={C.red} bg={C.redBg} border={C.redBorder} selected={obsDec==="ct"} onClick={function(){setObsDec("ct")}}/>
+
+      {obsDec==="observe"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="👁" title="Observation Period">
+        <strong>4–6 hours from time of injury</strong> (not from ED arrival)<br/>
+        Neuro checks Q1–2h: GCS, pupillary response, mental status<br/>
+        Reassess: headache severity, vomiting frequency, level of alertness<br/>
+        PO trial when appropriate<br/><br/>
+        <strong>If worsening</strong> → CT head<br/>
+        <strong>If improving/stable at 4–6h</strong> → Discharge with head injury precautions
+      </Alert>)}
+      <TeachBox id="observation" teaching={teaching}/>
+      <TeachBox id="ctrisks" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 6: CT Result (if CT obtained) */}
+    {onPath==="yes"&&(highRisk==="yes"||obsDec==="ct")&&(<Card title="Step 6 — CT Result" color={C.blue}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>CT head result?</strong></div>
+      <WizBtn label="Positive — Intracranial Injury" sub="Epidural, subdural, subarachnoid hemorrhage, contusion, depressed skull fracture" color={C.red} bg={C.redBg} border={C.redBorder} selected={ctResult==="positive"} onClick={function(){setCtResult("positive")}}/>
+      <WizBtn label="Isolated Skull Fracture — No Intracranial Hemorrhage" sub="Linear non-displaced fracture without underlying bleed" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={ctResult==="fracture"} onClick={function(){setCtResult("fracture")}}/>
+      <WizBtn label="Negative — Normal CT" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={ctResult==="negative"} onClick={function(){setCtResult("negative")}}/>
+
+      {ctResult==="positive"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Intracranial Injury — ADMIT">
+        <strong>Neurosurgery consult</strong> if surgical lesion (EDH, large SDH, depressed skull fx, mass effect)<br/>
+        Neuro checks Q1h · HOB 30°<br/>
+        Seizure prophylaxis if indicated: <strong>Levetiracetam</strong> {doses?doses.levetir+" mg":"20 mg/kg"} IV<br/>
+        <strong>If ↑ICP:</strong> Mannitol {doses?doses.mannitol+" g":"0.5 g/kg"} IV or 3% NaCl {doses?doses.hs3+" mL":"5 mL/kg"} IV<br/>
+        <strong>→ Admit</strong> (PICU if GCS ≤12, surgical lesion, or clinical concern)
+      </Alert>)}
+      {ctResult==="fracture"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🟡" title="Isolated Skull Fracture — Observe & Admit">
+        Observe minimum 4–6 hours with serial neuro checks<br/>
+        Low threshold for repeat CT if any neurological change<br/>
+        Consider admission for observation (especially if &lt;1 year or temporal fracture)<br/>
+        {ageGroup==="under2"&&<span><strong>Consider NAT evaluation if mechanism inconsistent</strong><br/></span>}
+        If well and stable → may discharge with close follow-up and return precautions
+      </Alert>)}
+      {ctResult==="negative"&&(<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Normal CT — Discharge">
+        Observe until clinically improving<br/>
+        <strong>Discharge with head injury precautions</strong><br/>
+        Concussion guidance if symptomatic: relative rest 24–48h → gradual return to activity<br/>
+        Return-to-learn before return-to-play<br/>
+        Concussion clinic referral if symptoms persist &gt;2 weeks
+      </Alert>)}
+      <TeachBox id="nat" teaching={teaching}/>
+    </Card>)}
+
+    {/* RESET */}
+    {(onPath!==null)&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
+
+    {/* FLOWCHART */}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+
+// ═══════════════════════════════
+// REFERENCE MODE TABS
+// ═══════════════════════════════
+function RefTriage({teaching}){return(<Pad>
+<Q text="Triage & Initial Assessment" sub="Blunt head trauma · Age <18 years · GCS 14–15"/>
+<TeachBox id="overview" teaching={teaching}/>
+<Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}>
+<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Age &lt;18 years · Blunt head trauma · GCS 14–15 on presentation</Alert>
+<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion / Off Pathway">GCS ≤13 (moderate-severe TBI — CT indicated; TBI rate up to 20% at GCS 13) · Penetrating trauma · Trivial mechanism with no signs/symptoms (ground-level fall onto soft surface, no LOC, no symptoms) · Pre-existing VP shunt · Known bleeding disorder on anticoagulation</Alert>
+</div></Card>
+<Card title="Triage Actions" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>
+<strong>ESI Level II–III</strong> (based on GCS and symptoms)<br/>
+Full vitals · GCS (use pediatric verbal scale for &lt;2 years)<br/>
+Focused neurological exam · Scalp inspection and palpation<br/>
+Mechanism details: height of fall, surface, impact location, LOC duration<br/>
+<strong style={{color:C.red}}>C-spine precautions if mechanism warrants</strong><br/>
+<strong>Serial GCS assessment</strong> — document time of injury
+</div></Card>
+<Card title="GCS — Pediatric Verbal Modification" color={C.blue}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 2fr 2fr",gap:4,marginBottom:6}}>
+<div style={{fontWeight:700,fontSize:10,color:C.muted}}>SCORE</div>
+<div style={{fontWeight:700,fontSize:10,color:C.muted}}>VERBAL (≥2 yr)</div>
+<div style={{fontWeight:700,fontSize:10,color:C.muted}}>VERBAL (&lt;2 yr)</div>
+</div>
+{[["5","Oriented","Coos / babbles"],["4","Confused","Irritable, consolable cry"],["3","Inappropriate words","Cries to pain"],["2","Incomprehensible","Moans to pain"],["1","None","None"]].map(function(r){return <div key={r[0]} style={{display:"grid",gridTemplateColumns:"1fr 2fr 2fr",gap:4,padding:"3px 0",borderBottom:"1px dashed "+C.rule}}><div style={{fontSize:12,fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{r[0]}</div><div style={{fontSize:12}}>{r[1]}</div><div style={{fontSize:12}}>{r[2]}</div></div>})}
+</div><TeachBox id="gcs" teaching={teaching}/></Card>
+<Card title="Severe Mechanism Definitions" color={C.amberMid}><div style={{marginTop:8}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px"}}>
+<div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4}}>Age &lt;2 Years</div>
+<div style={{fontSize:11,lineHeight:1.5}}>Fall &gt;3 feet (0.9 m)<br/>Head struck by high-impact object<br/>MVC with ejection/rollover/fatality<br/>Ped/cyclist without helmet vs vehicle</div>
+</div>
+<div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"10px"}}>
+<div style={{fontSize:12,fontWeight:700,color:C.blue,marginBottom:4}}>Age ≥2 Years</div>
+<div style={{fontSize:11,lineHeight:1.5}}>Fall &gt;5 feet (1.5 m)<br/>Head struck by high-impact object<br/>MVC with ejection/rollover/fatality<br/>Ped/cyclist without helmet vs vehicle</div>
+</div>
+</div>
+</div><TeachBox id="mechanism" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+<Q text="PECARN Decision Rule" sub="Age-stratified algorithm for identifying children at very low risk of ciTBI"/>
+<Card title="Interactive PECARN Calculator" color={C.primary}>
+<PECARNCalculator teaching={teaching}/>
+</Card>
+<Card title="PECARN — Age < 2 Years" color={C.red}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>HIGH RISK — CT Recommended (ciTBI 4.4%)</div><div style={{fontSize:12,marginTop:2}}>GCS = 14 · Other signs of AMS · Palpable skull fracture</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>INTERMEDIATE — Observation vs CT (ciTBI 0.9%)</div><div style={{fontSize:12,marginTop:2}}>LOC ≥5 seconds · Severe mechanism (fall &gt;3 ft) · Non-frontal scalp hematoma · Not acting normally per parent</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>LOW RISK — CT Not Recommended (ciTBI &lt;0.02%)</div><div style={{fontSize:12,marginTop:2}}>None of the above features present</div></div>
+</div></Card>
+<Card title="PECARN — Age ≥ 2 Years" color={C.blue}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>HIGH RISK — CT Recommended (ciTBI 4.3%)</div><div style={{fontSize:12,marginTop:2}}>GCS = 14 · Other signs of AMS · Signs of basilar skull fracture</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>INTERMEDIATE — Observation vs CT (ciTBI 0.8%)</div><div style={{fontSize:12,marginTop:2}}>Any loss of consciousness · History of vomiting · Severe mechanism (fall &gt;5 ft) · Severe headache</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>LOW RISK — CT Not Recommended (ciTBI &lt;0.05%)</div><div style={{fontSize:12,marginTop:2}}>None of the above features present</div></div>
+</div></Card>
+<Card title="Intermediate Risk — Observation vs CT Guidance" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px"}}><div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4}}>Favors CT</div><div style={{fontSize:11,lineHeight:1.5}}>Multiple risk factors present<br/>Worsening symptoms on serial exam<br/>Age &lt;3 months<br/>Physician clinical concern<br/>Isolated severe mechanism in young child<br/>Large or non-frontal hematoma (&lt;2yr)</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px"}}><div style={{fontSize:12,fontWeight:700,color:C.greenMid,marginBottom:4}}>Favors Observation</div><div style={{fontSize:11,lineHeight:1.5}}>Single risk factor<br/>Improving symptoms on serial exam<br/>Older child who can describe symptoms<br/>Reliable parent/caregiver for monitoring<br/>Mild mechanism despite meeting threshold<br/>Small frontal hematoma (&lt;2yr)</div></div>
+</div>
+</div><TeachBox id="observation" teaching={teaching}/></Card>
+<PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+<Q text="Medications & Supportive Care" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+{!doses&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>)}
+<Card title="Resuscitation — GCS ≤13 or Hypotension" color={C.red}><div style={{marginTop:8}}>
+<DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/>
+<DoseRow label="Mannitol (0.5 g/kg) IV — for ↑ICP" value={doses?doses.mannitol:"—"} unit={doses?"g":""}/>
+<DoseRow label="3% NaCl (5 mL/kg) IV — for ↑ICP" value={doses?doses.hs3:"—"} unit={doses?"mL":""}/>
+</div></Card>
+<Card title="Seizure Prophylaxis" color={C.purple}><div style={{marginTop:8}}>
+<DoseRow label="Levetiracetam (20 mg/kg) IV" value={doses?doses.levetir:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Phenytoin (20 mg/kg) IV — alternative" value={doses?doses.phenytoin:"—"} unit={doses?"mg":""}/>
+<div style={{fontSize:12,color:C.muted,marginTop:6}}>Seizure prophylaxis for intracranial hemorrhage per neurosurgery recommendation</div>
+</div></Card>
+<Card title="Symptom Management" color={C.blue}><div style={{marginTop:8}}>
+<DoseRow label="Acetaminophen (15 mg/kg) PO/PR" value={doses?doses.apap:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Ibuprofen (10 mg/kg) PO" value={doses?doses.ibu:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Ondansetron (0.15 mg/kg) IV/PO" value={doses?doses.ondans:"—"} unit={doses?"mg":""}/>
+<div style={{fontSize:12,color:C.muted,marginTop:6}}>Ondansetron for vomiting during observation period. Max single dose 4 mg. Ibuprofen acceptable for headache if no intracranial hemorrhage and platelets normal.</div>
+</div></Card>
+<Card title="Imaging Notes" color={C.primary} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>CT Head without contrast</strong> — standard for acute trauma evaluation<br/>
+<strong>CT C-spine</strong> — if mechanism warrants or clinical concern for cervical injury<br/>
+<strong>MRI Brain</strong> — not indicated acutely in ED; may be obtained inpatient for prognostication or NAT evaluation<br/>
+<strong>Skull radiographs</strong> — generally not recommended (low sensitivity for intracranial injury); may be considered in infants &lt;6 months as NAT screening
+</div><TeachBox id="ctrisks" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+<Q text="Disposition & References"/>
+<Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT — PICU</div><div style={{fontSize:12,marginTop:2}}>GCS ≤12 · Neurosurgical lesion · Clinical deterioration · Intubated · Coagulopathy with intracranial hemorrhage</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT — WARD</div><div style={{fontSize:12,marginTop:2}}>CT positive (non-surgical) · Persistent symptoms despite observation · Concern for NAT · Isolated skull fracture in young infant · GCS 14 not improving</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>CT negative · PECARN low risk (CT not obtained) · Symptoms improving after observation · Reliable caregiver for monitoring · Head injury precautions reviewed</div></div>
+</div><TeachBox id="disposition" teaching={teaching}/></Card>
+<Card title="Discharge Criteria" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>All patients must meet the following before discharge:</strong><br/>
+— No suspicion of inflicted injury<br/>
+— Easily aroused with light touch, normal neurologic exam (GCS 15)<br/>
+— At baseline level of function<br/>
+— Tolerating oral intake of fluids<br/>
+— No extracranial injuries warranting admission<br/>
+— Capable caretakers who can reliably observe and return for care if needed<br/><br/>
+<strong>It is not necessary to awaken most children from sleep.</strong> Those with concerning mechanism or prolonged symptoms who did not undergo neuroimaging may be awakened Q4h+, especially if discharged in evening hours. Upon awakening, the child should recognize surroundings and appear alert.<br/><br/>
+<strong>Follow-up within 24 hours</strong> (at minimum by telephone) for all discharged head injury patients.
+</div></Card>
+<Card title="Early Post-Traumatic Seizures" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>All children who seize after head trauma → neuroimaging (CT head)</strong><br/><br/>
+<strong>May discharge home</strong> if ALL of the following:<br/>
+— No prior seizures and no family history of epilepsy<br/>
+— Seizure was brief and generalized<br/>
+— Normal neuroimaging<br/>
+— Back to baseline mental status after observation period<br/><br/>
+<strong>Consider admission</strong> for: focal or prolonged seizures, known seizure disorder, strong family history, or abnormal neuroimaging. May warrant EEG and neurology consultation.<br/><br/>
+<span style={{fontSize:11,color:C.muted}}>Prophylactic anticonvulsant therapy is NOT recommended for early post-traumatic seizures (no benefit beyond first week in studies). Seizure recurrence risk is low (1.1% in patients with brief generalized seizures and normal CT).</span>
+</div><TeachBox id="seizures" teaching={teaching}/></Card>
+<Card title="Discharge — Head Injury Precautions" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>Return immediately for:</strong><br/>
+— Worsening or severe headache not relieved by acetaminophen/ibuprofen<br/>
+— Repeated vomiting (&gt;2 episodes)<br/>
+— Increasing drowsiness or difficulty waking<br/>
+— Confusion, disorientation, or unusual behavior<br/>
+— Seizure<br/>
+— Weakness or numbness in arms/legs<br/>
+— Unequal pupils or vision changes<br/>
+— Clear fluid from nose or ears<br/>
+— Worsening balance or coordination<br/><br/>
+<strong>General instructions:</strong><br/>
+— Responsible adult supervision for 24 hours<br/>
+— It is <strong>not necessary to awaken most children</strong> from sleep for monitoring<br/>
+— Children with concerning mechanism or prolonged symptoms who did not undergo imaging may be awakened Q4h+ overnight, especially if discharged in evening/night<br/>
+— Acetaminophen or ibuprofen for headache; avoid aspirin<br/>
+— Relative rest 24–48h, then gradual return to normal activity<br/>
+— Follow-up within 24 hours (at minimum by telephone)
+</div></Card>
+<Card title="Concussion — Return to Activity" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>Stepwise Return-to-Learn (before return-to-play):</strong><br/>
+1. Relative rest (24–48h) — light activity at home<br/>
+2. Light cognitive activity — short reading, limited screens<br/>
+3. Return to school with accommodations (breaks, reduced workload)<br/>
+4. Full school participation<br/><br/>
+<strong>Stepwise Return-to-Play:</strong><br/>
+1. Light aerobic exercise (walking, swimming)<br/>
+2. Sport-specific exercise (running, skating)<br/>
+3. Non-contact drills and training<br/>
+4. Full-contact practice (after medical clearance)<br/>
+5. Return to competition<br/><br/>
+<strong>Minimum 24h between steps. If symptoms recur, drop back one step.</strong><br/>
+<strong>No return to contact sports until symptom-free at rest AND with exertion AND provider clearance.</strong><br/>
+Concussion clinic referral if symptoms &gt;2 weeks.
+</div><TeachBox id="concussion" teaching={teaching}/></Card>
+<Card title="NAT Screening" color={C.red} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>Consider non-accidental trauma in:</strong><br/>
+— Any infant &lt;1 year with significant head injury<br/>
+— Mechanism inconsistent with developmental stage<br/>
+— Delayed presentation<br/>
+— Subdural hematomas (especially interhemispheric or bilateral)<br/>
+— Retinal hemorrhages<br/>
+— Multiple injuries in various stages of healing<br/><br/>
+<strong>If suspected:</strong> Skeletal survey · Ophthalmology consult · Social work · CPS notification · Follow institutional NAT pathway
+</div><TeachBox id="nat" teaching={teaching}/></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Kuppermann N et al. Identification of children at very low risk of clinically-important brain injuries after head trauma: a prospective cohort study. <em>Lancet</em> 2009; 374:1160-70.<br/>2. Borgialli DA et al. Performance of the Pediatric Glasgow Coma Scale Score in the Evaluation of Children With Blunt Head Trauma. <em>Acad Emerg Med</em> 2016; 23:878.<br/>3. Nigrovic LE et al. The effect of observation on cranial computed tomography utilization for children after blunt head trauma. <em>Pediatrics</em> 2011; 127:1067.<br/>4. Schonfeld D et al. Pediatric Emergency Care Applied Research Network head injury clinical prediction rules. <em>Pediatrics</em> 2014; 133:e507.<br/>5. Lumba-Brown A et al. CDC Guideline on the Diagnosis and Management of Mild TBI Among Children. <em>JAMA Pediatr</em> 2018; 172:e182853.<br/>6. Patricios JS et al. Consensus statement on concussion in sport: the 6th International Conference, Amsterdam 2022. <em>Br J Sports Med</em> 2023; 57:695.<br/>7. Miglioretti DL et al. The use of computed tomography in pediatrics and the associated radiation exposure. <em>JAMA Pediatr</em> 2013; 167:700.</div></Card>
+</Pad>)}
+
+
+// ═══════════════════════════════
+// APP
+// ═══════════════════════════════
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageYrs=s5[0],setAgeYrs=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decision",label:"PECARN"},{key:"meds",label:"Medications"},{key:"special",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (years)</label><input type="number" inputMode="decimal" value={ageYrs} onChange={function(e){setAgeYrs(e.target.value)}} placeholder="4" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="16" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+
+      {mode==="wizard"&&<Wizard teaching={teaching} weightKg={weightKg} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="special"&&<RefDispo teaching={teaching}/>}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/><strong style={{color:C.amberMid}}>⚠ DRAFT — Not yet reviewed or approved by the OHSU/Doernbecher Department of Emergency Medicine.</strong>
+        <br/>Doernbecher Children's Hospital · PED · Pediatric Head Injury / PECARN Clinical Pathway · 2024
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

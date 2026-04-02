@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concern for Hematologic Malignancy — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#6b21a8",pLight:"#faf5ff",pBorder:"#c4b5fd",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{title:"Concern for Hematologic Malignancy — Pathway Rationale",patho:"ALL/LBL is the most common childhood malignancy, accounting for approximately one-third of all childhood cancers. Peak incidence is between ages 2–5 years. B-lineage accounts for 85% of cases, T-lineage 10–15%, and NK-lineage <1%.\n\nMalignant lymphoblasts infiltrate the bone marrow, suppressing normal hematopoiesis and leading to cytopenias (anemia, thrombocytopenia, neutropenia). Extramedullary spread causes hepatosplenomegaly, lymphadenopathy, bone pain, and occasionally CNS or testicular involvement. T-ALL/LBL is commonly associated with mediastinal masses that can cause SVC syndrome or tracheal compression.",pearls:"More than half of children with leukemia present with at least one of: palpable liver, palpable spleen, pallor, fever, or bruising. Only 6% are asymptomatic at diagnosis. The challenge is that these findings overlap with common, self-limited childhood illnesses.\n\nKey red flags that should prompt CBC: persistent unexplained pallor, fever with cytopenias, hepatosplenomegaly, bone pain with limp or refusal to bear weight, unexplained lymphadenopathy unresponsive to antibiotics, and petechiae/purpura.",evidence:"Clarke RT et al. Clinical presentation of childhood leukaemia: systematic review and meta-analysis. Arch Dis Child 2016; 101:894. Ward E et al. Childhood and adolescent cancer statistics. CA Cancer J Clin 2014; 64:83. Hunger SP, Mullighan CG. ALL in Children. N Engl J Med 2015; 373:1541."},
+presentation:{title:"Clinical Presentation",patho:"Hepatomegaly (64%) and splenomegaly (61%) are the most common clinical findings. Lymphadenopathy is present in nearly half. Fever occurs in >50% — caused by infection or as a constitutional symptom. About 50% present with bleeding (petechiae, purpura) and 75% have platelets <100,000/µL at diagnosis. Musculoskeletal pain occurs in 43%.\n\nWBC count is <10,000/µL in 50% at presentation and >50,000/µL in 20%. Anemia manifestations (pallor, fatigue) are reported in >50%.",pearls:"Young children with bone pain may present with limp or refusal to bear weight — this can be mistaken for trauma or rheumatologic disease. Joint pain from ALL can be confused with JIA.\n\nTesticular enlargement is rare (<1%) but painless unilateral testicular swelling can be a presenting sign. Mediastinal mass (T-ALL) can cause SVC syndrome — look for neck/face swelling, dyspnea, dysphagia.",evidence:"Clarke RT et al. Arch Dis Child 2016; 101:894 (meta-analysis, >3000 children, 33 studies). Rabin KR et al. ALL. In: Principles and Practice of Pediatric Oncology, 7th ed."},
+cbc:{title:"CBC Interpretation",patho:"The peripheral blood smear is the single most important initial test. Circulating lymphoblasts may be present but are not always seen — WBC can be low, normal, or high. Pancytopenia (anemia + thrombocytopenia + neutropenia) is a classic pattern but not universal.\n\nA normal CBC does not exclude leukemia. If clinical suspicion remains high despite a normal CBC, bone marrow examination is warranted.",pearls:"Key CBC findings that should raise concern:\n• Blasts on peripheral smear (even rare blasts are significant)\n• Unexplained bicytopenia or pancytopenia\n• WBC >20,000 with lymphocyte predominance\n• Platelet count <100,000 without clear cause\n• Anemia with low reticulocyte count (hypoproliferative)\n\nAlways review the peripheral smear manually — automated differentials may miss low numbers of blasts.",evidence:"Rabin KR et al. Principles and Practice of Pediatric Oncology 7th ed. 75% have platelets <100K at diagnosis. WBC <10K in 50%, >50K in 20%."},
+emergencies:{title:"Oncologic Emergencies",patho:"Hyperleukocytosis (WBC >100,000/µL) causes leukostasis — sludging of blasts in the microvasculature leading to end-organ damage (pulmonary, CNS). Tumor lysis syndrome (TLS) can occur spontaneously or with treatment initiation — hyperuricemia, hyperkalemia, hyperphosphatemia, hypocalcemia leading to renal failure and cardiac arrhythmias.\n\nAnterior mediastinal masses (T-ALL) can cause life-threatening airway obstruction and SVC syndrome. Sedation and supine positioning are extremely dangerous in these patients.",pearls:"Hyperleukocytosis: avoid transfusing PRBCs if WBC >100K (increases viscosity) — use leukapheresis or exchange if symptomatic. Aggressive hydration (1.5–2× maintenance) and rasburicase for TLS prevention.\n\nMediastinal mass: DO NOT sedate, intubate, or lay flat without anesthesia/oncology guidance. These patients can rapidly decompensate. CT chest should be obtained upright if possible. Keep HOB elevated.",evidence:"Cairo MS, Bishop M. Tumour lysis syndrome: new therapeutic strategies and classification. Br J Haematol 2004; 127:3. Chest CT and echo recommended for mediastinal masses before any sedation."},
+differential:{title:"Differential Diagnosis",patho:"The differential includes other malignancies (AML, Burkitt lymphoma, neuroblastoma, Ewing sarcoma), aplastic anemia, and nonmalignant conditions. ITP presents with isolated thrombocytopenia but is distinguished by otherwise normal CBC. Infectious causes of lymphocytosis (EBV, CMV, pertussis, HIV) can mimic leukemia.\n\nJuvenile rheumatoid arthritis can present with joint pain and cytopenias and is an important mimicker of ALL. Bone marrow examination is recommended before starting steroids for suspected JIA if the CBC is abnormal.",pearls:"Critical rule: never start steroids for presumed JIA or ITP without first ruling out leukemia if the CBC shows any abnormalities beyond isolated thrombocytopenia. Steroids can temporarily suppress leukemic blasts, delaying diagnosis and worsening prognosis.\n\nBurkitt lymphoma can present as a rapidly growing jaw or abdominal mass with leukemic spread — distinguished by mature B-cell immunophenotype on flow cytometry.",evidence:"Hunger SP, Mullighan CG. N Engl J Med 2015; 373:1541. WHO Classification of Tumours of Haematopoietic and Lymphoid Tissues, revised 4th ed (2017)."},
+workup:{title:"Diagnostic Workup",patho:"Diagnosis requires characteristic morphology plus a diagnostic immunophenotype. B-lineage: CD19+, CD79a+, CD22+, TdT+, MPO–. T-lineage: CD3+ (surface or cytoplasmic), CD5+, CD7+, MPO–.\n\nCytogenetics and molecular features are essential for WHO classification and risk stratification but are not required for initial diagnosis. FISH and karyotype identify prognostically important translocations (e.g., t(12;21)/ETV6::RUNX1 = favorable; t(9;22)/BCR::ABL1 = unfavorable).",pearls:"The ED role is to obtain the initial CBC/smear, stabilize the patient, and consult heme/onc urgently. Bone marrow aspirate and biopsy, flow cytometry, cytogenetics, and molecular studies are performed by the oncology team — usually at a pediatric cancer center.\n\nAll children with confirmed ALL must have a diagnostic/therapeutic LP at treatment initiation for CNS staging (CNS-1, CNS-2, CNS-3).",evidence:"Arber DA et al. International Consensus Classification. Blood 2022; 140:1200. Alaggio R et al. WHO 5th edition. Leukemia 2022; 36:1720."},
+disposition:{title:"Disposition",pearls:"All patients with confirmed or strongly suspected hematologic malignancy should be admitted or transferred to a pediatric cancer center. Outpatient heme/onc referral within 24 hours is appropriate only for well-appearing patients with mildly abnormal CBC and no blasts on smear.\n\nPrior to transfer or admission: obtain CBC with differential, CMP, LDH, uric acid, coagulation studies, type and screen. Do NOT start steroids in the ED. Ensure adequate IV access.",evidence:"Pantell RH et al. AAP guidelines recommend prompt referral to pediatric oncology for any child with suspected malignancy."},
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,bolus:Math.round(wt*20),maintenance:Math.round(wt*1.5*24),rasburicase:Math.round(wt*0.2*10)/10,dex:Math.round(wt*0.15*10)/10,apap:Math.round(wt*15),ibu:Math.round(wt*10),prbc:Math.round(wt*10),plt:Math.round(wt*10),d10:Math.round(wt*5)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+// ── PRIMITIVES ──
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Concern for Hematologic Malignancy</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · 2024</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;var t=TEACH[id];if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});var st=useState(t.pearls?"pearls":tabs[0]?tabs[0].key:"patho"),tab=st[0],setTab=st[1];return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 6px"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",borderBottom:"1px solid "+C.tealBorder,padding:"0 10px"}}>{tabs.map(function(tb){return <button key={tb.key} onClick={function(){setTab(tb.key)}} style={{padding:"6px 10px",background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:tab===tb.key?700:500,color:tab===tb.key?C.teal:C.muted,borderBottom:tab===tb.key?"2px solid "+C.teal:"2px solid transparent",marginBottom:-1}}>{tb.label}</button>})}</div><div style={{padding:"10px 14px 12px"}}><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[tab]}</div></div></div>);}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+// ═══════════════════════════════
+// FLOWCHART
+// ═══════════════════════════════
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-3.5)+","+(p.y2-6)+" "+(p.x2+3.5)+","+(p.y2-6)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Pediatric patient with concern for hematologic malignancy</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 520" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={520} fill="#fafaf8" rx={6}/>
+
+          {/* Entry */}
+          <Box x={90} y={6} w={300} h={28} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={pC}>CONCERN FOR HEMATOLOGIC MALIGNANCY</T><T x={240} y={28} size={6} color={mC}>Cytopenias · Lymphadenopathy · HSM · Bone pain · Blasts</T></Box>
+
+          <Arrow x1={240} y1={34} x2={240} y2={50}/>
+
+          {/* Step 1: Critical? */}
+          <g transform="translate(240,66)"><polygon points="0,-16 70,0 0,16 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={7} weight={700}>Hemodynamically</T><T x={0} y={7} size={7} weight={700}>unstable / critically ill?</T></g>
+          <line x1={310} y1={66} x2={410} y2={66} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={410} y1={66} x2={410} y2={84} color={rC}/>
+          <T x={360} y={62} size={6} color={rC} weight={600}>Yes</T>
+          <Box x={360} y={84} w={100} h={36} fill={rBg} stroke={rBd} sw={2}><T x={410} y={95} size={7} weight={700} color={rC}>RESUSCITATE</T><T x={410} y={105} size={6}>ABCs · IV · Type&Screen</T><T x={410} y={115} size={6} weight={700} color={rC}>→ PICU</T></Box>
+
+          <Arrow x1={240} y1={82} x2={240} y2={100}/>
+          <T x={210} y={96} size={6} color={gC} weight={600}>No</T>
+
+          {/* Step 2: Tumor emergency? */}
+          <g transform="translate(240,116)"><polygon points="0,-16 70,0 0,16 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={7} weight={700}>Tumor emergency?</T><T x={0} y={7} size={6}>WBC &gt;100K · SVC · TLS · Airway</T></g>
+          <line x1={310} y1={116} x2={410} y2={116} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={410} y1={116} x2={410} y2={136} color={rC}/>
+          <T x={360} y={112} size={6} color={rC} weight={600}>Yes</T>
+          <Box x={350} y={136} w={120} h={44} fill={rBg} stroke={rBd} sw={2}><T x={410} y={148} size={6} weight={700} color={rC}>EMERGENT MGMT</T><T x={410} y={158} size={5.5}>Hydration · Rasburicase</T><T x={410} y={168} size={5.5}>No PRBCs if WBC &gt;100K</T><T x={410} y={178} size={5.5} weight={700} color={rC}>Heme/Onc STAT</T></Box>
+
+          <Arrow x1={240} y1={132} x2={240} y2={152}/>
+          <T x={210} y={148} size={6} color={gC} weight={600}>No</T>
+
+          {/* Step 3: Labs */}
+          <Box x={140} y={152} w={200} h={24} fill={blBg} stroke={blBd} radius={10}><T x={240} y={162} size={8} weight={700} color={blC}>OBTAIN CBC + SMEAR</T><T x={240} y={172} size={6} color={mC}>CMP · LDH · Uric acid · Coags</T></Box>
+
+          <Arrow x1={240} y1={176} x2={240} y2={196}/>
+
+          {/* Step 4: Blasts? */}
+          <g transform="translate(240,212)"><polygon points="0,-16 65,0 0,16 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={7} weight={700}>Blasts on</T><T x={0} y={7} size={7} weight={700}>peripheral smear?</T></g>
+
+          <Arrow x1={175} y1={212} x2={90} y2={240} color={rC}/>
+          <T x={120} y={224} size={6} color={rC} weight={600}>Yes</T>
+          <Arrow x1={305} y1={212} x2={390} y2={240} color={aC}/>
+          <T x={355} y={224} size={6} color={aC} weight={600}>No</T>
+
+          {/* Blasts YES branch */}
+          <Box x={20} y={240} w={140} h={50} fill={rBg} stroke={rBd} sw={1.5}><T x={90} y={252} size={7} weight={700} color={rC}>BLASTS PRESENT</T><T x={90} y={262} size={6}>Heme/Onc consult STAT</T><T x={90} y={272} size={6}>TLS labs · Type&Screen</T><T x={90} y={282} size={6} weight={700} color={rC}>ADMIT — Do NOT give steroids</T></Box>
+
+          {/* Blasts NO branch */}
+          <Box x={310} y={240} w={160} h={50} fill={aBg} stroke={aBd} sw={1.5}><T x={390} y={252} size={7} weight={700} color={aC}>NO BLASTS</T><T x={390} y={262} size={6}>Cytopenias or abnormal diff?</T><T x={390} y={272} size={6}>Lymphadenopathy / HSM?</T><T x={390} y={282} size={6} color={aC}>Evaluate further</T></Box>
+
+          <Arrow x1={390} y1={290} x2={390} y2={310}/>
+
+          {/* No blasts sub-decision */}
+          <g transform="translate(390,326)"><polygon points="0,-16 60,0 0,16 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={6} weight={700}>High clinical</T><T x={0} y={7} size={6} weight={700}>suspicion?</T></g>
+
+          <Arrow x1={330} y1={326} x2={240} y2={354} color={aC}/>
+          <T x={275} y={340} size={6} color={aC} weight={600}>Yes</T>
+          <Arrow x1={450} y1={326} x2={460} y2={354} color={gC}/>
+          <T x={458} y={340} size={6} color={gC} weight={600}>No</T>
+
+          {/* High suspicion */}
+          <Box x={160} y={354} w={160} h={42} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={366} size={7} weight={700} color={aC}>HEME/ONC CONSULT</T><T x={240} y={376} size={6}>BM biopsy + flow cytometry</T><T x={240} y={386} size={6}>Admit or urgent outpatient</T></Box>
+
+          {/* Low suspicion */}
+          <Box x={420} y={354} w={55} h={42} fill={gBg} stroke={gBd}><T x={448} y={368} size={6} weight={700} color={gC}>LOW</T><T x={448} y={378} size={6} color={gC}>RISK</T><T x={448} y={388} size={5.5}>f/u 48h</T></Box>
+
+          {/* Summary bars */}
+          <Box x={20} y={416} w={440} h={28} fill={blBg} stroke={blBd} radius={8}><T x={240} y={426} size={7} weight={700} color={blC}>ALL/LBL: MOST COMMON CHILDHOOD MALIGNANCY — PEAK AGE 2–5 YEARS</T><T x={240} y={438} size={6} color={mC}>B-lineage 85% · T-lineage 10–15% · Dx requires morphology + immunophenotype</T></Box>
+
+          <Box x={20} y={456} w={440} h={50} fill="#f1f5f9" stroke="#e2e8f0" radius={6}>
+            <T x={130} y={468} size={7} weight={700} color={rC}>ADMIT</T>
+            <T x={130} y={478} size={6} color={mC}>Blasts on smear · Symptomatic cytopenias</T>
+            <T x={130} y={488} size={6} color={mC}>Tumor emergency · Hemodynamic instability</T>
+            <T x={130} y={498} size={6} color={mC}>High suspicion with abnormal CBC</T>
+            <T x={370} y={468} size={7} weight={700} color={gC}>OUTPATIENT F/U</T>
+            <T x={370} y={478} size={6} color={mC}>Mild isolated cytopenia</T>
+            <T x={370} y={488} size={6} color={mC}>No blasts, low clinical suspicion</T>
+            <T x={370} y={498} size={6} color={mC}>Heme/Onc within 24–48 hours</T>
+          </Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════
+// WALK-THROUGH WIZARD
+// ═══════════════════════════════
+function Wizard({teaching,weightKg,doses}){
+  var s1=useState(null),concern=s1[0],setConcern=s1[1];
+  var s2=useState(null),critical=s2[0],setCritical=s2[1];
+  var s3=useState(null),emergency=s3[0],setEmergency=s3[1];
+  var s4=useState(null),blasts=s4[0],setBlasts=s4[1];
+  var s5=useState(null),suspicion=s5[0],setSuspicion=s5[1];
+  var s6=useState(null),cytopenias=s6[0],setCytopenias=s6[1];
+
+  function reset(){setConcern(null);setCritical(null);setEmergency(null);setBlasts(null);setSuspicion(null);setCytopenias(null);}
+
+  return(<Pad>
+    <Q text="Walk-Through" sub="Answer each question to get a patient-specific recommendation"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* STEP 1: Concern */}
+    <Card title="Step 1 — Clinical Concern" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>
+        <strong>Does the patient have findings concerning for hematologic malignancy?</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>Unexplained cytopenias · Persistent lymphadenopathy · Hepatosplenomegaly · Bone pain / limp · Persistent unexplained fever · Petechiae / bruising · Pallor / fatigue</span>
+      </div>
+      <WizBtn label="Yes — Concerning Features Present" sub="One or more findings suggestive of hematologic malignancy" color={C.primary} bg={C.pLight} border={C.pBorder} selected={concern==="yes"} onClick={function(){setConcern("yes")}}/>
+      <WizBtn label="No — Low Suspicion" sub="Alternative diagnosis more likely" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={concern==="no"} onClick={function(){setConcern("no")}}/>
+      {concern==="no"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Off Pathway">Consider alternative diagnoses. If any red flag features develop, reassess. Ensure appropriate follow-up.</Alert>}
+      <TeachBox id="presentation" teaching={teaching}/>
+    </Card>
+
+    {/* STEP 2: Critical */}
+    {concern==="yes"&&(<Card title="Step 2 — Hemodynamic Stability" color={C.red}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Is the patient hemodynamically unstable or critically ill?</strong><br/><span style={{fontSize:12,color:C.muted}}>Shock · Respiratory failure · Altered mental status · Active life-threatening hemorrhage</span></div>
+      <WizBtn label="Yes — Critically Ill" sub="Immediate resuscitation required" color={C.red} bg={C.redBg} border={C.redBorder} selected={critical==="yes"} onClick={function(){setCritical("yes")}}/>
+      <WizBtn label="No — Hemodynamically Stable" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={critical==="no"} onClick={function(){setCritical("no")}}/>
+      {critical==="yes"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="RESUSCITATE">
+        <strong>ABCs</strong> — Secure airway (caution with mediastinal mass)<br/>
+        <strong>IV access ×2</strong> — Type and screen STAT<br/>
+        <strong>NS bolus</strong> {doses?doses.bolus+" mL":"20 mL/kg"}<br/>
+        <strong>PRBCs</strong> {doses?doses.prbc+" mL":"10 mL/kg"} if symptomatic anemia (Hgb &lt;7) — <strong style={{color:C.red}}>AVOID if WBC &gt;100K</strong><br/>
+        <strong>Platelets</strong> {doses?doses.plt+" mL":"10 mL/kg"} if active bleeding + plt &lt;50K<br/>
+        <strong>Heme/Onc consult STAT</strong><br/>
+        <strong style={{color:C.red}}>→ Admit PICU</strong>
+      </Alert>)}
+    </Card>)}
+
+    {/* STEP 3: Tumor emergency */}
+    {concern==="yes"&&critical==="no"&&(<Card title="Step 3 — Oncologic Emergency Screen" color={C.amberMid}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Does the patient have signs of an oncologic emergency?</strong></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:12}}>
+        {["Hyperleukocytosis (WBC >100K)","SVC syndrome (face/neck swelling)","Tracheal compression / stridor","Tumor lysis (↑K, ↑phos, ↑uric acid, ↓Ca)","Symptomatic severe anemia (Hgb <7)","Severe bleeding (plt <20K)"].map(function(item){return <div key={item} style={{background:C.redBg,border:"1px solid "+C.redBorder,borderRadius:6,padding:"6px 8px",fontSize:11,fontWeight:500}}>{item}</div>})}
+      </div>
+      <WizBtn label="Yes — Oncologic Emergency Present" color={C.red} bg={C.redBg} border={C.redBorder} selected={emergency==="yes"} onClick={function(){setEmergency("yes")}}/>
+      <WizBtn label="No — No Emergency Features" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={emergency==="no"} onClick={function(){setEmergency("no")}}/>
+      {emergency==="yes"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⚠️" title="Emergent Management Required">
+        <strong>Hyperleukocytosis (WBC &gt;100K):</strong><br/>
+        — Aggressive IV hydration ({doses?Math.round(doses.w*3)+" mL/hr":"1.5–2× maintenance"})<br/>
+        — <strong>Rasburicase</strong> {doses?doses.rasburicase+" mg":"0.2 mg/kg"} IV (TLS prophylaxis)<br/>
+        — <strong>Do NOT transfuse PRBCs</strong> (increases viscosity)<br/>
+        — Consider leukapheresis if symptomatic leukostasis<br/><br/>
+        <strong>Mediastinal mass / SVC syndrome:</strong><br/>
+        — <strong style={{color:C.red}}>Do NOT sedate or lay flat</strong> — risk of cardiovascular collapse<br/>
+        — HOB elevated · CT chest upright if possible<br/>
+        — Anesthesia + Heme/Onc at bedside before any procedure<br/><br/>
+        <strong>TLS:</strong> Aggressive hydration · Rasburicase · Cardiac monitor · Q4h labs<br/><br/>
+        <strong>Heme/Onc consult STAT → Admit</strong>
+      </Alert>)}
+      <TeachBox id="emergencies" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 4: CBC / Blasts */}
+    {concern==="yes"&&critical==="no"&&emergency==="no"&&(<Card title="Step 4 — CBC & Peripheral Smear Review" color={C.blue}>
+      <div style={{fontSize:13,marginBottom:10}}>
+        <strong>Order: CBC with differential, peripheral smear review, CMP, LDH, uric acid, coags</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>Manual smear review is essential — automated differentials may miss low blast counts</span>
+      </div>
+      <div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"10px 12px",marginBottom:12}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.blue,marginBottom:4}}>Key Lab Findings in ALL/LBL</div>
+        <div style={{fontSize:11,lineHeight:1.7}}>
+          WBC &lt;10K in 50% · WBC &gt;50K in 20%<br/>
+          Platelets &lt;100K in 75%<br/>
+          Anemia with low reticulocyte count<br/>
+          Elevated LDH and uric acid suggest high tumor burden
+        </div>
+      </div>
+      <WizBtn label="Blasts Present on Peripheral Smear" sub="Even rare blasts are significant — consult heme/onc STAT" color={C.red} bg={C.redBg} border={C.redBorder} selected={blasts==="yes"} onClick={function(){setBlasts("yes")}}/>
+      <WizBtn label="No Blasts on Smear" sub="Evaluate for cytopenias and other abnormalities" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={blasts==="no"} onClick={function(){setBlasts("no")}}/>
+      {blasts==="yes"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Blasts Present — ADMIT">
+        <strong>Heme/Onc consult STAT</strong><br/>
+        TLS labs (K, phos, Ca, uric acid, LDH) — repeat Q4–6h<br/>
+        Type and screen · Coagulation profile<br/>
+        IV hydration ({doses?Math.round(doses.w*3)+" mL/hr":"1.5–2× maintenance"})<br/>
+        <strong style={{color:C.red}}>Do NOT give steroids in ED</strong> — can suppress blasts, delay diagnosis, worsen prognosis<br/>
+        <strong>→ Admit to oncology service</strong>
+      </Alert>)}
+      <TeachBox id="cbc" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 5: No blasts — suspicion level */}
+    {concern==="yes"&&critical==="no"&&emergency==="no"&&blasts==="no"&&(<Card title="Step 5 — Clinical Suspicion Assessment" color={C.amberMid}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>No blasts on smear. Assess overall clinical picture:</strong></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+        <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px"}}>
+          <div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4}}>High Suspicion</div>
+          <div style={{fontSize:11,lineHeight:1.5}}>Bicytopenia / pancytopenia<br/>Unexplained hepatosplenomegaly<br/>Persistent lymphadenopathy<br/>Bone pain + abnormal CBC<br/>WBC &gt;20K with lymphocyte predominance</div>
+        </div>
+        <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px"}}>
+          <div style={{fontSize:12,fontWeight:700,color:C.greenMid,marginBottom:4}}>Lower Suspicion</div>
+          <div style={{fontSize:11,lineHeight:1.5}}>Isolated mild cytopenia<br/>Reactive lymphocytosis with viral sx<br/>Isolated lymphadenopathy, tender/mobile<br/>Normal or near-normal CBC<br/>Clear alternative diagnosis</div>
+        </div>
+      </div>
+      <WizBtn label="High Clinical Suspicion" sub="Abnormal CBC + concerning exam findings" color={C.red} bg={C.redBg} border={C.redBorder} selected={suspicion==="high"} onClick={function(){setSuspicion("high")}}/>
+      <WizBtn label="Moderate Suspicion" sub="Some abnormalities but no definitive findings" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={suspicion==="moderate"} onClick={function(){setSuspicion("moderate")}}/>
+      <WizBtn label="Low Suspicion" sub="Mild isolated findings, likely alternative diagnosis" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={suspicion==="low"} onClick={function(){setSuspicion("low")}}/>
+
+      {suspicion==="high"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="High Suspicion — Consult & Admit">
+        <strong>Heme/Onc consult</strong> — likely bone marrow biopsy needed<br/>
+        TLS labs · Type and screen · Coags<br/>
+        IV hydration ({doses?Math.round(doses.w*3)+" mL/hr":"1.5–2× maintenance"})<br/>
+        <strong style={{color:C.red}}>Do NOT give steroids</strong><br/>
+        <strong>→ Admit for expedited workup</strong>
+      </Alert>)}
+      {suspicion==="moderate"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🟡" title="Moderate Suspicion — Heme/Onc Consult">
+        <strong>Heme/Onc consult</strong> — discuss need for admission vs urgent outpatient evaluation<br/>
+        Consider additional labs: peripheral flow cytometry, reticulocyte count, LDH, uric acid<br/>
+        If admitting: TLS labs, IV hydration<br/>
+        If discharging: <strong>Heme/Onc follow-up within 24 hours</strong><br/>
+        <strong style={{color:C.red}}>Do NOT give steroids</strong>
+      </Alert>)}
+      {suspicion==="low"&&(<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Low Suspicion — Outpatient Follow-up">
+        Consider alternative diagnoses (viral illness, ITP, reactive lymphadenopathy)<br/>
+        <strong>Heme/Onc follow-up within 24–48 hours</strong> if any cytopenia persists<br/>
+        Strict return precautions: worsening pallor, new petechiae/bruising, fever, bone pain, lymphadenopathy growth<br/>
+        Repeat CBC in 1–2 weeks if isolated mild abnormality
+      </Alert>)}
+      <TeachBox id="differential" teaching={teaching}/>
+    </Card>)}
+
+    {/* RESET */}
+    {(concern!==null)&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
+
+    {/* FLOWCHART */}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+// ═══════════════════════════════
+// REFERENCE MODE TABS
+// ═══════════════════════════════
+function RefTriage({teaching}){return(<Pad>
+<Q text="Triage & Initial Assessment" sub="Child with concern for hematologic malignancy"/>
+<TeachBox id="overview" teaching={teaching}/>
+<Card title="When to Suspect Hematologic Malignancy" color={C.primary}><div style={{marginTop:8}}>
+<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="High-Priority Features">Blasts on peripheral smear · Pancytopenia · WBC &gt;100K · Hepatosplenomegaly + cytopenias · Mediastinal mass · SVC syndrome</Alert>
+<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🟡" title="Concerning Features">Persistent unexplained pallor or fatigue · Recurrent/persistent unexplained fever · Unexplained bruising/petechiae · Persistent lymphadenopathy unresponsive to antibiotics · Bone pain with limp or refusal to bear weight · Unexplained weight loss</Alert>
+</div></Card>
+<Card title="Triage Actions" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>
+<strong>ESI Level II–III</strong> (based on acuity)<br/>
+Full vitals · Weight in kg<br/>
+IV access · Labs: <strong>CBC with differential + manual smear review</strong><br/>
+CMP · LDH · Uric acid · Coagulation studies (PT/PTT/fibrinogen)<br/>
+Type and screen<br/>
+<strong style={{color:C.red}}>If mediastinal mass suspected: CXR immediately, keep HOB elevated</strong>
+</div></Card>
+<Card title="Common Presenting Features — ALL/LBL" color={C.blue}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+<div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:4,marginBottom:6}}>
+<div style={{fontWeight:700,fontSize:10,color:C.muted}}>FINDING</div>
+<div style={{fontWeight:700,fontSize:10,color:C.muted,textAlign:"center"}}>FREQUENCY</div>
+</div>
+{[["Hepatomegaly","64%"],["Splenomegaly","61%"],["Fever","~55%"],["Pallor / fatigue",">50%"],["Bleeding (petechiae/purpura)","~50%"],["Lymphadenopathy","~50%"],["Musculoskeletal pain / limp","43%"],["Headache / CNS symptoms","<5%"],["Testicular enlargement","<1%"]].map(function(r){return <div key={r[0]} style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:4,padding:"3px 0",borderBottom:"1px dashed "+C.rule}}><div style={{fontSize:12}}>{r[0]}</div><div style={{fontSize:12,textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{r[1]}</div></div>})}
+<div style={{fontSize:11,color:C.muted,marginTop:6}}>Clarke RT et al. Arch Dis Child 2016; meta-analysis of &gt;3000 children</div>
+</div><TeachBox id="presentation" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+<Q text="Decision Tree" sub="Evaluate for oncologic emergencies → CBC/smear → risk stratify → consult heme/onc"/>
+<Card title="Critically Ill / Hemodynamically Unstable" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>Resuscitate</strong> — ABCs, IV access ×2, type and screen<br/>
+NS bolus 20 mL/kg · PRBCs 10 mL/kg if Hgb &lt;7 (<strong>avoid if WBC &gt;100K</strong>)<br/>
+Platelets 10 mL/kg if active bleeding + plt &lt;50K<br/>
+<strong>Heme/Onc + PICU consult STAT</strong><br/>
+<strong style={{color:C.red}}>→ Admit PICU</strong>
+</div></Card>
+<Card title="Oncologic Emergencies" color={C.red}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+<div style={{fontSize:13,fontWeight:700,color:C.red}}>Hyperleukocytosis (WBC &gt;100,000/µL)</div>
+<div style={{fontSize:12,marginTop:2}}>Aggressive hydration (1.5–2× maintenance) · Rasburicase 0.2 mg/kg IV · Do NOT transfuse PRBCs · Leukapheresis if symptomatic leukostasis · Heme/Onc STAT</div>
+</div>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+<div style={{fontSize:13,fontWeight:700,color:C.red}}>Mediastinal Mass / SVC Syndrome / Airway Compromise</div>
+<div style={{fontSize:12,marginTop:2}}>Do NOT sedate or intubate without Anesthesia + Heme/Onc at bedside · Keep HOB elevated · CT chest upright · Most common in T-ALL/LBL</div>
+</div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px"}}>
+<div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>Tumor Lysis Syndrome</div>
+<div style={{fontSize:12,marginTop:2}}>Hyperuricemia · Hyperkalemia · Hyperphosphatemia · Hypocalcemia · Aggressive IV hydration · Rasburicase · Cardiac monitor · Q4h electrolytes</div>
+</div>
+</div><TeachBox id="emergencies" teaching={teaching}/></Card>
+<Card title="Blasts on Peripheral Smear" color={C.red}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:C.red,fontWeight:600,marginBottom:8}}>Blasts present → Heme/Onc STAT → Admit</div>
+TLS labs (K, phos, Ca, uric acid, LDH) — repeat Q4–6h<br/>
+Type and screen · Coagulation profile<br/>
+IV hydration (1.5–2× maintenance)<br/>
+<strong style={{color:C.red}}>Do NOT give steroids in ED</strong> — can suppress blasts, delay diagnosis, worsen prognosis
+</div></Card>
+<Card title="No Blasts — Risk Stratification" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>High Suspicion → Consult + Admit</div><div style={{fontSize:12,marginTop:2}}>Bicytopenia/pancytopenia · Unexplained hepatosplenomegaly · Persistent lymphadenopathy · Bone pain + abnormal CBC · WBC &gt;20K with lymphocyte predominance</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>Moderate Suspicion → Consult + Admit or Urgent Outpatient</div><div style={{fontSize:12,marginTop:2}}>Some abnormalities without definitive findings · Discuss with heme/onc</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>Low Suspicion → Outpatient Heme/Onc Follow-up 24–48h</div><div style={{fontSize:12,marginTop:2}}>Isolated mild cytopenia · Reactive lymphocytosis with viral symptoms · Clear alternative diagnosis</div></div>
+</div></Card>
+<PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+<Q text="Medications & Supportive Care" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+{!doses&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>)}
+<Card title="Resuscitation" color={C.red}><div style={{marginTop:8}}>
+<DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/>
+<DoseRow label="PRBCs (10 mL/kg) — avoid if WBC >100K" value={doses?doses.prbc:"—"} unit={doses?"mL":""}/>
+<DoseRow label="Platelets (10 mL/kg)" value={doses?doses.plt:"—"} unit={doses?"mL":""}/>
+<DoseRow label="D10W (5 mL/kg) for hypoglycemia" value={doses?doses.d10:"—"} unit={doses?"mL":""}/>
+</div></Card>
+<Card title="TLS Prophylaxis / Treatment" color={C.amberMid}><div style={{marginTop:8}}>
+<DoseRow label="Rasburicase (0.2 mg/kg) IV" value={doses?doses.rasburicase:"—"} unit={doses?"mg":""}/>
+<div style={{fontSize:12,color:C.muted,marginTop:6}}>IV hydration: 1.5–2× maintenance (D5 ¼ NS without potassium) · Monitor K, phos, Ca, uric acid Q4–6h · Cardiac monitor for hyperkalemia</div>
+</div></Card>
+<Card title="Supportive Care" color={C.blue}><div style={{marginTop:8}}>
+<DoseRow label="Acetaminophen (15 mg/kg) PO/PR" value={doses?doses.apap:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Ibuprofen (10 mg/kg) PO" value={doses?doses.ibu:"—"} unit={doses?"mg":""}/>
+<div style={{fontSize:12,color:C.muted,marginTop:6}}>Use acetaminophen preferentially if thrombocytopenic. Avoid NSAIDs if plt &lt;50K or bleeding.</div>
+</div></Card>
+<Card title="Critical Medication Warnings" color={C.red}><div style={{marginTop:8}}>
+<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚫" title="Do NOT Give Steroids">Steroids (dexamethasone, prednisone, methylprednisolone) can transiently suppress leukemic blasts, delaying diagnosis and potentially worsening long-term prognosis. Do not start steroids until directed by heme/onc after diagnostic workup.</Alert>
+<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚫" title="Do NOT Transfuse PRBCs if WBC >100K">Red cell transfusion increases blood viscosity and worsens leukostasis. Use leukapheresis or exchange transfusion if symptomatic.</Alert>
+</div></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+<Q text="Disposition & References"/>
+<Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT — PICU</div><div style={{fontSize:12,marginTop:2}}>Hemodynamically unstable · Hyperleukocytosis with leukostasis · Respiratory compromise from mediastinal mass · Active TLS · DIC with hemorrhage</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT — ONCOLOGY / WARD</div><div style={{fontSize:12,marginTop:2}}>Blasts on peripheral smear · Symptomatic cytopenias (Hgb &lt;7, plt &lt;20K) · High clinical suspicion with abnormal CBC · Oncologic emergency requiring monitoring</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>OUTPATIENT — Heme/Onc Follow-up</div><div style={{fontSize:12,marginTop:2}}>Low suspicion · Mild isolated cytopenia · No blasts · Well-appearing · Heme/Onc appointment within 24–48 hours · Repeat CBC in 1–2 weeks · Strict return precautions</div></div>
+</div><TeachBox id="disposition" teaching={teaching}/></Card>
+<Card title="Differential Diagnosis" color={C.blue}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+<div style={{background:C.redBg,border:"1px solid "+C.redBorder,borderRadius:6,padding:"8px"}}>
+<div style={{fontSize:11,fontWeight:700,color:C.red,marginBottom:2}}>Malignant</div>
+<div style={{fontSize:11}}>AML · Burkitt lymphoma · CML in blast crisis · Neuroblastoma · Ewing sarcoma · MPAL</div>
+</div>
+<div style={{background:C.blueBg,border:"1px solid "+C.blueBorder,borderRadius:6,padding:"8px"}}>
+<div style={{fontSize:11,fontWeight:700,color:C.blue,marginBottom:2}}>Non-Malignant</div>
+<div style={{fontSize:11}}>ITP · Aplastic anemia · EBV/CMV · Pertussis · JIA · Osteomyelitis · HIV · Autoimmune disease</div>
+</div>
+</div>
+</div><TeachBox id="differential" teaching={teaching}/></Card>
+<Card title="Return Precautions" color={C.amberMid}><div style={{marginTop:8,fontSize:13,lineHeight:1.7}}>
+Instruct families to return immediately for:<br/>
+— New or worsening pallor, fatigue, or dizziness<br/>
+— New petechiae, bruising, or bleeding<br/>
+— Fever &gt;38.0°C<br/>
+— Worsening bone or joint pain, limp, or refusal to walk<br/>
+— Swelling of face, neck, or abdomen<br/>
+— Difficulty breathing<br/>
+— New lumps or lymph node enlargement
+</div></Card>
+<Card title="Classification — ALL/LBL" color={C.purple} defaultOpen={false}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+<div style={{fontWeight:700,marginBottom:4}}>B-ALL/LBL (85%)</div>
+CD19+, CD79a+, CD22+, TdT+, MPO–<br/>
+Multiple cytogenetic subtypes with prognostic implications (t(12;21)/ETV6::RUNX1 favorable; t(9;22)/BCR::ABL1 unfavorable; hyperdiploid favorable)<br/><br/>
+<div style={{fontWeight:700,marginBottom:4}}>T-ALL/LBL (10–15%)</div>
+CD3+ (surface or cytoplasmic), CD5+, CD7+, MPO–<br/>
+Often presents with mediastinal mass<br/><br/>
+<div style={{fontWeight:700,marginBottom:4}}>CNS Staging (at treatment initiation)</div>
+CNS-1: No lymphoblasts in CSF<br/>
+CNS-2: &lt;5 WBC/µL with lymphoblasts<br/>
+CNS-3: ≥5 WBC/µL with lymphoblasts
+</div><TeachBox id="workup" teaching={teaching}/></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Hunger SP, Mullighan CG. Acute Lymphoblastic Leukemia in Children. <em>N Engl J Med</em> 2015; 373:1541.<br/>2. Clarke RT et al. Clinical presentation of childhood leukaemia: systematic review and meta-analysis. <em>Arch Dis Child</em> 2016; 101:894.<br/>3. Ward E et al. Childhood and adolescent cancer statistics, 2014. <em>CA Cancer J Clin</em> 2014; 64:83.<br/>4. Arber DA et al. International Consensus Classification. <em>Blood</em> 2022; 140:1200.<br/>5. Alaggio R et al. WHO 5th edition Classification. <em>Leukemia</em> 2022; 36:1720.<br/>6. Cairo MS, Bishop M. Tumour lysis syndrome: new therapeutic strategies and classification. <em>Br J Haematol</em> 2004; 127:3.<br/>7. Horton TM, Aster JC. Overview of ALL/LBL in children. <em>UpToDate</em> 2024.</div></Card>
+</Pad>)}
+
+
+// ═══════════════════════════════
+// APP
+// ═══════════════════════════════
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageYrs=s5[0],setAgeYrs=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decision",label:"Decisions"},{key:"meds",label:"Medications"},{key:"special",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (years)</label><input type="number" inputMode="decimal" value={ageYrs} onChange={function(e){setAgeYrs(e.target.value)}} placeholder="4" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="16" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+
+      {mode==="wizard"&&<Wizard teaching={teaching} weightKg={weightKg} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="special"&&<RefDispo teaching={teaching}/>}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/><strong style={{color:C.amberMid}}>⚠ DRAFT — Not yet reviewed or approved by the OHSU/Doernbecher Department of Emergency Medicine.</strong>
+        <br/>Doernbecher Children's Hospital · PED · Concern for Hematologic Malignancy Clinical Pathway · 2024
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
