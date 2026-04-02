@@ -102,7 +102,7 @@ function PathwayFlowchart(){
           <Arrow x1={295} y1={114} x2={410} y2={136} color={rC}/><T x={362} y={124} size={6} weight={600} color={rC}>Yes</T>
           <Box x={350} y={136} w={120} h={40} fill={rBg} stroke={rBd} sw={2}><T x={410} y={148} size={7} weight={700} color={rC}>RESUSCITATE</T><T x={410} y={159} size={6} color={mC}>Ceftriaxone + Vanco</T><T x={410} y={169} size={6} weight={600} color={rC}>→ Admit, consider PICU</T></Box>
           <Arrow x1={240} y1={128} x2={240} y2={148}/><T x={250} y={144} size={6} weight={600} color={gC} anchor="start">Well</T>
-          <Box x={130} y={148} w={220} h={22} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={158} size={7} weight={700} color={tC}>LABS: CBG, UA, CBC, PCT, BMP, Blood Cx</T><T x={240} y={168} size={5.5} color={mC}>Consider LP · Cath UA with mandatory culture</T></Box>
+          <Box x={130} y={148} w={220} h={22} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={158} size={7} weight={700} color={tC}>LABS: CBG, UA, CBC, PCT, BMP, Coags, Blood Cx</T><T x={240} y={168} size={5.5} color={mC}>LMX to LP site · Cath UA with mandatory culture</T></Box>
           <Arrow x1={240} y1={170} x2={240} y2={188}/>
           <g transform="translate(240,202)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>ANC {">"} 4000 or PCT {">"} 0.5?</T></g>
 
@@ -116,7 +116,7 @@ function PathwayFlowchart(){
           <Box x={420} y={310} w={55} h={36} fill={rBg} stroke={rBd}><T x={448} y={322} size={5.5} weight={700} color={rC}>≥10 WBC</T><T x={448} y={332} size={5} color={mC}>Ceftri+Vanc</T><T x={448} y={342} size={5} weight={600} color={rC}>ADMIT</T></Box>
           {/* CSF neg or not obtained */}
           <Arrow x1={345} y1={282} x2={340} y2={310} color={aC}/>
-          <Box x={290} y={310} w={85} h={36} fill={aBg} stroke={aBd}><T x={332} y={322} size={5.5} weight={700} color={aC}>Neg/Not done</T><T x={332} y={332} size={5} color={mC}>Ceftriaxone</T><T x={332} y={342} size={5} color={aC}>Admit vs D/C</T></Box>
+          <Box x={280} y={310} w={100} h={42} fill={aBg} stroke={aBd}><T x={330} y={320} size={5.5} weight={700} color={aC}>Neg/Not done</T><T x={330} y={330} size={5} color={mC}>Ceftriaxone</T><T x={330} y={340} size={5} color={aC}>Admit vs D/C</T><T x={330} y={349} size={4.5} color={mC}>If D/C + pos UA: cefdinir 10–14d</T></Box>
 
           {/* Negative markers branch */}
           <Arrow x1={160} y1={202} x2={80} y2={228} color={gC}/><T x={108} y={214} size={6} weight={600} color={gC}>No</T>
@@ -127,8 +127,8 @@ function PathwayFlowchart(){
           <Arrow x1={135} y1={284} x2={190} y2={310} color={aC}/>
           <Box x={150} y={310} w={100} h={36} fill={aBg} stroke={aBd}><T x={200} y={322} size={6} weight={700} color={aC}>UTI</T><T x={200} y={332} size={5.5} color={mC}>Oral antibiotics</T><T x={200} y={342} size={5.5} weight={600} color={gC}>DISCHARGE</T></Box>
           {/* UA negative */}
-          <Arrow x1={25} y1={284} x2={15} y2={310} color={gC}/>
-          <Box x={-20} y={310} w={100} h={36} fill={gBg} stroke={gBd}><T x={30} y={322} size={6} weight={700} color={gC}>NO ABX</T><T x={30} y={332} size={5.5} color={mC}>Observe at home</T><T x={30} y={342} size={5.5} weight={600} color={gC}>F/U 24–36h</T></Box>
+          <Arrow x1={25} y1={284} x2={40} y2={310} color={gC}/>
+          <Box x={5} y={310} w={90} h={36} fill={gBg} stroke={gBd}><T x={50} y={322} size={6} weight={700} color={gC}>NO ABX</T><T x={50} y={332} size={5.5} color={mC}>Observe at home</T><T x={50} y={342} size={5.5} weight={600} color={gC}>F/U 24–36h</T></Box>
 
           {/* Dispo summary */}
           <Box x={10} y={370} w={460} h={24} fill={blBg} stroke={blBd} radius={6}><T x={240} y={385} size={7} weight={700} color={blC}>KEY: ANC {"<"} 4000 AND PCT {"<"} 0.5 → Sens 97.7% · NPV 99.6% for invasive bacterial infection</T></Box>
@@ -180,8 +180,8 @@ function Wizard({teaching,doses}){
         <strong>Order immediately:</strong><br/>
         CBG (if ill-appearing, hypoglycemic symptoms, vomiting, decreased PO)<br/>
         Catheter UA with microscopy and mandatory culture<br/>
-        CBC with differential, Procalcitonin, Blood culture, BMP/CMP<br/>
-        Consider LP (setup at bedside with LMX to LP site)<br/>
+        CBC with differential, Procalcitonin, Coags, Blood culture, BMP/CMP<br/>
+        LMX to LP site and/or J-tip · LP tray to bedside<br/>
         CXR if tachypnea, hypoxia, respiratory symptoms · Stool sample if diarrhea<br/>
       </div>
       <TeachBox id="urine" teaching={teaching}/>
@@ -239,8 +239,8 @@ function RefTriage({teaching}){return(<Pad>
   <Q text="Triage & Initial Assessment" sub="Infant 29–60 days with rectal/axillary temp ≥38.0°C"/>
   <TeachBox id="overview" teaching={teaching}/>
   <Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Aged 29–60 days with rectal or axillary temperature ≥38.0°C at home, other healthcare facility, or in ED.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Prematurity {"<"}37 weeks · Pre-existing medical conditions · Indwelling devices (foley, vascular catheter) · Focal bacterial infections (except AOM) · Clinical bronchiolitis · Immunizations in last 48 hours</Alert></div></Card>
-  <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong><br/>Full set of vitals including <strong>rectal temperature</strong> and weight<br/>Oxygen to maintain SpO₂ {'>'} 93%<br/>LMX to LP site and/or J-tip<br/>LP tray to bedside<br/>IV placement for all ill/toxic presentations · Consider IO per policy<br/><strong>Immediate labs:</strong> CBG, catheter UA + micro + culture, CBC with differential, procalcitonin, blood culture, BMP/CMP<br/>CXR if tachypnea, hypoxia, respiratory symptoms · Stool if diarrhea<br/>VBG/lactate if ill/toxic appearing</div><TeachBox id="temperature" teaching={teaching}/></Card>
-  <Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Core:</strong> CBC with differential, Procalcitonin, Blood culture, BMP/CMP<br/><strong>Urine:</strong> Catheter specimen — Pedi UTI Panel (UA, microscopy, mandatory culture)<br/><strong>CSF:</strong> Per MD — gram stain, cell count, protein, glucose, culture, hold extra fluid<br/><strong>Consider:</strong> CXR (resp symptoms), stool (diarrhea), VBG/lactate (toxic), CBG<br/><span style={{fontSize:12,color:C.muted}}>UA positive: LE trace+, nitrites+, or {'>'}5 WBC or bacteria on micro. Traumatic tap = ≥10,000 RBC/mm³.</span></div><TeachBox id="urine" teaching={teaching}/></Card>
+  <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong><br/>Full set of vitals including <strong>rectal temperature</strong> and weight<br/>Oxygen to maintain SpO₂ {'>'} 93%<br/>LMX to LP site and/or J-tip<br/>LP tray to bedside<br/>IV placement for all ill/toxic presentations · Consider IO per policy<br/><strong>Immediate labs:</strong> CBG, catheter UA + micro + culture, CBC with differential, procalcitonin, coags, blood culture, BMP/CMP<br/>CXR if tachypnea, hypoxia, respiratory symptoms · Stool if diarrhea<br/>VBG/lactate if ill/toxic appearing</div><TeachBox id="temperature" teaching={teaching}/></Card>
+  <Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Core:</strong> CBC with differential, Procalcitonin, Coags, Blood culture, BMP/CMP<br/><strong>Urine:</strong> Catheter specimen — Pedi UTI Panel (UA, microscopy, mandatory culture)<br/><strong>CSF:</strong> Per MD — gram stain, cell count, protein, glucose, culture, hold extra fluid<br/><strong>Consider:</strong> CXR (resp symptoms), stool (diarrhea), VBG/lactate (toxic), CBG<br/><span style={{fontSize:12,color:C.muted}}>UA positive: LE trace+, nitrites+, or {'>'}5 WBC or bacteria on micro. Traumatic tap = ≥10,000 RBC/mm³.</span></div><TeachBox id="urine" teaching={teaching}/></Card>
 </Pad>)}
 
 function RefDecisions({teaching}){return(<Pad>
