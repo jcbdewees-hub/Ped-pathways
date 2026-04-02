@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neutropenic Fever — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#6b21a8",pLight:"#faf5ff",pBorder:"#c4b5fd",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{
+  title:"Pathway Rationale — Neutropenic Fever",
+  patho:"Febrile neutropenia is a potentially life-threatening emergency in immunocompromised children. Neutropenia (ANC <500) eliminates the primary innate immune barrier against bacterial invasion. Without functional neutrophils, bacteria from the GI mucosa (damaged by chemotherapy), skin (through central line sites), and respiratory tract can disseminate rapidly. Bacteremia rates range 2–20%, and while most respond to antibiotics, a minority develop toxic shock-like syndrome with mortality rates of 6–30%.\n\nGram-positive organisms (Staphylococcus, Streptococcus, Enterococcus) account for 60–70% of isolates, largely due to central line colonization. However, gram-negative bacteremia (E. coli, Klebsiella, Pseudomonas) is more fulminant and carries higher mortality, necessitating empiric anti-pseudomonal coverage.",
+  pearls:"The single most important metric is time to antibiotic (TTA) — target is within 60 minutes of arrival. Order cefepime on the referral call or within 13 minutes of arrival. Do NOT wait for lab results before giving antibiotics.\n\nPort access should occur within 15–30 minutes or 2 attempts. After 2 failed port attempts → IP consult to VAT AND place a PIV to continue the pathway. Never delay antibiotics for port access.\n\nNo rectal temps (risk of bacteremia from mucosal disruption). No ibuprofen (platelet dysfunction risk in thrombocytopenic patients). No catheterization for urine (infection risk) — clean catch or bag only.",
+  evidence:"TTA <60 min associated with decreased adverse outcomes including ICU admission and death. (Burns Pediatr Qual Saf 2019). Cefepime monotherapy equivalent to combination therapy for stable patients (Robinson J Clin Oncol 2016). Vancomycin added for hemodynamic instability, MRSA history, or soft tissue infection (Beyar-Katz Cochrane 2017)."
+},
+cefepime:{
+  title:"Cefepime — First-Line Monotherapy",
+  patho:"Cefepime is a fourth-generation cephalosporin with potent anti-pseudomonal activity, broad gram-negative coverage (including many ESBL producers), and useful gram-positive coverage (streptococci, MSSA). Its mechanism involves binding PBP3, disrupting cell wall synthesis. The anti-pseudomonal activity distinguishes it from third-generation cephalosporins and makes it the empiric agent of choice for neutropenic fever where Pseudomonas coverage is mandatory.\n\nFor clinically stable children, monotherapy with cefepime is sufficient — routine combination therapy has not shown benefit. This is a key evidence-based principle: resist the urge to add unnecessary antibiotics.",
+  pearls:"Cefepime 50 mg/kg IVPB (max 2g per dose). Give within 60 minutes of arrival — this is the single most important intervention. Start the NS bolus (20 mL/kg) simultaneously with the antibiotic infusion.\n\nMonitor vital signs during and after infusion — minimum Q30 minutes. Watch for hypotension (which may indicate bacteremia with bacterial lysis). If hypotension develops during infusion, give additional NS bolus and consider PICU notification.",
+  evidence:"Cefepime monotherapy standard of care per NHLBI and multiple society guidelines. No benefit to routine combination therapy in stable patients. (Robinson J Clin Oncol 2016, OHSU DCH ED Pathway Oct 2021)"
+},
+vancomycin:{
+  title:"Vancomycin — When to Add",
+  patho:"Vancomycin covers MRSA and resistant gram-positive organisms including coagulase-negative Staphylococcus (the most common central line-associated pathogen) and vancomycin-susceptible Enterococcus. It is NOT routine in neutropenic fever — it is added only for specific high-risk features because: (1) routine vancomycin has not improved outcomes in uncomplicated febrile neutropenia, (2) it promotes VRE colonization, and (3) it has nephrotoxicity risk.",
+  pearls:"Add vancomycin 10–15 mg/kg IV if ANY of:\n• Ill/toxic appearance\n• Hemodynamic instability (hypotension, poor perfusion)\n• History of MRSA infection\n• Focal soft tissue infection\n• T ≥40°C with clinical concern\n\nDo NOT add vancomycin routinely for all neutropenic fever patients.",
+  evidence:"Routine vancomycin not beneficial for empiric neutropenic fever management. Add only for specific indications. (Beyar-Katz Cochrane 2017, OHSU DCH ED Pathway Oct 2021)"
+},
+riskStrat:{
+  title:"Risk Stratification — ANC-Driven",
+  patho:"The ANC is calculated as: (% neutrophils + % bands) × WBC. ANC <500 defines severe neutropenia with high infection risk. ANC <100 carries the highest risk, particularly for gram-negative sepsis and fungal infection. The duration of neutropenia also matters — prolonged neutropenia (>7–10 days) increases risk of invasive fungal infection. BMT patients have additional immunodeficiency from conditioning regimens and GVHD prophylaxis.",
+  pearls:"HIGH-RISK (admit): ANC <500, or any BMT patient <100 days from transplant, or BMT patient >100 days on >0.5 mg/kg/day prednisone. All high-risk patients admitted for IV antibiotics.\n\nLOW-RISK (may discharge with PHO guidance): ANC >500, non-toxic appearance, not a BMT patient, nearly normal hepatic/renal function, expected neutropenia resolution <10 days, no catheter site infection, evidence of marrow recovery.\n\nConsult PHO fellow with results to develop the disposition plan. Low-risk discharge requires PHO agreement.",
+  evidence:"All patients with ANC <500 admitted per current DCH practice. Low-risk outpatient criteria exist at other institutions but lack robust pediatric data. (Rivas-Ruiz Cochrane 2019, OHSU DCH ED Pathway Oct 2021)"
+},
+portAccess:{
+  title:"Central Line Access Protocol",
+  patho:"Most oncology patients have indwelling central venous access devices (ports, Hickman/Broviac catheters). Blood cultures must be drawn from each lumen of the central line to detect catheter-related bloodstream infections (CRBSI). Peripheral cultures are drawn only with a specific order. The CLABSI prevention bundle includes sterile technique, chlorhexidine skin prep, and proper hub disinfection.",
+  pearls:"Apply LMX to port prior to arrival if possible — but do NOT delay access if unstable. Port access within 15–30 minutes or 2 attempts. After 2 failed attempts → IP consult to VAT for port access AND place a PIV simultaneously to continue with labs, cultures, and antibiotics.\n\nDraw blood cultures from each lumen of central line. Do not catheterize for urine — use clean catch or bag specimen. Do not delay antibiotics for urine collection."
+},
+fungal:{
+  title:"Fungal Considerations",
+  pearls:"Antifungal agents are generally considered if fever persists >96 hours despite broad-spectrum antibiotics, or if the patient has a known fungal infection or history of fungemia. This decision is made in consultation with PHO and infectious disease, not empirically in the ED.\n\nAspergillus risk increases with prolonged neutropenia (>10 days). Candida risk increases with central lines, TPN, and broad-spectrum antibiotics."
+},
+ppe:{
+  title:"Infection Control",
+  pearls:"RN and MD don mask, gloves, gown, and eye protection. Mask the patient and place immediately in a room — do not leave in the waiting area. These patients are profoundly immunocompromised and at risk for healthcare-associated infections. COVID testing prior to all admissions."
+}
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,cefepime:Math.min(Math.round(wt*50),2000),vanc_lo:Math.round(wt*10),vanc_hi:Math.round(wt*15),bolus:Math.round(wt*20),apap:Math.round(wt*12.5)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Neutropenic Fever</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · October 2021</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+function TeachBox({id,teaching}){
+  var s=useState("pearls"),tab=s[0],setTab=s[1];
+  if(!teaching||!TEACH[id])return null;var t=TEACH[id];
+  if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}
+  var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;
+  var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;
+  return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>{tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}</div><div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeKey]||""}</div></div>);
+}
+
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Oncology/BMT patient with fever · Cefepime within 60 min · ANC-driven risk stratification</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 440" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={440} fill="#fafaf8" rx={6}/>
+          <Box x={90} y={8} w={300} h={30} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={20} size={9} weight={700} color={pC}>NEUTROPENIC FEVER</T><T x={240} y={31} size={6} color={mC}>Mask patient · Room immediately · PPE · Central line access</T></Box>
+          <Arrow x1={240} y1={38} x2={240} y2={54}/>
+
+          <Box x={100} y={54} w={280} h={36} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={66} size={7} weight={700} color={tC}>IMMEDIATE: Blood Cx each lumen · CBC · CMP</T><T x={240} y={77} size={6} color={mC}>CEFEPIME 50 mg/kg IV within 60 min + NS bolus 20 mL/kg</T><T x={240} y={87} size={6} color={rC}>Do NOT wait for lab results before antibiotics</T></Box>
+          <Arrow x1={240} y1={90} x2={240} y2={108}/>
+
+          <g transform="translate(240,122)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Toxic / Hypoxemic /</T><T x={0} y={7} size={6} weight={700}>Severe resp sx?</T></g>
+          <Arrow x1={310} y1={122} x2={410} y2={148} color={rC}/><T x={370} y={134} size={6} weight={600} color={rC}>Yes</T>
+          <Box x={345} y={148} w={125} h={36} fill={rBg} stroke={rBd} sw={2}><T x={408} y={160} size={7} weight={700} color={rC}>RESUSCITATE</T><T x={408} y={171} size={6} color={mC}>+ Vancomycin · Notify PICU</T><T x={408} y={181} size={6} weight={600} color={rC}>ADMIT</T></Box>
+
+          <Arrow x1={240} y1={136} x2={240} y2={158}/><T x={250} y={154} size={6} weight={600} color={gC} anchor="start">Stable</T>
+
+          <Box x={120} y={158} w={240} h={24} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={168} size={7} weight={700} color={aC}>MONITOR VS Q30 MIN DURING/AFTER ABX</T><T x={240} y={179} size={6} color={mC}>Watch for hypotension during infusion</T></Box>
+          <Arrow x1={240} y1={182} x2={240} y2={200}/>
+
+          <g transform="translate(240,214)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Add Vancomycin?</T><T x={0} y={7} size={5.5} color={mC}>Ill · MRSA hx · Hypotension · T≥40</T></g>
+          <Arrow x1={320} y1={214} x2={400} y2={238} color={rC}/><T x={370} y={226} size={6} weight={600} color={rC}>Yes</T>
+          <Box x={350} y={238} w={110} h={22} fill={rBg} stroke={rBd}><T x={405} y={252} size={7} weight={700} color={rC}>ADD VANCOMYCIN</T></Box>
+
+          <Arrow x1={240} y1={228} x2={240} y2={250}/>
+          <Box x={130} y={250} w={220} h={22} fill={blBg} stroke={blBd}><T x={240} y={260} size={7} weight={700} color={blC}>CONSULT PHO FELLOW WITH RESULTS</T><T x={240} y={270} size={6} color={mC}>ANC result drives disposition</T></Box>
+          <Arrow x1={240} y1={272} x2={240} y2={292}/>
+
+          <g transform="translate(240,306)"><polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>ANC result?</T></g>
+
+          <Arrow x1={175} y1={306} x2={80} y2={336} color={rC}/><T x={115} y={320} size={6} weight={600} color={rC}>{"<"} 500</T>
+          <Arrow x1={305} y1={306} x2={400} y2={336} color={gC}/><T x={365} y={320} size={6} weight={600} color={gC}>≥ 500</T>
+
+          <Box x={15} y={336} w={130} h={40} fill={rBg} stroke={rBd} sw={1.5} radius={8}><T x={80} y={350} size={8} weight={700} color={rC}>ADMIT</T><T x={80} y={362} size={6} color={mC}>ANC {"<"} 500 or BMT criteria</T><T x={80} y={372} size={6} color={mC}>IV antibiotics inpatient</T></Box>
+          <Box x={335} y={336} w={135} h={40} fill={gBg} stroke={gBd} sw={1.5} radius={8}><T x={403} y={350} size={8} weight={700} color={gC}>LOW RISK → HOME</T><T x={403} y={362} size={6} color={mC}>ANC ≥ 500 · Non-toxic</T><T x={403} y={372} size={6} color={mC}>Not BMT · PHO agrees</T></Box>
+
+          <Box x={10} y={392} w={460} h={38} fill={blBg} stroke={blBd} radius={6}><T x={240} y={406} size={7} weight={700} color={blC}>GOAL: CEFEPIME WITHIN 60 MINUTES OF ARRIVAL</T><T x={240} y={418} size={6} color={mC}>Port access ≤15–30 min or 2 attempts → PIV + VAT consult · No rectal temps · No ibuprofen · No cath for urine</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Wizard({teaching,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),toxic=s2[0],setToxic=s2[1];
+  var s3=useState(null),addVanc=s3[0],setAddVanc=s3[1];
+  var s4=useState(null),anc=s4[0],setANC=s4[1];
+  function reset(){setExcl(null);setToxic(null);setAddVanc(null);setANC(null);}
+
+  return(<Pad>
+    <Q text="Neutropenic Fever Walk-Through" sub="Antibiotics within 60 minutes · ANC-driven risk stratification"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    <Card title="Step 1 — Inclusion Screening" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Does this patient meet inclusion criteria?<br/><span style={{fontSize:12,color:C.muted}}>Age {"<"}20 with fever (T {'>'}38.3, or T 38 for {'>'}1h, or T 38 ×2 in 12h) AND: new malignancy/chemo, BMT {"<"}100 days, or BMT {'>'}100 days on {'>'}0.5 mg/kg/day prednisone</span></div>
+      <WizBtn label="Yes — Meets inclusion criteria" sub="ESI II · Mask patient · Room immediately · PPE" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      <WizBtn label="No — Does not meet criteria" sub="Off pathway" color={C.muted} bg={C.white} border={C.rule} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+      {excl==="yes"&&<Alert color={C.muted} border={C.rule} bg={C.white} icon="ℹ️" title="Off Pathway">Patients with malignancy history {'>'}3 months in remission without central line, or BMT patients not meeting criteria above, are excluded.</Alert>}
+      <TeachBox id="ppe" teaching={teaching}/>
+    </Card>
+
+    {excl==="no"&&<Card title="Step 2 — Immediate Actions (Start Now)" color={C.red}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⏱️" title="60-Minute Antibiotic Goal">
+        <strong>1.</strong> Mask patient, place in room, RN in full PPE<br/>
+        <strong>2.</strong> LMX to port (if not done) — access within 15–30 min or 2 attempts<br/>
+        <strong>3.</strong> Blood cultures from each lumen of central line<br/>
+        <strong>4.</strong> CBC with manual diff, CMP (hold/send), Type & Cross<br/>
+        <strong>5.</strong> UA/mandatory culture (do NOT cath — do NOT delay abx for urine)<br/>
+        <strong>6.</strong> COVID testing<br/>
+        <strong>7.</strong> <span style={{fontWeight:700,color:C.red}}>ORDER CEFEPIME NOW</span> — {doses?doses.cefepime+" mg":"50 mg/kg"} IVPB<br/>
+        <strong>8.</strong> NS bolus {doses?doses.bolus+" mL":"20 mL/kg"} — start with antibiotic infusion<br/>
+        <strong>9.</strong> Acetaminophen {doses?doses.apap+" mg":"12.5 mg/kg"} PO (NO ibuprofen)<br/>
+        <strong>10.</strong> CXR if URI symptoms, abnormal lung exam, hypoxia, or tachypnea
+      </Alert>
+      <TeachBox id="portAccess" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&<Card title="Step 3 — Clinical Appearance" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is the patient toxic-appearing, hypoxemic, or showing severe respiratory symptoms?</div>
+      <WizBtn label="Yes — Toxic / Hypoxemic / Severe resp" sub="Resuscitate → add Vancomycin → notify PICU → admit" color={C.red} bg={C.redBg} border={C.redBorder} selected={toxic==="yes"} onClick={function(){setToxic("yes")}}/>
+      <WizBtn label="No — Clinically stable" sub="Continue cefepime monotherapy, monitor VS Q30 min" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={toxic==="no"} onClick={function(){setToxic("no")}}/>
+      {toxic==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Toxic / Unstable — Admit">
+        Resuscitate as appropriate. Ensure cefepime given.<br/>
+        {doses?<DoseRow label="Add Vancomycin IV (10–15 mg/kg)" value={doses.vanc_lo+"–"+doses.vanc_hi} unit="mg"/>:<span>Add Vancomycin 10–15 mg/kg IV</span>}<br/>
+        Notify Hem/Onc fellow and PICU. <strong>Admit.</strong>
+      </Alert>}
+    </Card>}
+
+    {excl==="no"&&toxic==="no"&&<Card title="Step 4 — Vancomycin Decision" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Are any high-risk features present that warrant adding vancomycin?<br/><span style={{fontSize:12,color:C.muted}}>Ill-appearing · History of MRSA · Hypotension · Focal soft tissue infection · T ≥40°C with concern</span></div>
+      <WizBtn label="Yes — Add Vancomycin" sub="Cefepime + Vancomycin" color={C.red} bg={C.redBg} border={C.redBorder} selected={addVanc==="yes"} onClick={function(){setAddVanc("yes")}}/>
+      <WizBtn label="No — Cefepime monotherapy" sub="Standard stable patient regimen" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={addVanc==="no"} onClick={function(){setAddVanc("no")}}/>
+      {addVanc==="yes"&&<div style={{marginTop:8}}>{doses?<DoseRow label="Vancomycin IV (10–15 mg/kg)" value={doses.vanc_lo+"–"+doses.vanc_hi} unit="mg"/>:<span>Vancomycin 10–15 mg/kg IV</span>}</div>}
+      <TeachBox id="vancomycin" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&toxic==="no"&&addVanc!==null&&<Card title="Step 5 — ANC Result & Disposition" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Monitor VS Q30 min during and after antibiotic infusion. Call PHO fellow with results. What is the ANC?</div>
+      <WizBtn label="ANC < 500 (or BMT criteria met)" sub="HIGH RISK → Admit for IV antibiotics" color={C.red} bg={C.redBg} border={C.redBorder} selected={anc==="low"} onClick={function(){setANC("low")}}/>
+      <WizBtn label="ANC ≥ 500, non-toxic, not BMT" sub="LOW RISK → Discuss with PHO, may discharge with follow-up" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={anc==="high"} onClick={function(){setANC("high")}}/>
+      {anc==="low"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="High Risk — Admit">ANC {"<"} 500 or BMT criteria → admit for IV antibiotics. Consult PHO fellow. Ensure VS stable before transfer to floor. COVID test prior to admission.</Alert>}
+      {anc==="high"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Low Risk — May Discharge">
+        ANC ≥500, non-toxic, not BMT patient. Low-risk factors: nearly normal hepatic/renal function, expected neutropenia resolution {"<"}10 days, no catheter site infection, evidence of marrow recovery.<br/><br/>
+        <strong>Requires PHO fellow agreement for discharge.</strong> Arrange close follow-up.
+      </Alert>}
+      <TeachBox id="riskStrat" teaching={teaching}/>
+    </Card>}
+
+    {excl!==null&&<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+function RefTriage({teaching}){return(<Pad>
+  <Q text="Triage & Initial Assessment" sub="Oncology/BMT patient with fever — antibiotics within 60 minutes"/>
+  <TeachBox id="overview" teaching={teaching}/>
+  <Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Age {"<"}20 with fever (T {'>'}38.3, T 38 for {'>'}1h, or T 38 ×2 in 12h) AND: new malignancy or on antineoplastic chemo, BMT {"<"}100 days, or BMT {'>'}100 days on {'>'}0.5 mg/kg/day prednisone.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Malignancy history {'>'}3 months in remission without central line. BMT patients not meeting above criteria.</Alert></div></Card>
+  <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong> · RN/MD in mask, gloves, gown, eye protection<br/><strong>Mask patient</strong> and place immediately in room<br/>LMX to port · Bedside vitals and weight · <strong>No rectal temps</strong><br/>Central line access per CLABSI bundle (port within 15–30 min or 2 attempts)<br/>Blood cultures from each lumen · CBC with manual diff · CMP · Type & Cross<br/>UA/mandatory culture (do NOT catheterize · do NOT delay abx for urine)<br/>Consider: CBG, flu/RSV/COVID testing, CXR if respiratory symptoms<br/><strong style={{color:C.red}}>ORDER CEFEPIME upon referral call or within 13 minutes of arrival</strong></div><TeachBox id="portAccess" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+  <Q text="Decision Tree" sub="Cefepime ± Vancomycin → ANC-driven risk stratification"/>
+  <Card title="Antibiotic Selection" color={C.primary}><div style={{marginTop:8}}><div style={{background:C.purpleBg,border:"1.5px solid "+C.purpleBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.purple}}>ALL PATIENTS: Cefepime 50 mg/kg IVPB</div><div style={{fontSize:12,marginTop:2}}>Within 60 minutes of arrival. Start NS bolus simultaneously. Monitor VS Q30 min.</div></div><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADD Vancomycin 10–15 mg/kg IF:</div><div style={{fontSize:12,marginTop:2}}>Ill/toxic appearing · Hemodynamic instability · History of MRSA · Focal soft tissue infection · T ≥40°C with concern</div></div></div><TeachBox id="cefepime" teaching={teaching}/><TeachBox id="vancomycin" teaching={teaching}/></Card>
+  <Card title="Risk Stratification" color={C.primary}><div style={{marginTop:8}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}><div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>HIGH RISK → ADMIT</div><div style={{fontSize:12,marginTop:4}}>ANC {"<"} 500<br/>BMT {"<"} 100 days<br/>BMT {'>'}100d on {'>'}0.5 mg/kg pred<br/>Toxic appearance<br/>Hemodynamic instability</div></div><div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>LOW RISK → HOME</div><div style={{fontSize:12,marginTop:4}}>ANC ≥ 500<br/>Non-toxic presentation<br/>Not BMT patient<br/>Normal hepatic/renal function<br/>Neutropenia resolving {"<"}10d<br/>No catheter site infection<br/>Marrow recovery evident</div></div></div></div><TeachBox id="riskStrat" teaching={teaching}/></Card>
+  <Card title="Fungal Considerations" color={C.muted} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Consider antifungal agents if fever persists {'>'}96 hours despite broad-spectrum antibiotics, or if known fungal infection/history of fungemia. Consult PHO and ID — not an ED-initiated decision.</div><TeachBox id="fungal" teaching={teaching}/></Card>
+  <PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+  <Q text="Medications & Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+  {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+  <Card title="Antibiotics" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Cefepime IVPB (50 mg/kg, max 2g)" value={doses?doses.cefepime:"—"} unit={doses?"mg":""}/><DoseRow label="Vancomycin IV (10–15 mg/kg) — if indicated" value={doses?doses.vanc_lo+"–"+doses.vanc_hi:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.red,fontWeight:600,marginTop:6}}>Cefepime within 60 minutes of arrival. Do NOT wait for lab results.</div></div><TeachBox id="cefepime" teaching={teaching}/></Card>
+  <Card title="Supportive" color={C.primary}><div style={{marginTop:8}}><DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/><DoseRow label="Acetaminophen PO (12.5 mg/kg)" value={doses?doses.apap:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.red,fontWeight:600,marginTop:6}}>NO IBUPROFEN — platelet dysfunction risk in thrombocytopenic patients</div></div></Card>
+  <Card title="Blood Products" color={C.red} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Type & Cross held in anticipation of blood, platelets, or FFP. Consult PHO for transfusion decisions.</div></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+  <Q text="Disposition & References"/>
+  <Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+    <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT (High Risk)</div><div style={{fontSize:12,marginTop:2}}>ANC {"<"} 500 · BMT criteria · Toxic/ill · Hypoxemic · Hemodynamically unstable<br/>COVID test prior to admission. Ensure VS stable before floor transfer.</div></div>
+    <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU</div><div style={{fontSize:12,marginTop:2}}>Toxic appearance with hemodynamic instability · Severe respiratory failure</div></div>
+    <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>HOME (Low Risk — with PHO agreement)</div><div style={{fontSize:12,marginTop:2}}>ANC ≥500 · Non-toxic · Not BMT · Normal organ function · Expected recovery {"<"}10 days · No catheter infection · PHO fellow approves discharge</div></div>
+  </div></Card>
+  <Card title="Pathogens" color={C.muted} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Gram-positive (60–70%):</strong> Staphylococcus, Streptococcus, Enterococcus, Corynebacterium<br/><strong>Gram-negative:</strong> E. coli, Klebsiella, Pseudomonas aeruginosa (more fulminant, higher mortality)<br/><strong>Anaerobes:</strong> Bacteroides, Clostridium, Fusobacterium</div></Card>
+  <Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Neutropenic Fever Clinical Pathway, October 2021<br/>Robinson PD et al. Strategies for Empiric Management of Pediatric Fever and Neutropenia. J Clin Oncol 2016;34(17):2054-60<br/>Burns B et al. Optimizing Time to Antibiotic Administration in Children with Possible Febrile Neutropenia. Pediatr Qual Saf 2019;4(6):e236<br/>Rivas-Ruiz R et al. Outpatient treatment for low-risk febrile neutropenic events. Cochrane Database Syst Rev 2019;3:CD009031<br/>Beyar-Katz O et al. Empirical antibiotics targeting gram-positive bacteria for febrile neutropenic patients. Cochrane Database Syst Rev 2017;6:CD003914</div></Card>
+</Pad>)}
+
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decisions",label:"Decisions"},{key:"meds",label:"Antibiotics"},{key:"dispo",label:"Dispo & Refs"}];
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (years)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="8" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="25" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decisions"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}><strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.<br/>Doernbecher Children's Hospital · PED · Neutropenic Fever Clinical Pathway · October 2021</div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
