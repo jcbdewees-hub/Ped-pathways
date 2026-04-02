@@ -73,186 +73,208 @@ function TeachBox({id,teaching}){var s=useState("pearls"),tab=s[0],setTab=s[1];i
 function PathwayFlowchart(){
   var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280";
   var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var LArrow=function(p){var c=p.color||"#94a3b8";var mx=p.mid==="h"?p.x2:p.x1;var my=p.mid==="h"?p.y1:p.y2;var dx=p.x2-mx,dy=p.y2-my,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={mx} y2={my} stroke={c} strokeWidth={1.5}/><line x1={mx} y1={my} x2={p.x2} y2={p.y2} stroke={c} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={c}/></g>};
   var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
   var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+
+  /* ── LAYOUT CONSTANTS ──
+     Center col: x=220 (main decision flow)
+     Right col:  x=390 (action boxes)
+     Left col:   x=70  (abd branch, off-pathway)
+  */
+
   return(<div style={{marginTop:20}}>
     <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
     <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Shunt or ETV patient with possible elevated ICP or infection · Quick MRI within 60 min</div>
     <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-    <svg viewBox="0 0 480 700" style={{width:"100%",display:"block"}}>
-      <rect width={480} height={700} fill="#fafaf8" rx={6}/>
+    <svg viewBox="0 0 480 680" style={{width:"100%",display:"block"}}>
+      <rect width={480} height={680} fill="#fafaf8" rx={6}/>
 
-      {/* Entry pill */}
-      <Box x={90} y={8} w={300} h={30} fill={pBg} stroke={pBd} sw={1.5} radius={14}>
-        <T x={240} y={20} size={9} weight={700} color={pC}>SUSPECTED SHUNT / ETV FAILURE</T>
-        <T x={240} y={31} size={6} color={mC}>ESI II · Monitor · HOB 30° · Notify MRI · NPO</T>
+      {/* ═══ ROW 0: Entry pill ═══ y=10 */}
+      <Box x={100} y={10} w={280} h={28} fill={pBg} stroke={pBd} sw={1.5} radius={14}>
+        <T x={240} y={21} size={9} weight={700} color={pC}>SUSPECTED SHUNT / ETV FAILURE</T>
+        <T x={240} y={32} size={6} color={mC}>ESI II · Monitor · HOB 30° · Notify MRI · NPO</T>
       </Box>
-      <Arrow x1={240} y1={38} x2={240} y2={56}/>
 
-      {/* Diamond 1: Emergent? */}
-      <g transform="translate(240,70)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+      {/* ═══ ROW 1: Emergent? ═══ y=58 */}
+      <Arrow x1={240} y1={38} x2={240} y2={44}/>
+      <g transform="translate(240,58)"><polygon points="0,-14 75,0 0,14 -75,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
         <T x={0} y={-2} size={6} weight={700}>Bradycardia, lethargy,</T>
         <T x={0} y={7} size={6} weight={700}>resp compromise?</T>
       </g>
-      <Arrow x1={320} y1={70} x2={430} y2={96} color={rC}/><T x={384} y={80} size={6} weight={600} color={rC}>Yes</T>
-      <Box x={370} y={96} w={100} h={34} fill={rBg} stroke={rBd} sw={2}>
-        <T x={420} y={107} size={7} weight={700} color={rC}>EMERGENT NSG</T>
-        <T x={420} y={117} size={5.5} color={mC}>Rapid MRI/CT + IV</T>
-        <T x={420} y={126} size={5.5} color={mC}>Consider shunt tap</T>
+      {/* Yes → horizontal right then down to box */}
+      <line x1={315} y1={58} x2={400} y2={58} stroke={rC} strokeWidth={1.5}/>
+      <T x={356} y={52} size={6} weight={600} color={rC}>Yes</T>
+      <Arrow x1={400} y1={58} x2={400} y2={76} color={rC}/>
+      <Box x={350} y={76} w={100} h={32} fill={rBg} stroke={rBd} sw={2}>
+        <T x={400} y={87} size={7} weight={700} color={rC}>EMERGENT NSG</T>
+        <T x={400} y={97} size={5.5} color={mC}>Rapid MRI/CT + IV</T>
+        <T x={400} y={106} size={5.5} color={mC}>Consider shunt tap</T>
       </Box>
-      <Arrow x1={240} y1={84} x2={240} y2={106}/><T x={252} y={100} size={6} weight={600} color={gC} anchor="start">Stable</T>
+      {/* No/Stable → down */}
+      <Arrow x1={240} y1={72} x2={240} y2={92}/>
+      <T x={254} y={86} size={6} weight={600} color={gC} anchor="start">Stable</T>
 
-      {/* ── THREE PRESENTATION BRANCHES ── */}
-
-      {/* Left: Abdominal */}
-      <Arrow x1={180} y1={112} x2={75} y2={138}/>
-      <g transform="translate(75,138)"><polygon points="0,-10 50,0 0,10 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-        <T x={0} y={-1} size={5} weight={700}>Abd pain/distension</T>
-        <T x={0} y={7} size={5} weight={700}>w/ hx shunt?</T>
-      </g>
-      <Arrow x1={75} y1={148} x2={75} y2={168}/>
-      <Box x={20} y={168} w={110} h={30} fill={blBg} stroke={blBd}>
-        <T x={75} y={178} size={6} weight={700} color={blC}>ABD US + MRI</T>
-        <T x={75} y={188} size={5} color={mC}>UA · CBC CMP ESR CRP</T>
-        <T x={75} y={196} size={5} color={mC}>Eval dehydration</T>
-      </Box>
-
-      {/* Center: Neuro sxs */}
-      <g transform="translate(240,120)"><polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-        <T x={0} y={-2} size={5.5} weight={700}>Neuro sxs of failure?</T>
-        <T x={0} y={7} size={5} color={mC}>HA · vomiting · seizure</T>
+      {/* ═══ ROW 2: Three-branch presentation ═══ y=106 */}
+      <g transform="translate(240,106)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+        <T x={0} y={-3} size={6} weight={700}>Presentation?</T>
+        <T x={0} y={7} size={5} color={mC}>HA · vomiting · seizure · abd sxs · fever</T>
       </g>
 
-      {/* Right: Infection */}
-      <Arrow x1={305} y1={120} x2={400} y2={142} color={aC}/>
-      <g transform="translate(400,142)"><polygon points="0,-10 50,0 0,10 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-        <T x={0} y={-1} size={5} weight={700}>Fever {"<"}6mo revision</T>
-        <T x={0} y={7} size={5} weight={700}>drainage/redness?</T>
-      </g>
-      <Arrow x1={400} y1={152} x2={400} y2={168}/>
-      <Box x={345} y={168} w={110} h={30} fill={aBg} stroke={aBd}>
-        <T x={400} y={178} size={6} weight={700} color={aC}>INFECTION W/U</T>
-        <T x={400} y={188} size={5} color={mC}>CBC CMP ESR CRP UA</T>
-        <T x={400} y={196} size={5} color={mC}>Antipyretics · MRI/CT</T>
+      {/* Left branch: Abdominal — L-arrow: down then left */}
+      <LArrow x1={170} y1={106} x2={70} y2={140} mid="v" color="#94a3b8"/>
+      <T x={110} y={130} size={5} weight={600} color={mC} anchor="start">Abd sxs</T>
+      <Box x={15} y={140} w={110} h={30} fill={blBg} stroke={blBd}>
+        <T x={70} y={150} size={6} weight={700} color={blC}>ABD US + MRI</T>
+        <T x={70} y={160} size={5} color={mC}>UA · CBC CMP ESR CRP</T>
+        <T x={70} y={168} size={5} color={mC}>Eval dehydration</T>
       </Box>
 
-      {/* Main neuro branch continues down to MRI */}
-      <Arrow x1={240} y1={134} x2={240} y2={168}/>
-      <Box x={145} y={168} w={190} h={26} fill={blBg} stroke={blBd} sw={1.5}>
-        <T x={240} y={178} size={8} weight={700} color={blC}>QUICK BRAIN MRI</T>
-        <T x={240} y={190} size={5.5} color={mC}>{"<"}60 min · Shunt series if programmable · CT if unstable</T>
+      {/* Right branch: Infection — L-arrow: right then down */}
+      <LArrow x1={310} y1={106} x2={400} y2={140} mid="h" color={aC}/>
+      <T x={360} y={100} size={5} weight={600} color={aC}>Fever/infection</T>
+      <Box x={345} y={140} w={110} h={30} fill={aBg} stroke={aBd}>
+        <T x={400} y={150} size={6} weight={700} color={aC}>INFECTION W/U</T>
+        <T x={400} y={160} size={5} color={mC}>CBC CMP ESR CRP UA</T>
+        <T x={400} y={168} size={5} color={mC}>Antipyretics · MRI/CT</T>
       </Box>
-      <Arrow x1={240} y1={194} x2={240} y2={216}/>
 
-      {/* Diamond: Worsened hydrocephalus? */}
-      <g transform="translate(240,230)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+      {/* Center: Neuro → MRI */}
+      <Arrow x1={240} y1={120} x2={240} y2={140}/>
+      <Box x={135} y={140} w={210} h={26} fill={blBg} stroke={blBd} sw={1.5}>
+        <T x={240} y={150} size={8} weight={700} color={blC}>QUICK BRAIN MRI</T>
+        <T x={240} y={162} size={5.5} color={mC}>{"<"}60 min · Shunt series if programmable · CT if unstable</T>
+      </Box>
+
+      {/* ═══ ROW 3: Imaging result ═══ y=192 */}
+      <Arrow x1={240} y1={166} x2={240} y2={178}/>
+      <g transform="translate(240,192)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
         <T x={0} y={-2} size={6} weight={700}>Worsened hydrocephalus</T>
         <T x={0} y={7} size={6} weight={700}>or pseudocyst?</T>
       </g>
-      <Arrow x1={320} y1={230} x2={390} y2={258} color={rC}/><T x={362} y={244} size={6} weight={600} color={rC}>Yes</T>
-      <Box x={340} y={258} w={130} h={34} fill={rBg} stroke={rBd} sw={1.5}>
-        <T x={405} y={270} size={7} weight={700} color={rC}>NSG CONSULT</T>
-        <T x={405} y={281} size={5.5} color={mC}>OR / PICU / 10N per NSG</T>
-        <T x={405} y={290} size={5.5} weight={600} color={pC}>+ Neurology if ↑ seizures</T>
+      {/* Yes → right */}
+      <line x1={320} y1={192} x2={390} y2={192} stroke={rC} strokeWidth={1.5}/>
+      <T x={354} y={186} size={6} weight={600} color={rC}>Yes</T>
+      <Arrow x1={390} y1={192} x2={390} y2={212} color={rC}/>
+      <Box x={335} y={212} w={130} h={34} fill={rBg} stroke={rBd} sw={1.5}>
+        <T x={400} y={223} size={7} weight={700} color={rC}>NSG CONSULT</T>
+        <T x={400} y={234} size={5.5} color={mC}>OR / PICU / 10N per NSG</T>
+        <T x={400} y={243} size={5.5} weight={600} color={pC}>+ Neurology if ↑ seizures</T>
       </Box>
+      {/* No → down */}
+      <Arrow x1={240} y1={206} x2={240} y2={226}/>
+      <T x={252} y={220} size={6} weight={600} color={gC} anchor="start">No</T>
 
-      {/* Normal imaging — No goes left then down */}
-      <Arrow x1={160} y1={230} x2={100} y2={262} color={gC}/><T x={120} y={248} size={6} weight={600} color={gC}>No</T>
-
-      {/* Diamond: Persistent concern? */}
-      <g transform="translate(100,278)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-        <T x={0} y={-2} size={5.5} weight={700}>Persistent concern</T>
-        <T x={0} y={7} size={5.5} weight={700}>for failure?</T>
+      {/* ═══ ROW 4: Persistent concern? ═══ y=242 */}
+      <g transform="translate(240,242)"><polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+        <T x={0} y={-2} size={6} weight={700}>Persistent concern</T>
+        <T x={0} y={7} size={6} weight={700}>for failure?</T>
       </g>
-      <Arrow x1={40} y1={278} x2={10} y2={306} color={gC}/><T x={16} y={294} size={6} weight={600} color={gC}>No</T>
-      <Box x={-25} y={306} w={80} h={22} fill={gBg} stroke={gBd}>
-        <T x={15} y={320} size={6} weight={700} color={gC}>OFF PATHWAY</T>
+      {/* No → left */}
+      <line x1={175} y1={242} x2={100} y2={242} stroke={gC} strokeWidth={1.5}/>
+      <T x={136} y={236} size={6} weight={600} color={gC}>No</T>
+      <Arrow x1={100} y1={242} x2={100} y2={260} color={gC}/>
+      <Box x={50} y={260} w={100} h={22} fill={gBg} stroke={gBd}>
+        <T x={100} y={274} size={6} weight={700} color={gC}>OFF PATHWAY</T>
       </Box>
+      <T x={100} y={290} size={5} color={mC}>Consider alt dx · D/C</T>
+      {/* Yes → down */}
+      <Arrow x1={240} y1={256} x2={240} y2={280}/>
+      <T x={252} y={272} size={6} weight={600} color={aC} anchor="start">Yes</T>
 
-      <Arrow x1={160} y1={278} x2={220} y2={312} color={aC}/><T x={198} y={296} size={6} weight={600} color={aC}>Yes</T>
-
-      {/* Diamond: NSG operation last 30 days? — center column */}
-      <g transform="translate(220,330)"><polygon points="0,-16 70,0 0,16 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+      {/* ═══ ROW 5: NSG operation last 30 days? ═══ y=296 */}
+      <g transform="translate(240,296)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
         <T x={0} y={-3} size={6} weight={700}>NSG operation in</T>
-        <T x={0} y={8} size={6} weight={700}>last 30 days?</T>
+        <T x={0} y={7} size={6} weight={700}>last 30 days?</T>
       </g>
-      {/* Yes → right to admit box */}
-      <Arrow x1={290} y1={330} x2={350} y2={358} color={aC}/><T x={326} y={344} size={6} weight={600} color={aC}>Yes</T>
+      {/* Yes → right via L-arrow */}
+      <line x1={310} y1={296} x2={390} y2={296} stroke={aC} strokeWidth={1.5}/>
+      <T x={348} y={290} size={6} weight={600} color={aC}>Yes</T>
+      <Arrow x1={390} y1={296} x2={390} y2={316} color={aC}/>
 
-      {/* Shared admit box — right column, vertically centered on the 3 diamonds */}
-      <Box x={340} y={346} w={130} h={28} fill={aBg} stroke={aBd} sw={1.5}>
-        <T x={405} y={358} size={7} weight={700} color={aC}>NSG CONSULT</T>
-        <T x={405} y={368} size={5.5} color={mC}>Admit 10N / ED Obs per NSG</T>
+      {/* Shared admit box — right column, receives all 3 "Yes" arrows */}
+      <Box x={335} y={316} w={130} h={80} fill={aBg} stroke={aBd} sw={1.5}>
+        <T x={400} y={332} size={7} weight={700} color={aC}>NSG CONSULT</T>
+        <T x={400} y={346} size={6} color={mC}>Admit 10N or</T>
+        <T x={400} y={358} size={6} color={mC}>ED Obs per NSG</T>
+        <line x1={345} y1={368} x2={455} y2={368} stroke={pBd} strokeWidth={1}/>
+        <T x={400} y={384} size={5.5} weight={600} color={pC}>+ Neurology if</T>
+        <T x={400} y={393} size={5.5} weight={600} color={pC}>worsening seizures</T>
       </Box>
-      <Box x={340} y={378} w={130} h={16} fill={pBg} stroke={pBd}>
-        <T x={405} y={389} size={5.5} weight={600} color={pC}>+ Neurology if ↑ seizures</T>
-      </Box>
 
-      {/* No → down to myelo */}
-      <Arrow x1={220} y1={346} x2={220} y2={374}/>
+      {/* No → down */}
+      <Arrow x1={240} y1={310} x2={240} y2={338}/>
 
-      {/* Diamond: Hx myelomeningocele? */}
-      <g transform="translate(220,392)"><polygon points="0,-16 65,0 0,16 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+      {/* ═══ ROW 6: Hx myelomeningocele? ═══ y=354 */}
+      <g transform="translate(240,354)"><polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
         <T x={0} y={-3} size={6} weight={700}>Hx myelo-</T>
-        <T x={0} y={8} size={6} weight={700}>meningocele?</T>
+        <T x={0} y={7} size={6} weight={700}>meningocele?</T>
       </g>
-      {/* Yes → right to shared admit box */}
-      <Arrow x1={285} y1={392} x2={350} y2={374} color={aC}/><T x={324} y={382} size={6} weight={600} color={aC}>Yes</T>
+      {/* Yes → right to shared box */}
+      <line x1={305} y1={354} x2={335} y2={354} stroke={aC} strokeWidth={1.5}/>
+      <T x={318} y={348} size={6} weight={600} color={aC}>Yes</T>
+      {/* No → down */}
+      <Arrow x1={240} y1={368} x2={240} y2={396}/>
 
-      {/* No → down to still concerned */}
-      <Arrow x1={220} y1={408} x2={220} y2={436}/>
-
-      {/* Diamond: Still concern for failure? */}
-      <g transform="translate(220,454)"><polygon points="0,-16 60,0 0,16 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+      {/* ═══ ROW 7: Still concern for failure? ═══ y=412 */}
+      <g transform="translate(240,412)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
         <T x={0} y={-3} size={6} weight={700}>Still concern</T>
-        <T x={0} y={8} size={6} weight={700}>for failure?</T>
+        <T x={0} y={7} size={6} weight={700}>for failure?</T>
       </g>
-      {/* Yes → right to shared admit box */}
-      <Arrow x1={280} y1={454} x2={350} y2={394} color={aC}/><T x={322} y={424} size={6} weight={600} color={aC}>Yes</T>
+      {/* Yes → right to shared box */}
+      <line x1={300} y1={412} x2={335} y2={412} stroke={aC} strokeWidth={1.5}/>
+      <T x={316} y={406} size={6} weight={600} color={aC}>Yes</T>
+      {/* No → left */}
+      <line x1={180} y1={412} x2={100} y2={412} stroke={gC} strokeWidth={1.5}/>
+      <T x={138} y={406} size={6} weight={600} color={gC}>No</T>
+      <Arrow x1={100} y1={412} x2={100} y2={432} color={gC}/>
+      <Box x={50} y={432} w={100} h={22} fill={gBg} stroke={gBd}>
+        <T x={100} y={446} size={6} weight={700} color={gC}>OFF PATHWAY</T>
+      </Box>
+      <T x={100} y={462} size={5} color={mC}>Alt dx · NSG eval for D/C</T>
 
-      {/* No → left down to off pathway */}
-      <Arrow x1={160} y1={454} x2={80} y2={486} color={gC}/><T x={110} y={474} size={6} weight={600} color={gC}>No</T>
-      <Box x={30} y={486} w={100} h={22} fill={gBg} stroke={gBd}>
-        <T x={80} y={500} size={6} weight={700} color={gC}>OFF PATHWAY</T>
+      {/* ═══ DISPOSITION BAR ═══ y=484 */}
+      <Box x={10} y={484} w={145} h={40} fill={rBg} stroke={rBd} radius={8}>
+        <T x={82} y={498} size={7} weight={700} color={rC}>PICU / OR</T>
+        <T x={82} y={510} size={5.5} color={mC}>Elevated ICP + ventriculomegaly</T>
+        <T x={82} y={520} size={5.5} color={mC}>Unstable shunt malfunction</T>
       </Box>
-      <T x={80} y={518} size={5} color={mC}>Alt dx · NSG eval for D/C</T>
-
-      {/* ── DISPOSITION BAR ── */}
-      <Box x={10} y={536} w={145} h={40} fill={rBg} stroke={rBd} radius={8}>
-        <T x={82} y={550} size={7} weight={700} color={rC}>PICU / OR</T>
-        <T x={82} y={562} size={6} color={mC}>Elevated ICP + ventriculomegaly</T>
-        <T x={82} y={572} size={6} color={mC}>Unstable shunt malfunction</T>
+      <Box x={165} y={484} w={150} h={40} fill={aBg} stroke={aBd} radius={8}>
+        <T x={240} y={498} size={7} weight={700} color={aC}>10N / ED OBS</T>
+        <T x={240} y={510} size={5.5} color={mC}>Possible failure, normal imaging</T>
+        <T x={240} y={520} size={5.5} color={mC}>Infection w/u · 30d post-op · Myelo</T>
       </Box>
-      <Box x={165} y={536} w={155} h={40} fill={aBg} stroke={aBd} radius={8}>
-        <T x={243} y={550} size={7} weight={700} color={aC}>10N / ED OBS</T>
-        <T x={243} y={562} size={6} color={mC}>Possible failure, normal imaging</T>
-        <T x={243} y={572} size={6} color={mC}>Infection w/u · 30d post-op · Myelo</T>
-      </Box>
-      <Box x={330} y={536} w={140} h={40} fill={gBg} stroke={gBd} radius={8}>
-        <T x={400} y={550} size={7} weight={700} color={gC}>DISCHARGE</T>
-        <T x={400} y={562} size={6} color={mC}>NSG attending evaluation</T>
-        <T x={400} y={572} size={6} color={mC}>Alternative dx · Reset valve</T>
-      </Box>
-
-      {/* ── REFERENCE BARS ── */}
-      <Box x={10} y={590} w={460} h={28} fill={blBg} stroke={blBd} radius={6}>
-        <T x={240} y={602} size={7} weight={700} color={blC}>QUICK BRAIN MRI = FIRST CHOICE (no radiation, no sedation)</T>
-        <T x={240} y={614} size={6} color={mC}>Programmable shunt → shunt series BEFORE MRI (not required for ETV) · NSG to restore settings after MRI</T>
-      </Box>
-      <Box x={10} y={626} w={460} h={22} fill={pBg} stroke={pBd} radius={6}>
-        <T x={240} y={640} size={6} color={mC}>Shunt failure: 45–60% yr 1 · ETV 2-yr survival ~58% · Avoid NSAIDs · Avoid opioids if altered MS/↑ICP</T>
+      <Box x={325} y={484} w={145} h={40} fill={gBg} stroke={gBd} radius={8}>
+        <T x={398} y={498} size={7} weight={700} color={gC}>DISCHARGE</T>
+        <T x={398} y={510} size={5.5} color={mC}>NSG attending evaluation</T>
+        <T x={398} y={520} size={5.5} color={mC}>Alternative dx · Reset valve</T>
       </Box>
 
-      {/* ICP signs reference */}
-      <Box x={10} y={656} w={225} h={34} fill={rBg} stroke={rBd} radius={6}>
-        <T x={122} y={668} size={5.5} weight={700} color={rC}>INFANT ICP SIGNS</T>
-        <T x={122} y={678} size={5} color={mC}>Bulging fontanelle · ↑HC · irritability</T>
-        <T x={122} y={687} size={5} color={mC}>poor feeding · setting sun · apnea</T>
+      {/* ═══ REFERENCE BARS ═══ */}
+      <Box x={10} y={538} w={460} h={28} fill={blBg} stroke={blBd} radius={6}>
+        <T x={240} y={550} size={7} weight={700} color={blC}>QUICK BRAIN MRI = FIRST CHOICE (no radiation, no sedation)</T>
+        <T x={240} y={562} size={5.5} color={mC}>Programmable shunt → shunt series BEFORE MRI (not required for ETV) · NSG to restore settings after MRI</T>
       </Box>
-      <Box x={245} y={656} w={225} h={34} fill={rBg} stroke={rBd} radius={6}>
-        <T x={357} y={668} size={5.5} weight={700} color={rC}>CHILD ICP SIGNS</T>
-        <T x={357} y={678} size={5} color={mC}>HA · vomiting · personality Δ · lethargy</T>
-        <T x={357} y={687} size={5} color={mC}>gait Δ · seizure · nystagmus · upgaze paresis</T>
+      <Box x={10} y={574} w={460} h={20} fill={pBg} stroke={pBd} radius={6}>
+        <T x={240} y={587} size={5.5} color={mC}>Shunt failure: 45–60% yr 1 · ETV 2-yr survival ~58% · Avoid NSAIDs · Avoid opioids if altered MS/↑ICP</T>
+      </Box>
+
+      {/* ICP signs bars */}
+      <Box x={10} y={602} w={225} h={32} fill={rBg} stroke={rBd} radius={6}>
+        <T x={122} y={614} size={5.5} weight={700} color={rC}>INFANT ICP SIGNS</T>
+        <T x={122} y={624} size={5} color={mC}>Bulging fontanelle · ↑HC · irritability</T>
+        <T x={122} y={632} size={5} color={mC}>poor feeding · setting sun · apnea</T>
+      </Box>
+      <Box x={245} y={602} w={225} h={32} fill={rBg} stroke={rBd} radius={6}>
+        <T x={357} y={614} size={5.5} weight={700} color={rC}>CHILD ICP SIGNS</T>
+        <T x={357} y={624} size={5} color={mC}>HA · vomiting · personality Δ · lethargy</T>
+        <T x={357} y={632} size={5} color={mC}>gait Δ · seizure · nystagmus · upgaze paresis</T>
+      </Box>
+
+      {/* Key consult trigger */}
+      <Box x={10} y={642} w={460} h={28} fill={rBg} stroke={rBd} radius={6} sw={1.5}>
+        <T x={240} y={654} size={6} weight={700} color={rC}>CONSULT NSG IMMEDIATELY if: in extremis · lethargic · Cushing's triad</T>
+        <T x={240} y={666} size={5.5} color={mC}>Consult Neurology if new or worsening seizures · Notify PCP for all admissions</T>
       </Box>
     </svg>
     </div>
