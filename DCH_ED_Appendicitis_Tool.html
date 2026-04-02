@@ -217,10 +217,10 @@ function WizBtn({ label, sub, color, bg, border, onClick, selected }) {
 // ── Shared Flowchart ──
 
 function PathwayFlowchart() {
-  var blC="#1e40af", blBg="#eff6ff", blBd="#93c5fd"; // Blue (Labs/Info)
-  var gC="#16a34a", gBg="#f0fdf4", gBd="#86efac";   // Green (Low risk / Not Appy)
-  var oC="#c2410c", oBg="#ffedd5", oBd="#fdba74";   // Orange (Int/High Risk)
-  var dkC="#1e293b", dkBd="#475569", mC="#64748b";  // Dark/Slate (Diagnosis/Inconclusive)
+  var blC="#1e40af", blBg="#eff6ff", blBd="#93c5fd"; 
+  var gC="#16a34a", gBg="#f0fdf4", gBd="#86efac";   
+  var oC="#c2410c", oBg="#ffedd5", oBd="#fdba74";   
+  var dkC="#1e293b", dkBd="#475569", mC="#64748b";  
 
   var Arrow = function(p) {
     var dx=p.x2-p.x1, dy=p.y2-p.y1, len=Math.sqrt(dx*dx+dy*dy);
@@ -255,10 +255,10 @@ function PathwayFlowchart() {
   return (
     <div style={{marginTop:20}}>
       <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Simplified Algorithm</div>
-      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Suspected Appendicitis · Streamlined Clinical Pathway</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Suspected Appendicitis · Integrated Clinical Pathway</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 480 620" style={{width:"100%",display:"block"}}>
-          <rect width={480} height={620} fill="#ffffff" rx={6}/>
+        <svg viewBox="0 0 480 610" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={610} fill="#ffffff" rx={6}/>
 
           {/* ================= STEP 1: INITIAL WORKUP ================= */}
           <Box x={115} y={10} w={250} h={65} fill={blBg} stroke={blBd} sw={2}>
@@ -269,119 +269,121 @@ function PathwayFlowchart() {
           </Box>
           
           <line x1={240} y1={75} x2={240} y2={95} stroke="#94a3b8" strokeWidth={2}/>
-          <line x1={95} y1={95} x2={355} y2={95} stroke="#94a3b8" strokeWidth={2}/>
-          <Arrow x1={95} y1={95} x2={95} y2={105} color="#94a3b8"/>
-          <Arrow x1={355} y1={95} x2={355} y2={105} color="#94a3b8"/>
+          <line x1={85} y1={95} x2={345} y2={95} stroke="#94a3b8" strokeWidth={2}/>
+          <Arrow x1={85} y1={95} x2={85} y2={105} color="#94a3b8"/>
+          <Arrow x1={345} y1={95} x2={345} y2={105} color="#94a3b8"/>
 
           {/* ================= STEP 2: RISK STRATIFICATION ================= */}
           
           {/* Low Risk */}
-          <Box x={20} y={105} w={150} h={80} fill={gBg} stroke={gBd} sw={2}>
-            <T x={95} y={120} size={7} weight={700} color={gC}>LOW RISK</T>
-            <T x={95} y={130} size={6}>PAS/Alv ≤3 or Low pARC</T>
-            <line x1={30} y1={138} x2={160} y2={138} stroke={gBd} strokeWidth={1}/>
-            <T x={95} y={150} size={6} weight={700}>Discharge Home</T>
-            <T x={95} y={160} size={5.5}>PCP follow-up &lt;24 hrs</T>
-            <T x={95} y={170} size={5.5}>OR ED Obs for 6 hrs vs US</T>
+          <Box x={15} y={105} w={140} h={80} fill={gBg} stroke={gBd} sw={2}>
+            <T x={85} y={120} size={7} weight={700} color={gC}>LOW RISK</T>
+            <T x={85} y={130} size={6}>PAS/Alv ≤3 or Low pARC</T>
+            <line x1={25} y1={138} x2={145} y2={138} stroke={gBd} strokeWidth={1}/>
+            <T x={85} y={150} size={6} weight={700}>Discharge Home</T>
+            <T x={85} y={160} size={5.5}>PCP follow-up &lt;24 hrs</T>
+            <T x={85} y={170} size={5.5}>OR ED Obs for 6 hrs vs US</T>
           </Box>
 
-          {/* Int/High Risk (MERGED for simplicity) */}
-          <Box x={220} y={105} w={240} h={80} fill={oBg} stroke={oBd} sw={2}>
-            <T x={340} y={120} size={7} weight={700} color={oC}>INTERMEDIATE or HIGH RISK</T>
-            <T x={340} y={130} size={6}>PAS/Alv ≥4 or Int/High pARC</T>
-            <line x1={230} y1={138} x2={450} y2={138} stroke={oBd} strokeWidth={1}/>
+          {/* Int/High Risk */}
+          <Box x={220} y={105} w={250} h={100} fill={oBg} stroke={oBd} sw={2}>
+            <T x={345} y={120} size={7} weight={700} color={oC}>INTERMEDIATE or HIGH RISK</T>
+            <T x={345} y={130} size={6}>PAS/Alv ≥4 or Int/High pARC</T>
+            <line x1={230} y1={138} x2={460} y2={138} stroke={oBd} strokeWidth={1}/>
             <T x={235} y={150} anchor="start" size={6}>1. NPO, IV access, IV pain meds/fluids</T>
-            <T x={235} y={162} anchor="start" size={6} weight={700}>2. Obtain US abdomen</T>
-            <T x={235} y={172} anchor="start" size={5.5}>(also rule out ovarian torsion for females)*</T>
+            <T x={235} y={162} anchor="start" size={6}>2. Obtain US abdomen (also r/o torsion)*</T>
+            <line x1={235} y1={172} x2={455} y2={172} stroke={oBd} strokeWidth={1} strokeDasharray="2,2"/>
+            <T x={235} y={184} anchor="start" size={5.5} weight={700} color={oC}>* Obese pts: if US unlikely to reveal appx,</T>
+            <T x={235} y={194} anchor="start" size={5.5} weight={700} color={oC}>consider cross-sectional imaging first-line.</T>
           </Box>
 
           {/* ================= STEP 3: ULTRASOUND CASCADE ================= */}
-          <line x1={340} y1={185} x2={340} y2={210} stroke="#94a3b8" strokeWidth={2}/>
-          <line x1={85} y1={210} x2={400} y2={210} stroke="#94a3b8" strokeWidth={2}/>
+          <line x1={345} y1={205} x2={345} y2={230} stroke="#94a3b8" strokeWidth={2}/>
+          <line x1={85} y1={230} x2={400} y2={230} stroke="#94a3b8" strokeWidth={2}/>
           
-          <Arrow x1={85} y1={210} x2={85} y2={240} color="#94a3b8"/>
-          <Box x={50} y={215} w={70} h={16} stroke="#cbd5e1" radius={4}>
-            <T x={85} y={226} size={6} weight={700} color={mC}>US Negative</T>
+          <Arrow x1={85} y1={230} x2={85} y2={245} color="#94a3b8"/>
+          <Box x={50} y={245} w={70} h={18} stroke="#cbd5e1" radius={4}>
+            <T x={85} y={257} size={6} weight={700} color={mC}>US Negative</T>
           </Box>
 
-          <Arrow x1={240} y1={210} x2={240} y2={240} color={dkC} sw={2.5}/>
-          <Box x={205} y={215} w={70} h={16} stroke={dkBd} radius={4}>
-            <T x={240} y={226} size={6} weight={700} color={dkC}>US Positive</T>
+          <Arrow x1={240} y1={230} x2={240} y2={245} color={dkC} sw={2.5}/>
+          <Box x={205} y={245} w={70} h={18} stroke={dkBd} radius={4}>
+            <T x={240} y={257} size={6} weight={700} color={dkC}>US Positive</T>
           </Box>
 
-          <Arrow x1={400} y1={210} x2={400} y2={240} color="#94a3b8"/>
-          <Box x={360} y={215} w={80} h={16} stroke="#cbd5e1" radius={4}>
-            <T x={400} y={226} size={6} weight={700} color={mC}>Not Seen / Normal</T>
+          <Arrow x1={400} y1={230} x2={400} y2={245} color="#94a3b8"/>
+          <Box x={360} y={245} w={80} h={18} stroke="#cbd5e1" radius={4}>
+            <T x={400} y={257} size={6} weight={700} color={mC}>Not Seen / Normal</T>
           </Box>
 
-          {/* Imaging Result Columns */}
-          <Box x={15} y={240} w={140} h={85} stroke={mC} sw={1.5}>
-            <T x={85} y={258} size={7.5} weight={700}>Likely NOT Appy</T>
-            <T x={25} y={274} anchor="start" size={6}>1. Repeat PE</T>
-            <T x={25} y={286} anchor="start" size={6}>2. Consider alt diagnoses</T>
-            <T x={25} y={298} anchor="start" size={6}>3. PO challenge</T>
-            <T x={25} y={310} anchor="start" size={6}>4. D/C vs Observation</T>
+          {/* Imaging Result Action Columns */}
+          <Arrow x1={85} y1={263} x2={85} y2={280} color="#94a3b8"/>
+          <Box x={15} y={280} w={140} h={85} stroke={mC} sw={1.5}>
+            <T x={85} y={298} size={7.5} weight={700}>Likely NOT Appy</T>
+            <T x={25} y={314} anchor="start" size={6}>1. Repeat PE</T>
+            <T x={25} y={326} anchor="start" size={6}>2. Consider alt diagnoses</T>
+            <T x={25} y={338} anchor="start" size={6}>3. PO challenge</T>
+            <T x={25} y={350} anchor="start" size={6}>4. D/C vs Observation</T>
           </Box>
 
-          <Box x={165} y={240} w={150} h={85} stroke={dkC} sw={3}>
-            <T x={240} y={258} size={7.5} weight={700}>DIAGNOSIS OF APPY</T>
-            <T x={175} y={276} anchor="start" size={6}>1. Consult Pediatric Surgery</T>
-            <T x={175} y={288} anchor="start" size={6}>2. Start broad spectrum</T>
-            <T x={185} y={300} anchor="start" size={6}>Abx** if surgery requests</T>
-            <T x={185} y={312} anchor="start" size={6}>or perforation detected</T>
+          <Arrow x1={240} y1={263} x2={240} y2={280} color={dkC} sw={2.5}/>
+          <Box x={165} y={280} w={150} h={145} stroke={dkC} sw={3}>
+            <T x={240} y={296} size={7.5} weight={700}>DIAGNOSIS OF APPY</T>
+            <T x={175} y={312} anchor="start" size={5.5}>1. Consult Pediatric Surgery</T>
+            <T x={175} y={324} anchor="start" size={5.5}>2. Start broad spectrum Abx</T>
+            <T x={185} y={334} anchor="start" size={5.5}>(if surgery requests or perf)</T>
+            <line x1={175} y1={342} x2={305} y2={342} stroke="#e2e8f0" strokeWidth={1}/>
+            <T x={240} y={352} size={5.5} weight={700} color={dkC}>Standard Protocol:</T>
+            <T x={240} y={362} size={5}>Ceftriaxone 50mg/kg IV q24 (max 2g)</T>
+            <T x={240} y={372} size={5}>+ Flagyl 30mg/kg/day IV q24 (max 1.5g)</T>
+            <line x1={175} y1={380} x2={305} y2={380} stroke="#e2e8f0" strokeWidth={1}/>
+            <T x={240} y={390} size={5.5} weight={700} color={oC}>Cephalosporin Allergy:</T>
+            <T x={240} y={400} size={5}>Cipro 25mg/kg/day IV q12 (max 400mg)</T>
+            <T x={240} y={410} size={5}>+ Flagyl</T>
           </Box>
 
-          <Box x={325} y={240} w={150} h={95} fill="#f8fafc" stroke="#cbd5e1" sw={2}>
-            <T x={400} y={258} size={7.5} weight={700}>INCONCLUSIVE</T>
-            <T x={335} y={274} anchor="start" size={5.5}>1. Repeat PE / Alt Dx</T>
-            <T x={335} y={286} anchor="start" size={5.5}>2. If still suspected, get:</T>
-            <T x={345} y={298} anchor="start" size={5.5} weight={700}>Abdominal MRI</T>
-            <T x={335} y={310} anchor="start" size={5.5}>3. CT if cannot remain still</T>
-            <T x={345} y={322} anchor="start" size={5.5}>(age &lt;5) or suspect rupture</T>
+          <Arrow x1={400} y1={263} x2={400} y2={280} color="#94a3b8"/>
+          <Box x={325} y={280} w={150} h={95} fill="#f8fafc" stroke="#cbd5e1" sw={2}>
+            <T x={400} y={298} size={7.5} weight={700}>INCONCLUSIVE</T>
+            <T x={335} y={314} anchor="start" size={5.5}>1. Repeat PE / Alt Dx</T>
+            <T x={335} y={326} anchor="start" size={5.5}>2. If still suspected, get:</T>
+            <T x={345} y={338} anchor="start" size={5.5} weight={700}>Abdominal MRI</T>
+            <T x={335} y={350} anchor="start" size={5.5}>3. CT if cannot remain still</T>
+            <T x={345} y={362} anchor="start" size={5.5}>(age &lt;5) or suspect rupture</T>
           </Box>
 
           {/* ================= STEP 4: MRI RESULTS ================= */}
-          <line x1={400} y1={335} x2={400} y2={365} stroke="#94a3b8" strokeWidth={2}/>
-          <line x1={85} y1={365} x2={400} y2={365} stroke="#94a3b8" strokeWidth={2}/>
+          <line x1={400} y1={375} x2={400} y2={440} stroke="#94a3b8" strokeWidth={2}/>
+          {/* Horizontal line routes BELOW the Appy Box */}
+          <line x1={85} y1={440} x2={400} y2={440} stroke="#94a3b8" strokeWidth={2}/>
           
-          <Arrow x1={85} y1={365} x2={85} y2={325} color="#94a3b8"/>
-          <Box x={50} y={357} w={70} h={16} fill="#fff" stroke="#cbd5e1" radius={4}>
-            <T x={85} y={368} size={6} weight={700} color={mC}>MR Negative</T>
+          <Arrow x1={85} y1={440} x2={85} y2={455} color="#94a3b8"/>
+          <Box x={35} y={455} w={100} h={34} fill="#fff" stroke="#cbd5e1" radius={4}>
+            <T x={85} y={467} size={6.5} weight={700} color={mC}>MR Negative</T>
+            <T x={85} y={479} size={5.5} color={mC}>→ Manage as Not Appy</T>
           </Box>
 
-          <Arrow x1={240} y1={365} x2={240} y2={325} color={dkC} sw={2.5}/>
-          <Box x={205} y={357} w={70} h={16} fill="#fff" stroke={dkBd} radius={4}>
-            <T x={240} y={368} size={6} weight={700} color={dkC}>MR Positive</T>
+          <Arrow x1={240} y1={440} x2={240} y2={455} color={dkC} sw={2.5}/>
+          <Box x={190} y={455} w={100} h={34} fill="#fff" stroke={dkBd} radius={4}>
+            <T x={240} y={467} size={6.5} weight={700} color={dkC}>MR Positive</T>
+            <T x={240} y={479} size={5.5} color={dkC}>→ Diagnose as Appy</T>
           </Box>
 
-          <Arrow x1={400} y1={365} x2={400} y2={400} color="#94a3b8"/>
-          <Box x={360} y={375} w={80} h={16} fill="#fff" stroke="#cbd5e1" radius={4}>
-            <T x={400} y={386} size={6} weight={700} color={mC}>MR Equivocal</T>
+          <Arrow x1={400} y1={440} x2={400} y2={455} color="#94a3b8"/>
+          <Box x={325} y={455} w={150} h={55} fill="#f1f5f9" stroke="#cbd5e1" radius={4}>
+            <T x={400} y={467} size={6.5} weight={700} color={mC}>MR EQUIVOCAL</T>
+            <T x={400} y={479} size={5.5} color={mC}>Appx not seen AND (+RLQ stranding</T>
+            <T x={400} y={489} size={5.5} color={mC}>OR any free fluid in boys OR</T>
+            <T x={400} y={499} size={5.5} color={mC}>&gt;physiologic volume in girls)</T>
           </Box>
 
-          {/* Uncertain Diagnosis Box */}
-          <Box x={325} y={400} w={150} h={65} fill="#f8fafc" stroke="#cbd5e1" sw={2}>
-            <T x={400} y={415} size={7} weight={700}>DIAGNOSIS UNCERTAIN</T>
-            <T x={335} y={430} anchor="start" size={6}>1. Repeat PE / Alt dx</T>
-            <T x={335} y={442} anchor="start" size={6}>2. Consult Pediatric Surg</T>
-            <T x={335} y={454} anchor="start" size={6}>3. Avoid empiric Abx</T>
-          </Box>
-
-          {/* ================= FOOTNOTES ================= */}
-          <Box x={15} y={485} w={460} h={35} fill="#f1f5f9" stroke="#e2e8f0" radius={6}>
-            <T x={25} y={498} anchor="start" size={6.5} weight={700} color={mC}>* Imaging Note:</T>
-            <T x={95} y={498} anchor="start" size={6} color={mC}>Consider cross-sectional imaging as first-line in obese patients where US is unlikely to reveal appendix.</T>
-            <T x={95} y={510} anchor="start" size={5.5} color={mC}>MR Equivocal = appendix not seen AND (+RLQ fat stranding OR any free fluid in boys OR >physiologic volume in girls).</T>
-          </Box>
-
-          <Box x={15} y={525} w={460} h={85} stroke={dkBd} sw={1.5} radius={6}>
-            <T x={240} y={540} size={7} weight={700}>** Antibiotic Guidelines for Confirmed Appendicitis</T>
-            <line x1={25} y1={548} x2={455} y2={548} stroke="#e2e8f0" strokeWidth={1}/>
-            <T x={25} y={560} anchor="start" size={6.5} weight={700}>Standard Protocol:</T>
-            <T x={25} y={572} anchor="start" size={6}>Ceftriaxone 50mg/kg IV q24 (max 2g)  +  Flagyl 30mg/kg/day IV q24 (max 1.5g)</T>
-            
-            <T x={25} y={590} anchor="start" size={6.5} weight={700} color={oC}>Cephalosporin Allergy:</T>
-            <T x={25} y={602} anchor="start" size={6}>Ciprofloxacin 25mg/kg/day IV q12 (max 400mg)  +  Flagyl</T>
+          {/* ================= STEP 5: UNCERTAIN ================= */}
+          <Arrow x1={400} y1={510} x2={400} y2={530} color="#94a3b8"/>
+          <Box x={325} y={530} w={150} h={65} fill="#f8fafc" stroke="#cbd5e1" sw={2}>
+            <T x={400} y={545} size={7} weight={700}>DIAGNOSIS UNCERTAIN</T>
+            <T x={335} y={560} anchor="start" size={6}>1. Repeat PE / Alt dx</T>
+            <T x={335} y={572} anchor="start" size={6}>2. Consult Pediatric Surg</T>
+            <T x={335} y={584} anchor="start" size={6}>3. Avoid empiric Abx</T>
           </Box>
 
         </svg>
