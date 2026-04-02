@@ -132,160 +132,196 @@ function TeachBox({id,teaching}){
 /* ═══════════════════════════════
    FLOWCHART
    ═══════════════════════════════ */
+// CORRECTED PathwayFlowchart for Young Infant Hypothermia
+// Changes from previous version:
+// 1. REMOVED age-determinant decision diamond — age does NOT gate the workup
+// 2. Diagnostics are universal (all patients get same workup panel)
+// 3. Age (0-21d vs 22-60d) only determines antibiotic regimen selection
+// 4. Risk factors prominently shown alongside REAL BIGS
+// 5. Flow: Entry → Fever check → Temp severity/warming → REAL BIGS + Risk Factors → Toxic? → Universal Diagnostics → Abx by age → Disposition
+
 function PathwayFlowchart(){
   var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
-  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
   var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
   var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
-
   return(
     <div style={{marginTop:20}}>
       <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
-      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Infant 0–60 days · Rectal temp ≤36.4°C · Exclude history of fever ≥38.0°C</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Infants 0–60 days · Rectal temp ≤36.4°C · Warming + workup pathway</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 480 580" style={{width:"100%",display:"block"}}>
-          <rect width={480} height={580} fill="#fafaf8" rx={6}/>
+        <svg viewBox="0 0 480 620" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={620} fill="#fafaf8" rx={6}/>
 
-          {/* Entry */}
+          {/* ENTRY PILL */}
           <Box x={100} y={8} w={280} h={30} fill={aBg} stroke={aBd} sw={1.5} radius={14}>
             <T x={240} y={20} size={9} weight={700} color={aC}>HYPOTHERMIC INFANT 0–60 DAYS</T>
             <T x={240} y={31} size={6} color={mC}>Rectal temp ≤36.4°C · ESI II · Vitals + naked weight</T>
           </Box>
 
-          <Arrow x1={240} y1={38} x2={240} y2={54}/>
+          <Arrow x1={240} y1={38} x2={240} y2={56}/>
 
-          {/* Exclusion */}
-          <g transform="translate(240,68)">
+          {/* EXCLUSION: Fever history */}
+          <g transform="translate(240,70)">
             <polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
             <T x={0} y={-2} size={7} weight={700}>Hx of fever ≥38°C?</T>
           </g>
-          <line x1={305} y1={68} x2={415} y2={68} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={415} y1={68} x2={415} y2={84} color={mC}/>
-          <Box x={370} y={84} w={90} h={24} fill="#f1f5f9" stroke="#e2e8f0">
-            <T x={415} y={93} size={7} weight={600} color={mC}>OFF PATH</T>
-            <T x={415} y={103} size={5.5} color={mC}>Use Fever pathway</T>
+          <line x1={305} y1={70} x2={410} y2={70} stroke="#94a3b8" strokeWidth={1}/>
+          <T x={340} y={64} size={6} weight={600} color={rC}>Yes</T>
+          <Arrow x1={410} y1={70} x2={410} y2={86} color={mC}/>
+          <Box x={365} y={86} w={90} h={24} fill="#f1f5f9" stroke="#e2e8f0">
+            <T x={410} y={96} size={7} weight={600} color={mC}>OFF PATH</T>
+            <T x={410} y={106} size={5.5} color={mC}>Use Fever pathway</T>
           </Box>
 
-          <Arrow x1={240} y1={82} x2={240} y2={100}/>
+          <T x={240} y={88} size={6} weight={600} color={gC}>No</T>
+          <Arrow x1={240} y1={84} x2={240} y2={102}/>
 
-          {/* Temperature check */}
-          <g transform="translate(240,114)">
-            <polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-            <T x={0} y={-2} size={7} weight={700}>Temp ≤35.9°C?</T>
-          </g>
-
-          {/* ≤35.9 branch */}
-          <Arrow x1={305} y1={114} x2={390} y2={140} color={rC}/>
-          <T x={358} y={126} size={6} weight={600} color={rC}>Yes</T>
-          <Box x={330} y={140} w={130} h={36} fill={rBg} stroke={rBd} sw={1.5}>
-            <T x={395} y={152} size={7} weight={700} color={rC}>ACTIVE WARMING</T>
-            <T x={395} y={162} size={6} color={mC}>Radiant warmer ≤15 min</T>
-            <T x={395} y={172} size={6} color={mC}>PIV + LP setup + CBG</T>
-          </Box>
-
-          {/* ≥36.0 branch */}
-          <Arrow x1={175} y1={114} x2={90} y2={140} color={aC}/>
-          <T x={120} y={126} size={6} weight={600} color={aC}>No (36.0–36.4)</T>
-          <Box x={20} y={140} w={140} h={36} fill={aBg} stroke={aBd} sw={1.5}>
-            <T x={90} y={152} size={7} weight={700} color={aC}>PASSIVE WARMING</T>
-            <T x={90} y={162} size={6} color={mC}>Hat + swaddle or skin-to-skin</T>
-            <T x={90} y={172} size={6} color={mC}>CBG · Recheck in 30–60 min</T>
-          </Box>
-
-          {/* Both converge to REAL BIGS */}
-          <Arrow x1={90} y1={176} x2={200} y2={200} color={aC}/>
-          <Arrow x1={395} y1={176} x2={280} y2={200} color={rC}/>
-
-          <Box x={140} y={200} w={200} h={26} fill={tBg} stroke={tBd} sw={1.5}>
-            <T x={240} y={210} size={8} weight={700} color={tC}>ASSESS: REAL BIGS</T>
-            <T x={240} y={222} size={5.5} color={mC}>Resp · Energy · Tone · Liver · Feed · Vitals · GI · Skin</T>
-          </Box>
-
-          <Arrow x1={240} y1={226} x2={240} y2={244}/>
-
-          {/* Ill-appearing diamond */}
-          <g transform="translate(240,258)">
+          {/* TEMPERATURE SEVERITY */}
+          <g transform="translate(240,116)">
             <polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-            <T x={0} y={-2} size={6} weight={700}>Ill/toxic appearing?</T>
+            <T x={0} y={-2} size={7} weight={700}>Rectal temp ≤35.9°C?</T>
           </g>
 
-          {/* Toxic → resuscitate */}
-          <Arrow x1={310} y1={258} x2={400} y2={284} color={rC}/>
-          <T x={365} y={270} size={6} weight={600} color={rC}>Yes</T>
-          <Box x={340} y={284} w={130} h={40} fill={rBg} stroke={rBd} sw={2}>
-            <T x={405} y={296} size={7} weight={700} color={rC}>RESUSCITATE</T>
-            <T x={405} y={307} size={6} color={mC}>Full workup + HSV</T>
-            <T x={405} y={317} size={6} color={mC}>Abx within 60 min</T>
-            <T x={405} y={327} size={6} weight={600} color={rC}>→ PICU/NICU</T>
+          {/* ≤35.9 → Active warming */}
+          <line x1={310} y1={116} x2={395} y2={116} stroke={rC} strokeWidth={1}/>
+          <T x={350} y={110} size={6} weight={600} color={rC}>Yes</T>
+          <Arrow x1={395} y1={116} x2={395} y2={134} color={rC}/>
+          <Box x={330} y={134} w={130} h={36} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={395} y={146} size={7} weight={700} color={rC}>ACTIVE WARMING</T>
+            <T x={395} y={156} size={6} color={mC}>Radiant warmer ≤15 min</T>
+            <T x={395} y={166} size={6} color={mC}>PIV + LP setup + CBG</T>
           </Box>
 
-          {/* Well-appearing */}
-          <Arrow x1={240} y1={272} x2={240} y2={294}/>
-          <T x={240} y={290} size={6} weight={600} color={gC}>Well-appearing</T>
-
-          {/* Age stratification */}
-          <Box x={155} y={296} w={170} h={22} fill={blBg} stroke={blBd} radius={10}>
-            <T x={240} y={310} size={8} weight={700} color={blC}>AGE STRATIFICATION</T>
+          {/* 36.0–36.4 → Passive warming */}
+          <line x1={170} y1={116} x2={90} y2={116} stroke={aC} strokeWidth={1}/>
+          <T x={130} y={110} size={6} weight={600} color={aC}>No (36.0–36.4)</T>
+          <Arrow x1={90} y1={116} x2={90} y2={134} color={aC}/>
+          <Box x={20} y={134} w={140} h={36} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={90} y={146} size={7} weight={700} color={aC}>PASSIVE WARMING</T>
+            <T x={90} y={156} size={6} color={mC}>Hat + swaddle or skin-to-skin</T>
+            <T x={90} y={166} size={6} color={mC}>CBG · Recheck 30–60 min</T>
           </Box>
 
-          <Arrow x1={195} y1={318} x2={100} y2={344} color={rC}/>
-          <Arrow x1={285} y1={318} x2={380} y2={344} color={blC}/>
-          <T x={135} y={330} size={6} weight={600} color={rC}>0–21 days</T>
-          <T x={345} y={330} size={6} weight={600} color={blC}>22–60 days</T>
+          {/* Both converge to REAL BIGS + Risk Factors */}
+          <Arrow x1={90} y1={170} x2={195} y2={196} color={aC}/>
+          <Arrow x1={395} y1={170} x2={285} y2={196} color={rC}/>
 
-          {/* 0-21 days */}
-          <Box x={20} y={344} w={160} h={56} fill={rBg} stroke={rBd} sw={1.5}>
-            <T x={100} y={356} size={7} weight={700} color={rC}>0–21 DAYS</T>
-            <T x={100} y={367} size={6} color={mC}>Full workup including LP</T>
-            <T x={100} y={377} size={6} color={mC}>Amp 50 + Gent 5</T>
-            <T x={100} y={387} size={6} color={mC}>+ Acyclovir if HSV concern</T>
-            <T x={100} y={397} size={6} weight={600} color={rC}>ADMIT</T>
+          <Box x={130} y={196} w={220} h={36} fill={tBg} stroke={tBd} sw={1.5}>
+            <T x={240} y={208} size={8} weight={700} color={tC}>ASSESS: REAL BIGS</T>
+            <T x={240} y={218} size={5.5} color={mC}>Resp · Energy · Tone · Liver · Feed · Vitals · GI · Skin</T>
+            <T x={240} y={228} size={5.5} color={tC}>+ Risk factors: prematurity, maternal infxn, temp instability</T>
           </Box>
 
-          {/* 22-60 days */}
-          <Box x={300} y={344} w={165} h={56} fill={blBg} stroke={blBd} sw={1.5}>
-            <T x={383} y={356} size={7} weight={700} color={blC}>22–60 DAYS</T>
-            <T x={383} y={367} size={6} color={mC}>Labs, UA, blood Cx</T>
-            <T x={383} y={377} size={6} color={mC}>LP if concerned</T>
-            <T x={383} y={387} size={6} color={mC}>Ceftriaxone 50 mg/kg</T>
-            <T x={383} y={397} size={6} weight={600} color={blC}>Admit or observe</T>
-          </Box>
+          <Arrow x1={240} y1={232} x2={240} y2={252}/>
 
-          {/* Warming assessment */}
-          <Arrow x1={240} y1={400} x2={240} y2={420}/>
-          <g transform="translate(240,434)">
-            <polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-            <T x={0} y={-2} size={6} weight={700}>Maintains ≥36.5°C × 1 hr?</T>
+          {/* ILL/TOXIC DIAMOND */}
+          <g transform="translate(240,266)">
+            <polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6.5} weight={700}>Ill / toxic appearing?</T>
           </g>
 
-          {/* Cannot maintain */}
-          <Arrow x1={320} y1={434} x2={400} y2={458} color={rC}/>
-          <T x={370} y={445} size={6} weight={600} color={rC}>No</T>
-          <Box x={340} y={458} w={130} h={30} fill={rBg} stroke={rBd}>
-            <T x={405} y={470} size={7} weight={700} color={rC}>ADMIT PICU/NICU</T>
-            <T x={405} y={482} size={6} color={mC}>Cannot maintain temp</T>
+          {/* Toxic → immediate resuscitation */}
+          <line x1={310} y1={266} x2={400} y2={266} stroke={rC} strokeWidth={1}/>
+          <T x={350} y={260} size={6} weight={600} color={rC}>Yes</T>
+          <Arrow x1={400} y1={266} x2={400} y2={284} color={rC}/>
+          <Box x={335} y={284} w={130} h={46} fill={rBg} stroke={rBd} sw={2}>
+            <T x={400} y={296} size={7} weight={700} color={rC}>RESUSCITATE</T>
+            <T x={400} y={307} size={6} color={mC}>NS 10–20 mL/kg PRN</T>
+            <T x={400} y={317} size={6} color={mC}>Full workup + HSV PCR</T>
+            <T x={400} y={327} size={6} weight={600} color={rC}>Abx within 60 min → PICU</T>
           </Box>
 
-          {/* Can maintain */}
-          <Arrow x1={160} y1={434} x2={80} y2={458} color={gC}/>
-          <T x={108} y={445} size={6} weight={600} color={gC}>Yes</T>
+          {/* Well-appearing → universal diagnostics */}
+          <T x={240} y={284} size={6} weight={600} color={gC}>Well-appearing</T>
+          <Arrow x1={240} y1={280} x2={240} y2={300}/>
 
-          {/* Dispo bar */}
-          <Box x={10} y={500} w={225} h={40} fill={gBg} stroke={gBd} radius={8}>
-            <T x={122} y={514} size={7} weight={700} color={gC}>CONSIDER DISCHARGE</T>
-            <T x={122} y={526} size={6} color={mC}>Asymptomatic + low-risk</T>
-            <T x={122} y={535} size={6} color={mC}>Achieves ≥36.3°C after 1–2h passive</T>
-          </Box>
-          <Box x={245} y={500} w={225} h={40} fill={rBg} stroke={rBd} radius={8}>
-            <T x={358} y={514} size={7} weight={700} color={rC}>ADMIT</T>
-            <T x={358} y={526} size={6} color={mC}>REAL BIGS findings · Risk factors</T>
-            <T x={358} y={535} size={6} color={mC}>Cannot maintain temp · Abnl labs</T>
+          {/* UNIVERSAL DIAGNOSTICS — no age gate */}
+          <Box x={110} y={300} w={260} h={50} fill={blBg} stroke={blBd} sw={1.5}>
+            <T x={240} y={312} size={8} weight={700} color={blC}>UNIVERSAL DIAGNOSTICS</T>
+            <T x={240} y={323} size={6} color={mC}>CBC, CMP, PCT, coags, blood cx, UA + cx</T>
+            <T x={240} y={333} size={6} color={mC}>CSF (gram stain, cell count, protein, glucose, cx, HSV, enterovirus)</T>
+            <T x={240} y={343} size={6} color={mC}>Consider: TSH, T4, ammonia, RPP, CXR/EKG if indicated</T>
           </Box>
 
-          {/* Summary */}
-          <Box x={10} y={548} w={460} h={24} fill={blBg} stroke={blBd} radius={6}>
-            <T x={120} y={563} size={6} color={mC}>≤35.9°C → radiant warmer ≤15 min</T>
-            <T x={360} y={563} size={6} color={mC}>Abx within 60 min if toxic/ill</T>
+          <Arrow x1={240} y1={350} x2={240} y2={368}/>
+
+          {/* HSV RISK CHECK */}
+          <g transform="translate(240,382)">
+            <polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6.5} weight={700}>HSV risk factors</T>
+            <T x={0} y={7} size={6.5} weight={700}>or CSF pleocytosis?</T>
+          </g>
+
+          {/* HSV Yes → add Acyclovir */}
+          <line x1={305} y1={382} x2={390} y2={382} stroke={rC} strokeWidth={1}/>
+          <T x={345} y={376} size={6} weight={600} color={rC}>Yes</T>
+          <Arrow x1={390} y1={382} x2={390} y2={400} color={rC}/>
+          <Box x={330} y={400} w={120} h={28} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={390} y={412} size={6.5} weight={700} color={rC}>ADD ACYCLOVIR</T>
+            <T x={390} y={422} size={5.5} color={mC}>20 mg/kg IV + meningitic abx</T>
           </Box>
+
+          {/* HSV No → standard abx */}
+          <T x={240} y={400} size={6} weight={600} color={gC}>No</T>
+          <Arrow x1={240} y1={396} x2={240} y2={414}/>
+
+          {/* ANTIBIOTIC SELECTION — age determines REGIMEN only */}
+          <Box x={80} y={414} w={200} h={22} fill={pBg} stroke={pBd} radius={10}>
+            <T x={180} y={428} size={7} weight={700} color={pC}>ANTIBIOTIC SELECTION BY AGE</T>
+          </Box>
+
+          <Arrow x1={130} y1={436} x2={80} y2={456} color={aC}/>
+          <Arrow x1={230} y1={436} x2={280} y2={456} color={blC}/>
+
+          {/* 0–21 days regimen */}
+          <Box x={10} y={456} w={140} h={40} fill={aBg} stroke={aBd}>
+            <T x={80} y={468} size={7} weight={700} color={aC}>0–21 DAYS</T>
+            <T x={80} y={479} size={5.5} color={mC}>Amp 50 + Gent 5</T>
+            <T x={80} y={489} size={5.5} color={mC}>If HSV: Acy + Amp 75 + Ceph</T>
+          </Box>
+
+          {/* 22–60 days regimen */}
+          <Box x={210} y={456} w={140} h={40} fill={blBg} stroke={blBd}>
+            <T x={280} y={468} size={7} weight={700} color={blC}>22–60 DAYS</T>
+            <T x={280} y={479} size={5.5} color={mC}>Ceftriaxone 50</T>
+            <T x={280} y={489} size={5.5} color={mC}>If HSV: Acy + Amp 75 + Ceph</T>
+          </Box>
+
+          {/* Both converge to warming outcome */}
+          <Arrow x1={80} y1={496} x2={195} y2={520} color={aC}/>
+          <Arrow x1={280} y1={496} x2={285} y2={520} color={blC}/>
+
+          {/* WARMING OUTCOME / DISPOSITION */}
+          <g transform="translate(240,534)">
+            <polygon points="0,-14 75,0 0,14 -75,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6.5} weight={700}>Maintains temp ≥36.5°C</T>
+            <T x={0} y={7} size={6.5} weight={700}>for ≥1 hour?</T>
+          </g>
+
+          {/* Cannot maintain → ADMIT */}
+          <line x1={315} y1={534} x2={400} y2={534} stroke={rC} strokeWidth={1}/>
+          <T x={355} y={528} size={6} weight={600} color={rC}>No</T>
+          <Arrow x1={400} y1={534} x2={400} y2={552} color={rC}/>
+          <Box x={345} y={552} w={110} h={28} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={400} y={564} size={7} weight={700} color={rC}>ADMIT</T>
+            <T x={400} y={574} size={5.5} color={mC}>PICU/NICU or Hospitalist</T>
+          </Box>
+
+          {/* Can maintain → consider discharge */}
+          <line x1={165} y1={534} x2={90} y2={534} stroke={gC} strokeWidth={1}/>
+          <T x={130} y={528} size={6} weight={600} color={gC}>Yes</T>
+          <Arrow x1={90} y1={534} x2={90} y2={552} color={gC}/>
+          <Box x={25} y={552} w={130} h={28} fill={gBg} stroke={gBd} sw={1.5}>
+            <T x={90} y={564} size={7} weight={700} color={gC}>CONSIDER D/C</T>
+            <T x={90} y={574} size={5.5} color={mC}>Low-risk · ≥36.3°C · Call PCP</T>
+          </Box>
+
+          {/* Summary bar */}
+          <Box x={20} y={592} w={440} h={20} fill={blBg} stroke={blBd} radius={4}>
+            <T x={240} y={605} size={6} weight={600} color={blC}>Goals: Warmer ≤15 min if ≤35.9°C · Abx ≤60 min if toxic · Temp ≥36.5°C ×1h before D/C</T>
+          </Box>
+
         </svg>
       </div>
     </div>
