@@ -111,6 +111,13 @@ function ASTCalculator({onScore,teaching}){
 // ═══════════════════════════════
 // FLOWCHART
 // ═══════════════════════════════
+// CORRECTED PathwayFlowchart for Asthma
+// Changes from previous version:
+// 1. REMOVED all "transfer to children's hospital" language — DCH IS the children's hospital
+// 2. Severe → "Call PICU early" instead of "transfer to children's hospital"
+// 3. Moderate dispo: "consider admission" not "consider transfer"
+// 4. Flow: Entry → AST Score → Mild/Moderate/Severe branches → Reassess → Disposition
+
 function PathwayFlowchart(){
   var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
   var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
@@ -119,90 +126,177 @@ function PathwayFlowchart(){
   return(
     <div style={{marginTop:20}}>
       <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
-      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Ages 2–19 · Known asthma · AST severity-driven management</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Ages 2–19 · Known asthma · AST-driven severity classification</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 480 540" style={{width:"100%",display:"block"}}>
-          <rect width={480} height={540} fill="#fafaf8" rx={6}/>
+        <svg viewBox="0 0 480 600" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={600} fill="#fafaf8" rx={6}/>
 
-          {/* Entry */}
-          <Box x={130} y={6} w={220} h={28} fill={tBg} stroke={tBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={tC}>ASTHMA EXACERBATION</T><T x={240} y={28} size={6} color={mC}>Ages 2–19 · Known asthma · ESI II–IV</T></Box>
+          {/* ENTRY PILL */}
+          <Box x={115} y={8} w={250} h={30} fill={tBg} stroke={tBd} sw={1.5} radius={14}>
+            <T x={240} y={20} size={9} weight={700} color={tC}>ASTHMA EXACERBATION</T>
+            <T x={240} y={31} size={6} color={mC}>Ages 2–19 · Known asthma hx · Vitals + SpO₂</T>
+          </Box>
 
-          <Arrow x1={240} y1={34} x2={240} y2={48}/>
+          <Arrow x1={240} y1={38} x2={240} y2={54}/>
 
-          {/* Initial assessment */}
-          <Box x={140} y={48} w={200} h={26} fill={blBg} stroke={blBd} sw={1.5}><T x={240} y={58} size={8} weight={700} color={blC}>INITIAL ASSESSMENT</T><T x={240} y={70} size={6} color={mC}>Vitals · SpO₂ · Isolation · O₂ if SpO₂ {'<'}90%</T></Box>
+          {/* EXCLUSION CHECK */}
+          <g transform="translate(240,68)">
+            <polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6.5} weight={700}>First-time wheezer,</T>
+            <T x={0} y={7} size={6.5} weight={700}>CLD, or cardiac dz?</T>
+          </g>
+          <line x1={310} y1={68} x2={410} y2={68} stroke="#94a3b8" strokeWidth={1}/>
+          <T x={355} y={62} size={6} weight={600} color={rC}>Yes</T>
+          <Arrow x1={410} y1={68} x2={410} y2={84} color={mC}/>
+          <Box x={365} y={84} w={90} h={22} fill="#f1f5f9" stroke="#e2e8f0">
+            <T x={410} y={94} size={7} weight={600} color={mC}>OFF PATH</T>
+            <T x={410} y={104} size={5.5} color={mC}>Manage individually</T>
+          </Box>
 
-          <Arrow x1={240} y1={74} x2={240} y2={88}/>
+          <T x={240} y={86} size={6} weight={600} color={gC}>No</T>
+          <Arrow x1={240} y1={82} x2={240} y2={98}/>
 
-          {/* AST diamond */}
-          <g transform="translate(240,102)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>AST Score</T><T x={0} y={7} size={6}>(room air)</T></g>
+          {/* AST SCORING */}
+          <Box x={140} y={98} w={200} h={26} fill={pBg} stroke={pBd} sw={1.5} radius={10}>
+            <T x={240} y={108} size={8} weight={700} color={pC}>ROOM AIR AST SCORE</T>
+            <T x={240} y={120} size={6} color={mC}>SpO₂ · Accessory use · I:E · Wheeze · HR · RR</T>
+          </Box>
+
+          <Arrow x1={240} y1={124} x2={240} y2={140}/>
+
+          {/* SEVERITY LABEL BAR */}
+          <T x={240} y={148} size={7} weight={700} color={mC}>INITIAL SEVERITY CLASSIFICATION</T>
 
           {/* Three branches */}
-          <Arrow x1={180} y1={102} x2={70} y2={128} color={gC}/>
-          <Arrow x1={240} y1={116} x2={240} y2={128} color={aC}/>
-          <Arrow x1={300} y1={102} x2={410} y2={128} color={rC}/>
+          <Arrow x1={80} y1={152} x2={80} y2={168} color={gC}/>
+          <Arrow x1={240} y1={152} x2={240} y2={168} color={aC}/>
+          <Arrow x1={400} y1={152} x2={400} y2={168} color={rC}/>
 
-          {/* MILD */}
-          <Box x={10} y={128} w={120} h={28} fill={gBg} stroke={gBd} sw={1.5}><T x={70} y={138} size={8} weight={700} color={gC}>MILD ({'<'}6)</T><T x={70} y={150} size={6} color={mC}>ESI IV · SpO₂ ≥93%</T></Box>
-          <Arrow x1={70} y1={156} x2={70} y2={170} color={gC}/>
-          <Box x={10} y={170} w={120} h={48} fill={gBg} stroke={gBd}><T x={70} y={181} size={6} weight={600} color={gC}>Albuterol MDI 4–8 puffs</T><T x={70} y={191} size={6}>Repeat × 1 in 30–60 min PRN</T><T x={70} y={201} size={6} weight={600} color={gC}>Dex 0.6 mg/kg PO</T><T x={70} y={211} size={6}>Oral hydration</T></Box>
-          <Arrow x1={70} y1={218} x2={70} y2={232} color={gC}/>
-          <Box x={10} y={232} w={120} h={28} fill={gBg} stroke={gBd} radius={8}><T x={70} y={243} size={7} weight={700} color={gC}>DISCHARGE</T><T x={70} y={255} size={5.5} color={mC}>± 2nd dex in 24h · F/U 1 wk</T></Box>
-
-          {/* MODERATE */}
-          <Box x={155} y={128} w={170} h={28} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={138} size={8} weight={700} color={aC}>MODERATE (6–11)</T><T x={240} y={150} size={6} color={mC}>ESI III · SpO₂ ≥90%</T></Box>
-          <Arrow x1={240} y1={156} x2={240} y2={170} color={aC}/>
-          <Box x={155} y={170} w={170} h={48} fill={aBg} stroke={aBd}><T x={240} y={181} size={6} weight={600} color={aC}>3 stacked Duo nebs (20 min)</T><T x={240} y={191} size={6}>Dex 0.6 mg/kg PO (IM/IV PRN)</T><T x={240} y={201} size={6}>Consider MgSO₄ 25–50 mg/kg IV</T><T x={240} y={211} size={6}>Consider CXR · Q2H albuterol</T></Box>
-
-          {/* Moderate rescore */}
-          <Arrow x1={240} y1={218} x2={240} y2={234} color={aC}/>
-          <Box x={170} y={234} w={140} h={20} fill={aBg} stroke={aBd}><T x={240} y={244} size={7} weight={700} color={aC}>1ST HR RE-SCORE</T></Box>
-          <Arrow x1={240} y1={254} x2={240} y2={268} color={aC}/>
-
-          <g transform="translate(240,282)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>AST {'>'}8?</T></g>
-
-          <Arrow x1={295} y1={282} x2={375} y2={298} color={rC}/>
-          <Box x={340} y={298} w={100} h={20} fill={rBg} stroke={rBd}><T x={390} y={310} size={6} weight={700} color={rC}>Consider admit/transfer</T></Box>
-
-          <Arrow x1={185} y1={282} x2={150} y2={300} color={aC}/>
-          <Box x={120} y={300} w={100} h={20} fill={aBg} stroke={aBd}><T x={170} y={310} size={7} weight={700} color={aC}>2ND HR RE-SCORE</T></Box>
-
-          <Arrow x1={170} y1={320} x2={170} y2={338} color={aC}/>
-          <g transform="translate(170,352)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Q4H MDI?</T></g>
-          <Arrow x1={115} y1={352} x2={55} y2={368} color={gC}/>
-          <Box x={10} y={368} w={90} h={20} fill={gBg} stroke={gBd} radius={8}><T x={55} y={380} size={7} weight={700} color={gC}>DISCHARGE</T></Box>
-          <Arrow x1={225} y1={352} x2={290} y2={368} color={rC}/>
-          <Box x={250} y={368} w={120} h={20} fill={rBg} stroke={rBd}><T x={310} y={380} size={6} weight={700} color={rC}>Consider transfer</T></Box>
-
-          {/* SEVERE */}
-          <Box x={350} y={128} w={120} h={28} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={138} size={8} weight={700} color={rC}>SEVERE (12–18)</T><T x={410} y={150} size={6} color={mC}>ESI II · SpO₂ ≤90%</T></Box>
-          <Arrow x1={410} y1={156} x2={410} y2={170} color={rC}/>
-          <Box x={340} y={170} w={135} h={48} fill={rBg} stroke={rBd}><T x={407} y={181} size={6} weight={600} color={rC}>Continuous albuterol</T><T x={407} y={191} size={6}>Dex 0.6 mg/kg · IV fluids</T><T x={407} y={201} size={6}>Adjuncts: Mag · Terb · Epi</T><T x={407} y={211} size={6}>VBG · CXR · Heliox</T></Box>
-          <Arrow x1={410} y1={218} x2={410} y2={234} color={rC}/>
-          <Box x={355} y={234} w={110} h={24} fill={rBg} stroke={rBd} radius={8}><T x={410} y={244} size={7} weight={700} color={rC}>EARLY PICU</T><T x={410} y={253} size={5.5} color={mC}>Call early for transfer</T></Box>
-
-          {/* Bottom summary */}
-          <Box x={20} y={400} w={440} h={20} fill={tBg} stroke={tBd} radius={8}><T x={240} y={411} size={7} weight={700} color={tC}>ALL PATIENTS: Dexamethasone 0.6 mg/kg PO (max 16 mg) × 1</T></Box>
-
-          {/* Continuous neb weaning */}
-          <Box x={20} y={426} w={440} h={26} fill={pBg} stroke={pBd} radius={8}><T x={240} y={436} size={7} weight={700} color={pC}>WEANING CONTINUOUS NEBS</T><T x={240} y={447} size={6} color={mC}>Do NOT stop abruptly · Decrease dose by half × 1 hr → if tolerated → Q2H nebs</T></Box>
-
-          {/* Adjunct summary */}
-          <Box x={20} y={458} w={440} h={36} fill={blBg} stroke={blBd} radius={8}>
-            <T x={240} y={468} size={7} weight={700} color={blC}>ADJUNCT MEDICATIONS (SEVERE)</T>
-            <T x={120} y={480} size={6} color={mC}>MgSO₄ 25–50 mg/kg IV</T>
-            <T x={240} y={480} size={6} color={mC}>Terbutaline IV/SQ</T>
-            <T x={370} y={480} size={6} color={mC}>Epi 0.01 mg/kg SQ/IM</T>
-            <T x={120} y={490} size={6} color={mC}>Ketamine IV</T>
-            <T x={240} y={490} size={6} color={mC}>Heliox 80/20%</T>
-            <T x={370} y={490} size={6} color={mC}>BiPAP / HFNC</T>
+          {/* ═══ MILD (AST <6) ═══ */}
+          <Box x={15} y={168} w={130} h={100} fill={gBg} stroke={gBd} sw={1.5}>
+            <T x={80} y={180} size={8} weight={700} color={gC}>MILD (AST &lt;6)</T>
+            <T x={80} y={191} size={6} color={mC}>ESI IV</T>
+            <T x={80} y={203} size={5.5} color="#1a1d21">Albuterol MDI 4–8 puffs</T>
+            <T x={80} y={213} size={5.5} color="#1a1d21">Repeat ×1 in 30–60 min</T>
+            <T x={80} y={225} size={5.5} color="#1a1d21">Dexa 0.6 mg/kg PO</T>
+            <T x={80} y={235} size={5.5} color="#1a1d21">(max 16 mg)</T>
+            <T x={80} y={247} size={5.5} color="#1a1d21">Oral hydration</T>
+            <T x={80} y={259} size={5.5} color="#1a1d21">Review inhaler technique</T>
           </Box>
 
-          <Box x={20} y={500} w={440} h={34} fill="#f1f5f9" stroke="#e2e8f0" radius={6}>
-            <T x={240} y={511} size={8} weight={700} color={rC}>SIGNS OF DETERIORATION</T>
-            <T x={240} y={523} size={6} color={mC}>Fatigue with breathing · Worsening SpO₂ · Decreasing air movement · AMS</T>
-            <T x={240} y={531} size={6} weight={700} color={rC}>→ Give MgSO₄ or Terbutaline prior to transfer</T>
+          {/* ═══ MODERATE (AST 6–11) ═══ */}
+          <Box x={160} y={168} w={160} h={100} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={240} y={180} size={8} weight={700} color={aC}>MODERATE (AST 6–11)</T>
+            <T x={240} y={191} size={6} color={mC}>ESI III</T>
+            <T x={240} y={203} size={5.5} color="#1a1d21">3 stacked Duo nebs</T>
+            <T x={240} y={213} size={5.5} color="#1a1d21">(within 20 min)</T>
+            <T x={240} y={225} size={5.5} color="#1a1d21">Dexa 0.6 mg/kg PO/IM/IV</T>
+            <T x={240} y={237} size={5.5} color="#1a1d21">Consider MgSO₄ 25–50 mg/kg</T>
+            <T x={240} y={249} size={5.5} color="#1a1d21">Q2h albuterol nebs</T>
+            <T x={240} y={261} size={5.5} color="#1a1d21">Consider CXR</T>
           </Box>
+
+          {/* ═══ SEVERE (AST 12–18) ═══ */}
+          <Box x={335} y={168} w={130} h={100} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={400} y={180} size={8} weight={700} color={rC}>SEVERE (AST 12–18)</T>
+            <T x={400} y={191} size={6} color={mC}>ESI II</T>
+            <T x={400} y={203} size={5.5} color="#1a1d21">Continuous albuterol</T>
+            <T x={400} y={213} size={5.5} color="#1a1d21">10–20 mg/hr</T>
+            <T x={400} y={225} size={5.5} color="#1a1d21">Dexa 0.6 mg/kg</T>
+            <T x={400} y={237} size={5.5} color="#1a1d21">IV hydration · VBG · CXR</T>
+            <T x={400} y={249} size={5.5} color="#1a1d21">Consider: Mag, terbutaline,</T>
+            <T x={400} y={259} size={5.5} color="#1a1d21">epi, heliox, ketamine</T>
+          </Box>
+
+          {/* ═══ 1ST HOUR RE-SCORE ═══ */}
+          <T x={240} y={286} size={7} weight={700} color={blC}>1ST HOUR — RE-SCORE AST ON ROOM AIR</T>
+
+          {/* Mild → discharge path */}
+          <Arrow x1={80} y1={268} x2={80} y2={306} color={gC}/>
+          <Box x={15} y={306} w={130} h={38} fill={gBg} stroke={gBd}>
+            <T x={80} y={318} size={7} weight={700} color={gC}>DISCHARGE</T>
+            <T x={80} y={329} size={5.5} color={mC}>±2nd Dexa dose in 24h</T>
+            <T x={80} y={339} size={5.5} color={mC}>PCP/asthma f/u ≤1 wk</T>
+          </Box>
+
+          {/* Moderate → reassess */}
+          <Arrow x1={240} y1={268} x2={240} y2={306} color={aC}/>
+          <g transform="translate(240,320)">
+            <polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6} weight={700}>AST after 1h?</T>
+          </g>
+
+          {/* Moderate: AST >8 after 1h → admit */}
+          <line x1={305} y1={320} x2={365} y2={320} stroke={rC} strokeWidth={1}/>
+          <T x={335} y={314} size={5.5} weight={600} color={rC}>&gt;8</T>
+          <Arrow x1={365} y1={320} x2={365} y2={338} color={rC}/>
+          <Box x={335} y={338} w={80} h={26} fill={rBg} stroke={rBd}>
+            <T x={375} y={349} size={6.5} weight={700} color={rC}>ADMIT</T>
+            <T x={375} y={359} size={5.5} color={mC}>Floor or PICU</T>
+          </Box>
+
+          {/* Severe → call PICU early */}
+          <Arrow x1={400} y1={268} x2={400} y2={306} color={rC}/>
+          <Box x={415} y={306} w={55} h={32} fill={rBg} stroke={rBd} sw={2}>
+            <T x={442} y={318} size={6} weight={700} color={rC}>CALL</T>
+            <T x={442} y={328} size={6} weight={700} color={rC}>PICU</T>
+            <T x={442} y={336} size={5} color={mC}>EARLY</T>
+          </Box>
+
+          {/* ═══ 2ND HOUR RE-SCORE ═══ */}
+          <T x={240} y={380} size={7} weight={700} color={blC}>2ND HOUR — RE-SCORE AST ON ROOM AIR</T>
+          <Arrow x1={240} y1={334} x2={240} y2={392}/>
+
+          <g transform="translate(240,406)">
+            <polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6} weight={700}>AST after 2h?</T>
+          </g>
+
+          {/* AST 6–8 after 2h → admit */}
+          <line x1={305} y1={406} x2={390} y2={406} stroke={aC} strokeWidth={1}/>
+          <T x={345} y={400} size={5.5} weight={600} color={aC}>6–8</T>
+          <Arrow x1={390} y1={406} x2={390} y2={424} color={aC}/>
+          <Box x={340} y={424} w={100} h={28} fill={aBg} stroke={aBd}>
+            <T x={390} y={436} size={7} weight={700} color={aC}>ADMIT</T>
+            <T x={390} y={447} size={5.5} color={mC}>Continued Q2h nebs</T>
+          </Box>
+
+          {/* AST <6 or spacing to Q4h → discharge */}
+          <line x1={175} y1={406} x2={90} y2={406} stroke={gC} strokeWidth={1}/>
+          <T x={130} y={400} size={5.5} weight={600} color={gC}>&lt;6 / Q4h MDI</T>
+          <Arrow x1={90} y1={406} x2={90} y2={424} color={gC}/>
+          <Box x={30} y={424} w={120} h={28} fill={gBg} stroke={gBd}>
+            <T x={90} y={436} size={7} weight={700} color={gC}>DISCHARGE</T>
+            <T x={90} y={447} size={5.5} color={mC}>Dexa ×2 + PCP f/u ≤1 wk</T>
+          </Box>
+
+          {/* WORSENING BOX */}
+          <Arrow x1={400} y1={338} x2={400} y2={470} color={rC}/>
+          <Box x={330} y={470} w={140} h={46} fill={rBg} stroke={rBd} sw={2}>
+            <T x={400} y={482} size={7} weight={700} color={rC}>WORSENING / FATIGUE</T>
+            <T x={400} y={493} size={5.5} color={mC}>Give Mg or terbutaline</T>
+            <T x={400} y={503} size={5.5} color={mC}>Consider BiPAP/HFNC</T>
+            <T x={400} y={513} size={5.5} weight={600} color={rC}>→ Admit PICU</T>
+          </Box>
+
+          {/* WEANING NOTE */}
+          <Box x={20} y={470} w={280} h={30} fill={blBg} stroke={blBd} radius={4}>
+            <T x={160} y={482} size={6} weight={700} color={blC}>WEANING CONTINUOUS NEBS</T>
+            <T x={160} y={493} size={5.5} color={mC}>Decrease dose by half ×1h → if tolerated → Q2h nebs</T>
+          </Box>
+
+          {/* CONTINUOUS ALBUTEROL DOSING BAR */}
+          <Box x={20} y={520} w={440} h={32} fill={pBg} stroke={pBd} radius={4}>
+            <T x={240} y={532} size={6.5} weight={700} color={pC}>CONTINUOUS ALBUTEROL DOSING</T>
+            <T x={240} y={545} size={6} color={mC}>5–10 kg: 10 mg/hr · 10–20 kg: 15 mg/hr · &gt;20 kg: 20 mg/hr</T>
+          </Box>
+
+          {/* Summary bar */}
+          <Box x={20} y={564} w={440} h={28} fill={tBg} stroke={tBd} radius={4}>
+            <T x={240} y={574} size={6} weight={600} color={tC}>All scoring on ROOM AIR · Dexa 0.6 mg/kg (max 16 mg) PO ×1, ±2nd dose in 24h</T>
+            <T x={240} y={585} size={6} weight={600} color={tC}>Discharge: PCP or asthma specialist follow-up within 1 week</T>
+          </Box>
+
         </svg>
       </div>
     </div>
