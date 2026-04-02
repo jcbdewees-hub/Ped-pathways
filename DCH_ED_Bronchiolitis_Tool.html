@@ -178,83 +178,161 @@ function PathwayFlowchart(){
       <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
       <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Age ≤2 years · Viral respiratory symptoms · Supportive care pathway</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 480 500" style={{width:"100%",display:"block"}}>
-          <rect width={480} height={500} fill="#fafaf8" rx={6}/>
+        <svg viewBox="0 0 480 560" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={560} fill="#fafaf8" rx={6}/>
 
-          {/* Entry */}
-          <Box x={120} y={6} w={240} h={28} fill={blBg} stroke={blBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={blC}>BRONCHIOLITIS ≤2 YEARS</T><T x={240} y={28} size={6} color={mC}>Viral URI + wheezing/crackles · ESI I–III</T></Box>
-
+          {/* ═══ ENTRY ═══ */}
+          <Box x={120} y={6} w={240} h={28} fill={blBg} stroke={blBd} sw={1.5} radius={14}>
+            <T x={240} y={18} size={9} weight={700} color={blC}>BRONCHIOLITIS ≤2 YEARS</T>
+            <T x={240} y={28} size={6} color={mC}>Viral URI + wheezing/crackles · ESI I–III</T>
+          </Box>
           <Arrow x1={240} y1={34} x2={240} y2={48}/>
 
-          {/* Exclusion diamond */}
-          <g transform="translate(240,62)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Exclusions?</T></g>
-          <line x1={300} y1={62} x2={410} y2={62} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={410} y1={62} x2={410} y2={78} color={mC}/>
-          <Box x={370} y={78} w={80} h={24} fill="#f1f5f9" stroke="#e2e8f0"><T x={410} y={87} size={7} weight={600} color={mC}>OFF PATH</T><T x={410} y={97} size={5.5} color={mC}>CHD · CLD · Airway abn</T></Box>
-
+          {/* ═══ EXCLUSION ═══ */}
+          <g transform="translate(240,62)">
+            <polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={7} weight={700}>Exclusions?</T>
+          </g>
+          <line x1={300} y1={62} x2={410} y2={62} stroke="#94a3b8" strokeWidth={1}/>
+          <Arrow x1={410} y1={62} x2={410} y2={78} color={mC}/>
+          <Box x={370} y={78} w={80} h={24} fill="#f1f5f9" stroke="#e2e8f0">
+            <T x={410} y={87} size={7} weight={600} color={mC}>OFF PATH</T>
+            <T x={410} y={97} size={5.5} color={mC}>CHD · CLD · Airway abn</T>
+          </Box>
           <Arrow x1={240} y1={76} x2={240} y2={92}/>
 
-          {/* Triage box */}
-          <Box x={130} y={92} w={220} h={26} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={102} size={8} weight={700} color={tC}>TRIAGE & ASSESS</T><T x={240} y={114} size={6} color={mC}>Vitals · Suction · Isolate · PBST score</T></Box>
-
+          {/* ═══ TRIAGE ═══ */}
+          <Box x={130} y={92} w={220} h={26} fill={tBg} stroke={tBd} sw={1.5}>
+            <T x={240} y={102} size={8} weight={700} color={tC}>TRIAGE & ASSESS</T>
+            <T x={240} y={114} size={6} color={mC}>Vitals · Suction · Reposition · Isolate · PBST score</T>
+          </Box>
           <Arrow x1={240} y1={118} x2={240} y2={132}/>
 
-          {/* PBST diamond */}
-          <g transform="translate(240,146)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>PBST Score?</T></g>
+          {/* ═══ PBST DIAMOND ═══ */}
+          <g transform="translate(240,146)">
+            <polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={7} weight={700}>PBST Score?</T>
+          </g>
 
           {/* Three branches */}
           <Arrow x1={180} y1={146} x2={75} y2={172} color={gC}/>
           <Arrow x1={240} y1={160} x2={240} y2={172} color={aC}/>
           <Arrow x1={300} y1={146} x2={405} y2={172} color={rC}/>
 
-          {/* MILD */}
-          <Box x={15} y={172} w={120} h={28} fill={gBg} stroke={gBd} sw={1.5}><T x={75} y={183} size={8} weight={700} color={gC}>MILD (≤3)</T><T x={75} y={196} size={6} color={mC}>Q4H assess · Suction</T></Box>
+          {/* ═══ MILD ═══ */}
+          <Box x={15} y={172} w={120} h={28} fill={gBg} stroke={gBd} sw={1.5}>
+            <T x={75} y={183} size={8} weight={700} color={gC}>MILD (≤3)</T>
+            <T x={75} y={196} size={6} color={mC}>Q4H assess · Suction</T>
+          </Box>
           <Arrow x1={75} y1={200} x2={75} y2={216} color={gC}/>
-          <Box x={15} y={216} w={120} h={36} fill={gBg} stroke={gBd}><T x={75} y={227} size={6} weight={600} color={gC}>PO trial</T><T x={75} y={237} size={6}>No continuous monitoring</T><T x={75} y={247} size={6} weight={600} color={gC}>Consider discharge</T></Box>
+          <Box x={15} y={216} w={120} h={36} fill={gBg} stroke={gBd}>
+            <T x={75} y={227} size={6} weight={600} color={gC}>PO trial</T>
+            <T x={75} y={237} size={6}>No continuous monitoring</T>
+            <T x={75} y={247} size={6} weight={600} color={gC}>Consider discharge</T>
+          </Box>
 
-          {/* MODERATE */}
-          <Box x={160} y={172} w={160} h={28} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={183} size={8} weight={700} color={aC}>MODERATE (4–7)</T><T x={240} y={196} size={6} color={mC}>≥Q2H assess · Wall suction PRN</T></Box>
+          {/* ═══ MODERATE ═══ */}
+          <Box x={160} y={172} w={160} h={28} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={240} y={183} size={8} weight={700} color={aC}>MODERATE (4–7)</T>
+            <T x={240} y={196} size={6} color={mC}>≥Q2H assess · Wall suction PRN</T>
+          </Box>
           <Arrow x1={240} y1={200} x2={240} y2={216} color={aC}/>
-          <Box x={160} y={216} w={160} h={36} fill={aBg} stroke={aBd}><T x={240} y={227} size={6} weight={600} color={aC}>PO vs NG feeds</T><T x={240} y={237} size={6}>Perform HIP before HFNC</T><T x={240} y={247} size={6} weight={600} color={aC}>Admit vs observe</T></Box>
+          <Box x={160} y={216} w={160} h={36} fill={aBg} stroke={aBd}>
+            <T x={240} y={227} size={6} weight={600} color={aC}>PO vs NG feeds</T>
+            <T x={240} y={237} size={6}>If considering HFNC → HIP first</T>
+            <T x={240} y={247} size={6} weight={600} color={aC}>Admit vs observe</T>
+          </Box>
 
-          {/* SEVERE */}
-          <Box x={345} y={172} w={120} h={28} fill={rBg} stroke={rBd} sw={1.5}><T x={405} y={183} size={8} weight={700} color={rC}>SEVERE (8–14)</T><T x={405} y={196} size={6} color={mC}>Q1–2H assess · Cont SpO₂</T></Box>
+          {/* ═══ SEVERE ═══ */}
+          <Box x={345} y={172} w={120} h={28} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={405} y={183} size={8} weight={700} color={rC}>SEVERE (8–14)</T>
+            <T x={405} y={196} size={6} color={mC}>Q1–2H assess · Cont SpO₂</T>
+          </Box>
           <Arrow x1={405} y1={200} x2={405} y2={216} color={rC}/>
-          <Box x={345} y={216} w={120} h={36} fill={rBg} stroke={rBd}><T x={405} y={227} size={6} weight={600} color={rC}>IV bolus · HFNC</T><T x={405} y={237} size={6}>Consider CXR</T><T x={405} y={247} size={6} weight={600} color={rC}>Consider PICU</T></Box>
+          <Box x={345} y={216} w={120} h={44} fill={rBg} stroke={rBd}>
+            <T x={405} y={227} size={6} weight={600} color={rC}>IV bolus · HFNC</T>
+            <T x={405} y={237} size={6}>Consider CXR</T>
+            <T x={405} y={247} size={5.5}>Albuterol ×1 if high-risk hx</T>
+            <T x={405} y={256} size={6} weight={600} color={rC}>Consider PICU</T>
+          </Box>
 
-          {/* HIP section */}
-          <Arrow x1={240} y1={252} x2={240} y2={270} color={aC}/>
-          <Box x={140} y={270} w={200} h={22} fill={pBg} stroke={pBd} sw={1.5}><T x={240} y={280} size={8} weight={700} color={pC}>HFNC INITIATION PAUSE (HIP)</T><T x={240} y={289} size={5.5} color={mC}>Suction · Feed · Comfort · Low-flow NC trial</T></Box>
-          <Arrow x1={240} y1={292} x2={240} y2={308}/>
+          {/* ═══ HIP ═══ */}
+          <Arrow x1={240} y1={252} x2={240} y2={276} color={aC}/>
+          <Box x={120} y={276} w={240} h={28} fill={pBg} stroke={pBd} sw={1.5}>
+            <T x={240} y={286} size={8} weight={700} color={pC}>HFNC INITIATION PAUSE (HIP)</T>
+            <T x={240} y={296} size={5.5} color={mC}>Suction · Feed · Comfort · Antipyretic · Low-flow NC trial</T>
+          </Box>
+          <T x={240} y={310} size={5} color={pC}>RN/LIP huddle after 20–30 min to reassess</T>
+          <Arrow x1={240} y1={314} x2={240} y2={330}/>
 
-          {/* HIP diamond */}
-          <g transform="translate(240,322)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Improved?</T></g>
+          {/* ═══ IMPROVED? DIAMOND ═══ */}
+          <g transform="translate(240,344)">
+            <polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6.5} weight={700}>Stabilized /</T>
+            <T x={0} y={7} size={6.5} weight={700}>improved?</T>
+          </g>
 
-          <Arrow x1={185} y1={322} x2={100} y2={344} color={gC}/>
-          <Arrow x1={295} y1={322} x2={380} y2={344} color={rC}/>
+          {/* HIP PASS */}
+          <Arrow x1={185} y1={344} x2={100} y2={366} color={gC}/>
+          <T x={130} y={354} size={5.5} weight={600} color={gC}>Yes</T>
+          <Box x={40} y={366} w={120} h={28} fill={gBg} stroke={gBd}>
+            <T x={100} y={377} size={7} weight={700} color={gC}>HIP PASS</T>
+            <T x={100} y={389} size={6} color={mC}>RA/low-flow · Reassess</T>
+          </Box>
 
-          <Box x={40} y={344} w={120} h={28} fill={gBg} stroke={gBd}><T x={100} y={355} size={7} weight={700} color={gC}>HIP PASS</T><T x={100} y={367} size={6} color={mC}>RA/low-flow · Reassess</T></Box>
+          {/* HIP FAIL */}
+          <Arrow x1={295} y1={344} x2={380} y2={366} color={rC}/>
+          <T x={348} y={354} size={5.5} weight={600} color={rC}>No</T>
+          <Box x={320} y={366} w={120} h={28} fill={rBg} stroke={rBd}>
+            <T x={380} y={377} size={7} weight={700} color={rC}>HIP FAIL → HFNC</T>
+            <T x={380} y={389} size={6} color={mC}>1 L/kg/min · Re-huddle 2h</T>
+          </Box>
 
-          <Box x={320} y={344} w={120} h={28} fill={rBg} stroke={rBd}><T x={380} y={355} size={7} weight={700} color={rC}>HIP FAIL → HFNC</T><T x={380} y={367} size={6} color={mC}>1 L/kg/min · Re-huddle 2h</T></Box>
+          {/* ═══ HFNC THRESHOLD ═══ */}
+          <Arrow x1={380} y1={394} x2={380} y2={412} color={rC}/>
+          <g transform="translate(380,426)">
+            <polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-2} size={6} weight={700}>HFNC</T>
+            <T x={0} y={7} size={6} weight={700}>≥2 L/kg/min?</T>
+          </g>
+          <Arrow x1={325} y1={426} x2={260} y2={444} color={aC}/>
+          <T x={282} y={434} size={5.5} weight={600} color={aC}>{'<'}2</T>
+          <Arrow x1={435} y1={426} x2={440} y2={444} color={rC}/>
+          <T x={446} y={434} size={5.5} weight={600} color={rC}>≥2</T>
 
-          {/* HFNC threshold */}
-          <Arrow x1={380} y1={372} x2={380} y2={388} color={rC}/>
-          <g transform="translate(380,402)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>HFNC</T><T x={0} y={7} size={6} weight={700}>≥2 L/kg/min?</T></g>
-          <Arrow x1={325} y1={402} x2={260} y2={420} color={aC}/>
-          <Arrow x1={435} y1={402} x2={440} y2={420} color={rC}/>
+          <Box x={200} y={444} w={110} h={20} fill={aBg} stroke={aBd}>
+            <T x={255} y={456} size={6.5} weight={600} color={aC}>Ped Ward</T>
+          </Box>
+          <Box x={400} y={444} w={70} h={20} fill={rBg} stroke={rBd}>
+            <T x={435} y={456} size={7} weight={700} color={rC}>PICU</T>
+          </Box>
 
-          <Box x={200} y={420} w={110} h={20} fill={aBg} stroke={aBd}><T x={255} y={432} size={6} weight={600} color={aC}>Ped Ward</T></Box>
-          <Box x={390} y={420} w={80} h={20} fill={rBg} stroke={rBd}><T x={430} y={432} size={7} weight={700} color={rC}>PICU</T></Box>
+          {/* ═══ SUMMARY BARS ═══ */}
 
-          {/* Summary bars */}
-          <Box x={20} y={452} w={440} h={20} fill={blBg} stroke={blBd} radius={8}><T x={240} y={463} size={7} weight={700} color={blC}>SUPPORTIVE CARE: SUCTION · HYDRATION · O₂ IF SpO₂ {'<'}90%</T><T x={240} y={470} size={5.5} color={mC}>No routine albuterol · No steroids · No antibiotics · No CXR unless severe</T></Box>
+          {/* Supportive care */}
+          <Box x={20} y={476} w={440} h={20} fill={blBg} stroke={blBd} radius={8}>
+            <T x={240} y={487} size={7} weight={700} color={blC}>SUPPORTIVE CARE: SUCTION · HYDRATION · O₂ IF SpO₂ {'<'}90%</T>
+          </Box>
 
-          <Box x={20} y={478} w={440} h={18} fill="#f1f5f9" stroke="#e2e8f0" radius={6}><T x={130} y={489} size={7} weight={700} color={rC}>ADMIT: SpO₂ {'<'}90% · Severe PBST · HFNC</T><T x={370} y={489} size={7} weight={700} color={gC}>D/C: SpO₂ {'>'}92% · Mild PBST · PO OK</T></Box>
+          {/* Discouraged therapies */}
+          <Box x={20} y={500} w={440} h={16} fill={aBg} stroke={aBd} radius={4}>
+            <T x={240} y={511} size={5.5} weight={600} color={aC}>DISCOURAGED: Racemic epi · Corticosteroids · Antibiotics · Montelukast · Chest PT</T>
+          </Box>
+
+          {/* Assessment frequency rule */}
+          <T x={240} y={526} size={5} color={mC}>2 consecutive lower scores → downgrade severity · 1 higher score → immediate upgrade</T>
+
+          {/* Admit/Discharge bar */}
+          <Box x={20} y={534} w={440} h={18} fill="#f1f5f9" stroke="#e2e8f0" radius={6}>
+            <T x={130} y={545} size={7} weight={700} color={rC}>ADMIT: SpO₂ {'<'}90% · Severe · HFNC</T>
+            <T x={370} y={545} size={7} weight={700} color={gC}>D/C: SpO₂ {'>'}92% · Mild · PO OK</T>
+          </Box>
+
         </svg>
       </div>
     </div>
   );
 }
-
 
 // ═══════════════════════════════
 // WALK-THROUGH WIZARD
