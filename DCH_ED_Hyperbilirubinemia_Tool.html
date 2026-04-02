@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neonatal Hyperbilirubinemia — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#b45309",pLight:"#fffbeb",pBorder:"#fcd34d",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{
+  title:"Pathway Rationale — Neonatal Hyperbilirubinemia",
+  patho:"Neonatal jaundice occurs in ~60% of newborns due to a physiologic imbalance: neonates have increased bilirubin production (higher hemoglobin concentration with shorter RBC lifespan of ~90 days vs 120 in adults), limited bilirubin-binding capacity (low serum albumin), decreased hepatic conjugation (low UGT1A1 enzyme activity), and decreased excretion (immature biliary transport + limited gut flora for urobilinogen conversion). Unconjugated (indirect) bilirubin is lipophilic and can cross the blood-brain barrier, causing acute bilirubin encephalopathy and, if untreated, chronic kernicterus with devastating neurologic sequelae.\n\nThe NCNC (Northern California Neonatal Consortium) guidelines used at OHSU are less conservative than the 2004 AAP guidelines, based on newer data showing possible associations between phototherapy and childhood epilepsy/malignancy, and the high NNT (~4,000) to prevent one case of kernicterus with phototherapy at the AAP threshold.",
+  pearls:"Three critical questions on every jaundiced neonate: (1) Age in hours — not days — for nomogram plotting, (2) Gestational age at birth — determines which nomogram curve, (3) Neurotoxicity risk factors present? These shift the treatment threshold down.\n\nThe key decision tool is the NCNC nomogram at phototherapyguidelines.com — plot TSB against age in hours on the appropriate risk curve to determine whether phototherapy or exchange transfusion is needed.",
+  evidence:"NCNC guidelines implemented at OHSU 2019, based on Kuzniewicz (Pediatrics 2014), Newman (Pediatrics 2009, 2018), Flaherman (J Peds 2012). AAP 2022 updated guidelines (Kemper et al., Pediatrics 2022) align more closely with NCNC. (OHSU DCH ED Pathway March 2022)"
+},
+pathologic:{
+  title:"Pathologic vs Physiologic Jaundice",
+  patho:"Pathologic jaundice is suggested by: onset within 24 hours of life (before physiologic peak), TSB rising >0.2 mg/dL/hour, TSB exceeding the phototherapy threshold, or direct bilirubin >1.5 mg/dL or >20% of TSB. These findings trigger expanded workup because they suggest hemolysis (isoimmune disease, G6PD deficiency, RBC membrane defects), sepsis, metabolic disease, or biliary obstruction.\n\nDirect (conjugated) hyperbilirubinemia always warrants investigation — it is never physiologic and suggests hepatocellular disease or biliary obstruction (biliary atresia if >2 weeks old).",
+  pearls:"Red flags for pathologic jaundice — any of these triggers expanded workup:\n• Jaundice within first 24 hours of life\n• TSB rising >0.2 mg/dL/hour\n• TSB exceeds phototherapy threshold\n• Direct bilirubin >1.5 mg/dL or >20% of TSB\n\nExpanded workup: Blood type & screen, CBC, direct Coombs, CMP, G6PD screen (in at-risk males), reticulocyte count, repeat TSB. Consider sepsis workup if ill-appearing or temp instability.",
+  evidence:"Jaundice <24 hours has 10× higher risk of severe hyperbilirubinemia compared to later onset. Rising rate >0.2 mg/dL/hr suggests active hemolysis. (AAP 2004/2022, NCNC Guidelines, OHSU DCH ED Pathway March 2022)"
+},
+phototherapy:{
+  title:"Phototherapy — Mechanism & Thresholds",
+  patho:"Phototherapy works by photoisomerization of unconjugated bilirubin in the skin. Blue-green light (wavelength 460–490 nm) converts the 4Z,15Z-bilirubin isomer to water-soluble structural isomers (lumirubin) and configurational isomers (4Z,15E-bilirubin) that can be excreted in bile and urine without hepatic conjugation. Effectiveness depends on light intensity (irradiance), surface area exposed, and distance from the light source.\n\nThe NCNC phototherapy threshold varies by gestational age and neurotoxicity risk factors. With risk factors present, the threshold drops by approximately 2–3 mg/dL. Must avoid interruptions >30 minutes to maintain effectiveness.",
+  pearls:"Use NCNC nomograms (phototherapyguidelines.com) — plot TSB vs age in hours on the curve matching GA and risk factor status. If above the phototherapy line → start phototherapy. If within 2 mg/dL of the exchange line → admit to NICU.\n\nStart phototherapy in the ED if admission is required — do not wait for bed assignment. Intensive phototherapy (irradiance ≥30 μW/cm²/nm) with maximum skin exposure is the goal. Fiberoptic blankets alone are less effective and reserved for low-risk outpatients.",
+  evidence:"NCNC thresholds based on updated evidence showing higher NNT for phototherapy at AAP levels (~4,000 to prevent 1 kernicterus case). Newman (Pediatrics 2009) NNT analysis. Possible phototherapy associations with seizures (Newman Pediatrics 2018) and malignancy (Frazier Pediatrics 2016) support more conservative threshold use."
+},
+exchange:{
+  title:"Exchange Transfusion",
+  patho:"Exchange transfusion physically removes bilirubin-laden blood and replaces it with donor blood, rapidly reducing TSB. It is indicated when TSB approaches the exchange threshold on the NCNC nomogram or when acute bilirubin encephalopathy (ABE) is present. ABE signs include hypertonia, arching (opisthotonos), retrocollis, high-pitched cry, and fever — these are neurologic emergencies even if TSB appears to be decreasing.\n\nThe procedure carries significant risks: electrolyte derangements, thrombocytopenia, catheter complications, necrotizing enterocolitis, and mortality (~0.3–3%). It requires neonatology expertise and NICU-level care.",
+  pearls:"Exchange transfusion is indicated if TSB exceeds the exchange threshold OR if signs of acute bilirubin encephalopathy are present — even if TSB is falling. Consult neonatology EMERGENTLY for any patient at or near the exchange threshold.\n\nIf TSB within 2 mg/dL of exchange threshold, requires warmer, or critically ill → admit to NICU (PICU if NICU bed unavailable).",
+  evidence:"Exchange transfusion recommended per NCNC and AAP 2022 guidelines for TSB at exchange threshold or ABE signs regardless of TSB. Mortality rate 0.3–3%. (OHSU DCH ED Pathway March 2022)"
+},
+neurotoxicity:{
+  title:"Neurotoxicity Risk Factors",
+  patho:"Neurotoxicity risk factors lower the phototherapy and exchange thresholds because they increase the ratio of free (unbound) bilirubin to total bilirubin, or impair the blood-brain barrier, increasing CNS exposure. Isoimmune hemolytic disease increases bilirubin production acutely; G6PD deficiency causes episodic hemolysis; sepsis increases BBB permeability; acidosis shifts bilirubin off albumin (protons compete for binding sites); low albumin directly reduces bilirubin binding capacity; clinical instability is a marker for multiorgan compromise.",
+  pearls:"Neurotoxicity risk factors (shift treatment threshold DOWN):\n• Isoimmune hemolytic disease, G6PD deficiency, or other hemolytic disease\n• Sepsis or suspected sepsis (on antibiotics)\n• Acidosis (BE ≤ −8 meq/L or pCO₂ > 50 mmHg within last 24h)\n• Albumin < 3.0 mg/dL\n• Any clinical instability\n\nWhen risk factors present, use the lower (risk factor) curve on the NCNC nomogram.",
+  evidence:"Risk factor thresholds from NCNC and AAP 2022. Albumin <3.0 associated with increased free bilirubin fraction. Acidosis shifts bilirubin-albumin binding curve. (OHSU DCH ED Pathway March 2022)"
+},
+feeding:{
+  title:"Feeding Assessment & Dehydration",
+  pearls:"Assess feeding adequacy: breast vs bottle, intake volume, stool pattern, weight trajectory. Excessive weight loss defined as >10% from birth weight; should be back to birth weight by DOL 10.\n\nIf weight loss >10% or clinical dehydration → NS bolus 10 mL/kg. If significantly dehydrated and requiring admission → start maintenance D10 ½NS + 20 KCl (if K normal). Breastfeeding should be encouraged and supported — phototherapy does not require cessation of breastfeeding.",
+},
+disposition:{
+  title:"Disposition Decision-Making",
+  pearls:"NICU: TSB within 2 mg/dL of exchange threshold, requires warmer, critically ill, or exchange transfusion needed. (PICU if NICU bed unavailable.)\n\nMBU: Requires only phototherapy and/or rehydration — page MBU attending.\n\nPeds Hospital Medicine: Suspected infection or comorbidities.\n\nFamily Medicine: If followed by FM or Virginia Garcia.\n\nDischarge with 24h follow-up: TSB below phototherapy threshold, well-appearing, adequate feeding, no excessive weight loss, no pathologic features.\n\nStart phototherapy in ED if admission required — do not wait for bed."
+}
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,bolus:Math.round(wt*10)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Neonatal Hyperbilirubinemia</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · March 2022</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+function TeachBox({id,teaching}){
+  var s=useState("pearls"),tab=s[0],setTab=s[1];
+  if(!teaching||!TEACH[id])return null;var t=TEACH[id];
+  if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}
+  var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;
+  var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;
+  return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>{tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}</div><div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeKey]||""}</div></div>);
+}
+
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Infant {"<"}14 days · ≥35 wk GA · Jaundice/suspected hyperbilirubinemia · NCNC guidelines</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 480" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={480} fill="#fafaf8" rx={6}/>
+          <Box x={100} y={8} w={280} h={30} fill={aBg} stroke={aBd} sw={1.5} radius={14}><T x={240} y={20} size={9} weight={700} color={aC}>NEONATAL JAUNDICE</T><T x={240} y={31} size={6} color={mC}>ESI II · Vitals · Naked weight · Heelstick TSB</T></Box>
+          <Arrow x1={240} y1={38} x2={240} y2={54}/>
+
+          <g transform="translate(240,68)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Ill / Temp instability /</T><T x={0} y={7} size={6} weight={700}>Significant dehydration?</T></g>
+          <Arrow x1={310} y1={68} x2={410} y2={90} color={rC}/><T x={370} y={78} size={6} weight={600} color={rC}>Yes</T>
+          <Box x={350} y={90} w={120} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={410} y={102} size={7} weight={700} color={rC}>RESUSCITATE</T><T x={410} y={114} size={6} color={mC}>PIV · Sepsis pathway</T></Box>
+
+          <Arrow x1={240} y1={82} x2={240} y2={100}/><T x={250} y={96} size={6} weight={600} color={gC} anchor="start">Well</T>
+
+          <g transform="translate(240,114)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Pathologic features?</T><T x={0} y={7} size={5} color={mC}>{"<"}24h · Rising {">"} 0.2/h · Direct {">"} 1.5</T></g>
+          <Arrow x1={320} y1={114} x2={410} y2={140} color={aC}/><T x={375} y={126} size={6} weight={600} color={aC}>Yes</T>
+          <Box x={345} y={140} w={130} h={30} fill={aBg} stroke={aBd} sw={1.5}><T x={410} y={152} size={7} weight={700} color={aC}>EXPANDED WORKUP</T><T x={410} y={164} size={6} color={mC}>T&S · CBC · Coombs · G6PD</T></Box>
+
+          <Arrow x1={240} y1={128} x2={240} y2={150}/>
+
+          <Box x={110} y={150} w={260} h={28} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={162} size={8} weight={700} color={tC}>PLOT TSB ON NCNC NOMOGRAM</T><T x={240} y={174} size={6} color={mC}>phototherapyguidelines.com · Age in hours · GA · Risk factors</T></Box>
+          <Arrow x1={240} y1={178} x2={240} y2={196}/>
+
+          <g transform="translate(240,210)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>TSB vs thresholds?</T></g>
+
+          {/* Above exchange */}
+          <Arrow x1={320} y1={210} x2={420} y2={238} color={rC}/><T x={380} y={224} size={6} weight={600} color={rC}>Near exchange</T>
+          <Box x={355} y={238} w={120} h={36} fill={rBg} stroke={rBd} sw={2}><T x={415} y={250} size={7} weight={700} color={rC}>NICU / EXCHANGE</T><T x={415} y={261} size={6} color={mC}>Within 2 mg/dL of exchange</T><T x={415} y={271} size={6} color={mC}>Consult neonatology STAT</T></Box>
+
+          {/* Above phototherapy */}
+          <Arrow x1={240} y1={224} x2={240} y2={248} color={aC}/>
+          <Box x={140} y={248} w={200} h={28} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={260} size={7} weight={700} color={aC}>PHOTOTHERAPY</T><T x={240} y={272} size={6} color={mC}>Start in ED · Admit (MBU/NICU)</T></Box>
+
+          {/* Below phototherapy */}
+          <Arrow x1={160} y1={210} x2={70} y2={248} color={gC}/><T x={102} y={228} size={6} weight={600} color={gC}>Below</T>
+          <Box x={10} y={248} w={120} h={28} fill={gBg} stroke={gBd}><T x={70} y={260} size={7} weight={700} color={gC}>BELOW THRESHOLD</T><T x={70} y={272} size={6} color={mC}>Assess feeding + weight</T></Box>
+
+          <Arrow x1={70} y1={276} x2={70} y2={296}/>
+          <g transform="translate(70,310)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Feeding concern?</T><T x={0} y={7} size={5} color={mC}>Weight loss {">"} 10%?</T></g>
+          <Arrow x1={10} y1={310} x2={-10} y2={336} color={aC}/>
+          <Box x={-40} y={336} w={100} h={24} fill={aBg} stroke={aBd}><T x={10} y={351} size={7} weight={700} color={aC}>ADMIT</T></Box>
+          <Arrow x1={130} y1={310} x2={180} y2={336} color={gC}/>
+          <Box x={145} y={336} w={120} h={24} fill={gBg} stroke={gBd}><T x={205} y={351} size={7} weight={700} color={gC}>DISCHARGE</T><T x={205} y={359} size={5} color={mC}>F/U within 24h</T></Box>
+
+          {/* Dispo summary */}
+          <Box x={10} y={380} w={150} h={40} fill={rBg} stroke={rBd} radius={8}><T x={85} y={394} size={7} weight={700} color={rC}>NICU</T><T x={85} y={406} size={6} color={mC}>Near exchange · Warmer</T><T x={85} y={416} size={6} color={mC}>Critically ill</T></Box>
+          <Box x={170} y={380} w={145} h={40} fill={aBg} stroke={aBd} radius={8}><T x={243} y={394} size={7} weight={700} color={aC}>MBU / WARD</T><T x={243} y={406} size={6} color={mC}>Phototherapy only</T><T x={243} y={416} size={6} color={mC}>Feeding/rehydration</T></Box>
+          <Box x={325} y={380} w={145} h={40} fill={gBg} stroke={gBd} radius={8}><T x={398} y={394} size={7} weight={700} color={gC}>DISCHARGE</T><T x={398} y={406} size={6} color={mC}>Below threshold</T><T x={398} y={416} size={6} color={mC}>Good feeds · F/U 24h</T></Box>
+
+          <Box x={10} y={434} w={460} h={34} fill={blBg} stroke={blBd} radius={6}><T x={240} y={448} size={7} weight={700} color={blC}>NCNC NOMOGRAM: phototherapyguidelines.com</T><T x={240} y={460} size={6} color={mC}>Plot TSB (mg/dL) vs age (hours) · Adjust for GA and neurotoxicity risk factors</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Wizard({teaching,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),illAppear=s2[0],setIllAppear=s2[1];
+  var s3=useState(null),pathologic=s3[0],setPathologic=s3[1];
+  var s4=useState(null),tsbResult=s4[0],setTsbResult=s4[1];
+  var s5=useState(null),feedingOk=s5[0],setFeedingOk=s5[1];
+  var s6=useState([]),riskFactors=s6[0],setRiskFactors=s6[1];
+  function toggleRisk(item){setRiskFactors(function(p){return p.includes(item)?p.filter(function(x){return x!==item}):[].concat(p,[item])});}
+  function reset(){setExcl(null);setIllAppear(null);setPathologic(null);setTsbResult(null);setFeedingOk(null);setRiskFactors([]);}
+  var RISKS=["Isoimmune hemolytic disease","G6PD deficiency or other hemolysis","Sepsis or suspected sepsis (on abx)","Acidosis (BE ≤ −8 or pCO₂ > 50)","Albumin < 3.0 mg/dL","Any clinical instability"];
+
+  return(<Pad>
+    <Q text="Hyperbilirubinemia Walk-Through" sub="Infant <14 days, ≥35 wk GA with jaundice"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    <Card title="Step 1 — Inclusion & Initial Assessment" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is the infant ≥35 weeks GA and {"<"}14 days of life with concern for jaundice?</div>
+      <WizBtn label="Yes — Meets criteria" sub="ESI II · Vitals · Naked weight · Heelstick TSB (total, indirect, direct)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      <WizBtn label="No — Does not meet criteria" sub="Off pathway (age >14 days or <35 wk GA)" color={C.muted} bg={C.white} border={C.rule} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+    </Card>
+
+    {excl==="no"&&<Card title="Step 2 — Clinical Appearance" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is the infant ill-appearing, hypothermic ({"<"}36.0°C), hypoxemic, or significantly dehydrated?</div>
+      <WizBtn label="Yes — Ill / Unstable" sub="PIV · Resuscitate · Consider sepsis pathway" color={C.red} bg={C.redBg} border={C.redBorder} selected={illAppear==="yes"} onClick={function(){setIllAppear("yes")}}/>
+      <WizBtn label="No — Well-appearing" sub="Proceed to TSB assessment" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={illAppear==="no"} onClick={function(){setIllAppear("no")}}/>
+      {illAppear==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Ill / Unstable">Place PIV. Resuscitate as appropriate. If hypothermia {"<"}36.0°C, refer to Fever/Sepsis {"<"}29 Days pathway. NS bolus {doses?doses.bolus+" mL":"10 mL/kg"} if dehydrated. Obtain expanded labs. Likely NICU admission.</Alert>}
+    </Card>}
+
+    {excl==="no"&&illAppear==="no"&&<Card title="Step 3 — Pathologic Jaundice Screen" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Are any of these pathologic features present?</div>
+      <WizBtn label="Jaundice within first 24 hours of life" sub="Pathologic — expanded workup" color={C.red} bg={C.redBg} border={C.redBorder} selected={pathologic==="24h"} onClick={function(){setPathologic("24h")}}/>
+      <WizBtn label="TSB rising > 0.2 mg/dL per hour" sub="Suggests active hemolysis" color={C.red} bg={C.redBg} border={C.redBorder} selected={pathologic==="rising"} onClick={function(){setPathologic("rising")}}/>
+      <WizBtn label="TSB exceeds phototherapy threshold" sub="Start phototherapy — see nomogram" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={pathologic==="photo"} onClick={function(){setPathologic("photo")}}/>
+      <WizBtn label="Direct bilirubin > 1.5 or > 20% of TSB" sub="Conjugated hyperbilirubinemia — never physiologic" color={C.red} bg={C.redBg} border={C.redBorder} selected={pathologic==="direct"} onClick={function(){setPathologic("direct")}}/>
+      <WizBtn label="None — below phototherapy threshold" sub="Likely physiologic — assess feeding and weight" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={pathologic==="none"} onClick={function(){setPathologic("none")}}/>
+      {pathologic&&pathologic!=="none"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="⚠️" title="Pathologic — Expanded Workup">Obtain: blood type & screen, CBC, direct Coombs, CMP, reticulocyte count, G6PD screen (in at-risk males). Consider sepsis workup if ill or temp instability. Start phototherapy in ED if above threshold.</Alert>}
+      <TeachBox id="pathologic" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&illAppear==="no"&&pathologic!==null&&<Card title="Step 4 — Neurotoxicity Risk Factors" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:8}}>Select any neurotoxicity risk factors present (these shift the NCNC treatment threshold DOWN):</div>
+      {RISKS.map(function(item){var sel=riskFactors.includes(item);return <button key={item} onClick={function(){toggleRisk(item)}} style={{display:"block",width:"100%",textAlign:"left",background:sel?C.redBg:C.white,border:"1.5px solid "+(sel?C.red:C.rule),borderRadius:8,padding:"8px 12px",marginBottom:4,cursor:"pointer"}}><div style={{fontSize:12,fontWeight:sel?700:400,color:sel?C.red:C.ink}}>{sel?"✓ ":""}{item}</div></button>})}
+      <div style={{background:riskFactors.length>0?C.amberBg:C.greenBg,border:"1.5px solid "+(riskFactors.length>0?C.amberBorder:C.greenBorder),borderRadius:8,padding:"8px 12px",marginTop:6}}>
+        <div style={{fontSize:12,fontWeight:700,color:riskFactors.length>0?C.amberMid:C.greenMid}}>{riskFactors.length>0?"⚠️ "+riskFactors.length+" risk factor(s) — use LOWER threshold curve on NCNC nomogram":"✓ No risk factors — use standard curve"}</div>
+      </div>
+      <div style={{marginTop:8,padding:"10px 12px",background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8}}>
+        <div style={{fontSize:13,fontWeight:700,color:C.blue}}>NCNC Nomogram</div>
+        <div style={{fontSize:12,marginTop:4}}>Plot TSB vs age in hours at <a href="https://www.phototherapyguidelines.com/" target="_blank" rel="noopener" style={{color:C.blue,fontWeight:600}}>phototherapyguidelines.com</a></div>
+      </div>
+      <TeachBox id="neurotoxicity" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&illAppear==="no"&&pathologic!==null&&<Card title="Step 5 — TSB vs NCNC Thresholds" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Where does the TSB fall on the NCNC nomogram?</div>
+      <WizBtn label="Within 2 mg/dL of exchange threshold" sub="NICU admission · Consult neonatology EMERGENTLY" color={C.red} bg={C.redBg} border={C.redBorder} selected={tsbResult==="exchange"} onClick={function(){setTsbResult("exchange")}}/>
+      <WizBtn label="Above phototherapy threshold" sub="Start phototherapy in ED · Admit" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={tsbResult==="photo"} onClick={function(){setTsbResult("photo")}}/>
+      <WizBtn label="Below phototherapy threshold" sub="Assess feeding and weight — may discharge" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={tsbResult==="below"} onClick={function(){setTsbResult("below")}}/>
+      {tsbResult==="exchange"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Near Exchange Threshold — NICU">TSB within 2 mg/dL of exchange threshold. Consult neonatology EMERGENTLY. Admit to NICU (PICU if no NICU bed). Start intensive phototherapy immediately. If signs of acute bilirubin encephalopathy (hypertonia, arching, opisthotonos, high-pitched cry, fever) → exchange transfusion even if TSB falling.</Alert>}
+      {tsbResult==="photo"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="💡" title="Phototherapy Required">Start phototherapy in ED — do not wait for bed. Admit to MBU (if phototherapy/rehydration only) or Peds Hospital Medicine (if infection/comorbidities). NS bolus {doses?doses.bolus+" mL":"10 mL/kg"} if dehydrated. Recheck TSB in 4–6 hours.</Alert>}
+      <TeachBox id="phototherapy" teaching={teaching}/>
+    </Card>}
+
+    {excl==="no"&&tsbResult==="below"&&<Card title="Step 6 — Feeding & Disposition" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is feeding adequate and weight appropriate? (Weight loss ≤10% from birth, gaining toward birth weight by DOL 10)</div>
+      <WizBtn label="Yes — Adequate feeding, appropriate weight" sub="Discharge with 24-hour follow-up" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={feedingOk==="yes"} onClick={function(){setFeedingOk("yes")}}/>
+      <WizBtn label="No — Poor feeding, excessive weight loss, or other concern" sub="Admit for rehydration and feeding support" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={feedingOk==="no"} onClick={function(){setFeedingOk("no")}}/>
+      {feedingOk==="yes"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Discharge">TSB below phototherapy threshold, well-appearing, adequate feeding, appropriate weight trajectory. <strong>Follow-up within 24 hours</strong> with PCP for repeat TSB. Return if jaundice worsens, poor feeding, lethargy, or dark urine/pale stools.</Alert>}
+      {feedingOk==="no"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🏥" title="Admit">Inadequate feeding, excessive weight loss ({'>'}10%), or poor weight gain. Admit for rehydration (NS bolus {doses?doses.bolus+" mL":"10 mL/kg"}, maintenance D10 ½NS + 20 KCl) and feeding support. Lactation consult if breastfeeding.</Alert>}
+      <TeachBox id="feeding" teaching={teaching}/>
+    </Card>}
+
+    {excl!==null&&<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+function RefTriage({teaching}){return(<Pad>
+  <Q text="Triage & Initial Assessment" sub="Infant <14 days, ≥35 wk GA with jaundice"/>
+  <TeachBox id="overview" teaching={teaching}/>
+  <Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Infants ≥35 weeks gestation who present with concern for jaundice, {"<"}14 days of life.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Infants {'>'}14 days of life.</Alert></div></Card>
+  <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong><br/>Full vitals, naked weight<br/>Evaluate for dehydration<br/>Heelstick total, indirect, and direct serum bilirubin<br/>Do not delay labs for difficult IV — may send capillary after 2 failed venous attempts<br/>Infant warmer as needed · If hypothermia {"<"}36.0°C → refer to Fever/Sepsis {"<"}29 days pathway</div></Card>
+  <Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Initial (all):</strong> Heelstick total, indirect, and direct serum bilirubin<br/><strong>Expanded (pathologic jaundice):</strong> Blood type & screen, CBC, direct Coombs, CMP, reticulocyte count, G6PD screen (at-risk males)<br/><strong>Consider sepsis workup</strong> if ill, temp instability, or clinical concern<br/><span style={{fontSize:12,color:C.muted}}>G6PD screening: Afro-Caribbean, West Africa, India, Pakistan, Bangladesh, East African Asian, Cyprus, Iran, Lebanon, China, Italy</span></div></Card>
+  <Card title="Neurotoxicity Risk Factors" color={C.red}><div style={{marginTop:8}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>{["Isoimmune hemolytic disease","G6PD or other hemolysis","Sepsis (on antibiotics)","Acidosis (BE ≤ −8, pCO₂ > 50)","Albumin < 3.0 mg/dL","Any clinical instability"].map(function(r){return <div key={r} style={{background:C.redBg,border:"1px solid "+C.redBorder,borderRadius:6,padding:"6px 8px",fontSize:12,fontWeight:500}}>{r}</div>})}</div><div style={{fontSize:12,color:C.muted,marginTop:6}}>Risk factors shift NCNC phototherapy and exchange thresholds DOWN</div></div><TeachBox id="neurotoxicity" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+  <Q text="Decision Tree" sub="TSB vs NCNC nomogram · Pathologic screening · Disposition"/>
+  <Card title="Pathologic Jaundice Triggers" color={C.red}><div style={{marginTop:8}}>{["Jaundice within first 24 hours of life","TSB rising > 0.2 mg/dL per hour","TSB exceeds phototherapy threshold","Direct bilirubin > 1.5 mg/dL or > 20% of TSB"].map(function(r){return <div key={r} style={{background:C.redBg,border:"1px solid "+C.redBorder,borderRadius:6,padding:"6px 8px",fontSize:12,fontWeight:500,marginBottom:4}}>{r}</div>})}<div style={{fontSize:12,color:C.muted,marginTop:4}}>Any trigger → expanded workup (T&S, CBC, Coombs, CMP, G6PD, retic count)</div></div><TeachBox id="pathologic" teaching={teaching}/></Card>
+  <Card title="NCNC Nomogram — Treatment Thresholds" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Plot TSB (mg/dL) vs age (hours) at <a href="https://www.phototherapyguidelines.com/" target="_blank" rel="noopener" style={{color:C.blue,fontWeight:600}}>phototherapyguidelines.com</a><br/>Select curve by: gestational age + neurotoxicity risk factor presence<br/><strong>Above phototherapy line →</strong> start phototherapy in ED, admit<br/><strong>Within 2 mg/dL of exchange line →</strong> NICU admission, consult neonatology STAT<br/><strong>Below phototherapy line →</strong> assess feeding/weight, may discharge with 24h follow-up</div><TeachBox id="phototherapy" teaching={teaching}/></Card>
+  <Card title="Exchange Transfusion" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Indicated if TSB at exchange threshold OR if signs of acute bilirubin encephalopathy (ABE): hypertonia, arching/opisthotonos, retrocollis, high-pitched cry, fever — <strong>even if TSB falling</strong>.<br/>Consult neonatology EMERGENTLY. Requires NICU-level care.</div><TeachBox id="exchange" teaching={teaching}/></Card>
+  <PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+  <Q text="Treatment & Fluids" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+  {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+  <Card title="Phototherapy" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Start intensive phototherapy in ED if above threshold — do not wait for bed assignment.<br/>Maximize skin exposure. Avoid interruptions {'>'}30 minutes.<br/>Fiberoptic blankets alone are less effective — reserved for low-risk outpatients.<br/>Recheck TSB 4–6 hours after starting phototherapy.</div><TeachBox id="phototherapy" teaching={teaching}/></Card>
+  <Card title="Fluids" color={C.primary}><div style={{marginTop:8}}><DoseRow label="NS bolus (10 mL/kg) — if dehydrated or weight loss >10%" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>If significantly dehydrated and requiring admission: start maintenance D10 ½NS + 20 KCl (if K normal). Encourage breastfeeding — phototherapy does not require cessation.</div></div><TeachBox id="feeding" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+  <Q text="Disposition & References"/>
+  <Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+    <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>NICU (PICU if NICU unavailable)</div><div style={{fontSize:12,marginTop:2}}>TSB within 2 mg/dL of exchange threshold · Requires warmer · Critically ill · Exchange transfusion needed</div></div>
+    <div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>MBU / WARD</div><div style={{fontSize:12,marginTop:2}}>Phototherapy only → MBU (page MBU attending)<br/>Suspected infection or comorbidities → Peds Hospital Medicine<br/>Followed by FM or Virginia Garcia → Family Medicine</div></div>
+    <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Below phototherapy threshold · Well-appearing · Adequate feeding · Weight loss ≤10% · Follow-up within 24 hours</div></div>
+  </div><TeachBox id="disposition" teaching={teaching}/></Card>
+  <Card title="Lab Interpretation Guide" color={C.blue} defaultOpen={false}><div style={{fontSize:12,lineHeight:1.6,marginTop:8}}><strong>Elevated indirect + normal retic + negative Coombs:</strong> physiologic, breast milk jaundice, or familial nonhemolytic<br/><strong>Elevated indirect + elevated retic:</strong> hemolysis (ABO/Rh incompatibility, RBC abnormalities)<br/><strong>Elevated direct + indirect + negative Coombs + normal retic:</strong> hepatitis, metabolic, or biliary obstruction</div></Card>
+  <Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Neonatal Jaundice/Hyperbilirubinemia Clinical Pathway, March 2022<br/>Maisels MJ et al. Management of hyperbilirubinemia in the newborn ≥35 weeks. Pediatrics 2004;114(1)<br/>Kemper AR et al. Clinical Practice Guideline Revision: Management of Hyperbilirubinemia in the Newborn ≥35 Weeks. Pediatrics 2022;150(3):e2022058859<br/>Newman TB et al. Numbers needed to treat with phototherapy per AAP guidelines. Pediatrics 2009;123(5)<br/>Newman TB et al. Childhood seizures after phototherapy. Pediatrics 2018;142(4)<br/>Kuzniewicz MW et al. Incidence, etiology, and outcomes of hazardous hyperbilirubinemia in newborns. Pediatrics 2014;134:504-509<br/>NCNC Guidelines: phototherapyguidelines.com</div></Card>
+</Pad>)}
+
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageHours=s5[0],setAgeHours=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decisions",label:"Decisions"},{key:"meds",label:"Treatment"},{key:"dispo",label:"Dispo & Refs"}];
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (hours)</label><input type="number" inputMode="decimal" value={ageHours} onChange={function(e){setAgeHours(e.target.value)}} placeholder="72" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="3.2" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decisions"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}><strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.<br/>Doernbecher Children's Hospital · PED · Neonatal Hyperbilirubinemia Clinical Pathway · March 2022</div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
