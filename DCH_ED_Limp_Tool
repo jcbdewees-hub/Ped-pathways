@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Limp — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#0f766e",pLight:"#f0fdfa",pBorder:"#5eead4",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{title:"Pediatric Limp — Evaluation Framework",patho:"Limp is an abnormality in gait caused by pain, weakness, or deformity. In toddlers, it may present as refusal to walk or stand. The hip and knee are the most common sites of pathology; minor trauma and transient synovitis predominate as the most frequent causes.\n\nMost children with limp have benign, self-limiting conditions. However, life- or limb-threatening conditions (septic arthritis, SCFE, osteomyelitis, malignancy, compartment syndrome) must be identified promptly. The location of pain does not always reflect the location of pathology — hip conditions can cause knee or thigh pain, abdominal conditions can cause hip pain, and back conditions can refer pain to the leg.",pearls:"Key evaluation principles:\n• Age drives the differential — think age-specific diagnoses first\n• Fever + joint pain = septic arthritis until proven otherwise\n• Always examine the hips even if the child complains of knee pain\n• An afebrile child with normal gait and normal exam may not need imaging at the initial visit\n• Children ≤3 years and those unable to walk warrant more thorough evaluation\n• Always consider NAT, especially in non-ambulatory children with fractures",evidence:"Fischer SU, Beattie TF. J Bone Joint Surg Br 1999; 81:1029 (epidemiology). Clark MC, Thompson A. Evaluation of limp in children. UpToDate 2025. Perry DC, Bruce C. BMJ 2010; 341:c4250."},
+septicHip:{title:"Septic Hip — Emergency",patho:"Bacterial arthritis of the hip causes rapid joint destruction within hours due to proteolytic enzymes and increased intra-articular pressure compromising blood supply to the femoral head. S. aureus is the most common pathogen; Kingella kingae is increasingly recognized in children <5 years.\n\nThe hip joint is deeply seated, making clinical assessment challenging. A septic hip typically presents with the hip held in flexion, abduction, and external rotation to maximize joint volume and minimize pain. Any attempt at passive ROM causes severe pain.",pearls:"Emergency ultrasound is the key diagnostic step — it identifies effusion and can guide aspiration. A septic hip requires urgent surgical drainage.\n\nKocher criteria help differentiate septic arthritis from transient synovitis:\n• Fever (>38.5°C)\n• Non-weight-bearing\n• ESR >40 mm/hr\n• WBC >12,000/µL\n\n0 predictors: <0.2% risk · 1 predictor: 3% · 2 predictors: 40% · 3 predictors: 93% · 4 predictors: 99%\n\nCRP >2 mg/dL is now often added as a 5th predictor and may be more useful than ESR.",evidence:"Kocher MS et al. J Bone Joint Surg Am 1999; 81:1662 (original criteria). Caird MS et al. J Bone Joint Surg Am 2006; 88:1251 (added CRP). Sultan J, Hughes PJ. BMJ 2010; 341:c4250."},
+transientSynovitis:{title:"Transient Synovitis",patho:"Transient (toxic) synovitis is the most common cause of acute hip pain in children aged 3–8 years. It is a self-limiting inflammatory condition, often following a viral upper respiratory infection. The hip has a small effusion on US but the child is generally well-appearing and can usually bear some weight.\n\nThe key clinical challenge is distinguishing transient synovitis from early septic arthritis. Transient synovitis resolves in 1–2 weeks with rest and NSAIDs.",pearls:"Features favoring transient synovitis over septic arthritis:\n• Age 3–8 years (peak incidence)\n• Afebrile or low-grade fever (<38.5°C)\n• Able to bear some weight (even if limping)\n• Recent URI (preceding 1–2 weeks)\n• Some ROM tolerated (painful at extremes)\n• Normal or mildly elevated inflammatory markers\n\nIf clinical picture is ambiguous: aspiration of the hip joint is the definitive differentiator. If synovitis suspected and markers low, outpatient follow-up in 24–48h with precautions is reasonable.",evidence:"Kocher MS et al. J Bone Joint Surg Am 1999; 81:1662. Luhmann SJ et al. J Pediatr Orthop 2004; 24:373 (CRP added)."},
+scfe:{title:"Slipped Capital Femoral Epiphysis (SCFE)",patho:"SCFE is displacement of the femoral epiphysis posteriorly and inferiorly relative to the femoral neck through the physis. It occurs in the pre-pubertal or pubertal age group (typically 10–16 years) and is more common in obese children and those with endocrinopathies (hypothyroidism, growth hormone deficiency).\n\nThe slip disrupts the blood supply to the femoral head — weight-bearing on an unstable slip risks avascular necrosis. This is why immediate non-weight-bearing is mandatory.",pearls:"Classic presentation: obese adolescent with insidious hip or knee pain, antalgic gait, and obligate external rotation with hip flexion (decreased internal rotation on exam).\n\nCritical actions:\n• Immediate NON-WEIGHT-BEARING (crutches or wheelchair)\n• AP + frog-leg lateral of BILATERAL pelvis (not unilateral hip — a small slip can be missed without comparison)\n• Urgent orthopedic consultation for operative fixation\n\nDo not force internal rotation on exam — this can worsen the slip. Bilateral SCFE occurs in 20–40% of cases.",evidence:"Loder RT et al. J Bone Joint Surg Am 1993; 75:1134. Aronsson DD et al. J Am Acad Orthop Surg 2006; 14:666."},
+toddlerFx:{title:"Toddler's Fracture",patho:"A toddler's fracture is a non-displaced spiral fracture of the tibial shaft that occurs in children typically aged 9 months to 3 years. It results from a low-energy twisting mechanism (catching foot while running, falling while held by the hand). The causative event may be unwitnessed or seem trivial.\n\nInitial radiographs may be normal — up to 20% of limping toddlers without localizing findings have occult fractures. Periosteal reaction becomes visible on repeat radiographs at 7–14 days.",pearls:"If clinical suspicion is high but radiographs are negative:\n• Immobilize (short leg splint, CAM boot, or short leg cast)\n• Follow-up in 7–10 days with repeat radiographs\n• If asymptomatic out of immobilization → discontinue without further imaging\n\nFor the non-localizable limp in a toddler: start with AP/lateral of tibia-fibula. Consider femur and foot radiographs if tibial films are normal. Always consider NAT if the mechanism is inconsistent with developmental stage.",evidence:"Oudjhane K et al. J Trauma 1988; 28:858 (up to 20% occult fractures). ACR Appropriateness Criteria: Acutely limping child up to age 5 (revised 2018)."},
+malignancy:{title:"Malignancy — Red Flags",patho:"Leukemia is the most common malignancy presenting with limp in children. Bone pain from marrow infiltration may be the initial symptom. Osteosarcoma and Ewing sarcoma present with localized bone pain and swelling, typically in the metaphysis of long bones (distal femur, proximal tibia for osteosarcoma).\n\nNight pain and pain at rest that wakes the child from sleep are classic red flags for malignancy or benign bone tumors (osteoid osteoma).",pearls:"Red flags for malignancy in a limping child:\n• Night pain / pain at rest that wakes the child\n• Persistent bone pain without trauma\n• Systemic symptoms: fever, pallor, weight loss, fatigue, bruising\n• Hepatosplenomegaly or lymphadenopathy\n• Abnormal CBC (cytopenias, blasts)\n• Elevated LDH or uric acid\n\nLabs to obtain: CBC with differential + peripheral smear, ESR/CRP, LDH, alkaline phosphatase, uric acid. Plain radiographs of the painful area.\n\nSee the Hematologic Malignancy pathway for further workup if leukemia is suspected.",evidence:"Clark MC, Thompson A. UpToDate 2025. See also DCH Hematologic Malignancy pathway."},
+gaitTypes:{title:"Gait Types and Their Significance",pearls:"Antalgic gait — Most common. Short stance phase on the affected side due to pain. Causes: fracture, infection, inflammation, tumor.\n\nTrendelenburg gait — Pelvic tilt toward unaffected side during swing phase. Suggests hip pathology: SCFE, Legg-Calvé-Perthes, DDH, JDM.\n\nToe-walking — Heel pain (Sever disease), calf pain (myositis), neurologic (cerebral palsy, tethered cord), or idiopathic.\n\nStooping gait — Hip flexed throughout gait cycle. Suggests psoas irritation: appendicitis, psoas abscess, PID, ovarian/testicular torsion.\n\nSteppage gait — Exaggerated hip/knee flexion to clear a dropped foot. Peroneal nerve injury, Charcot-Marie-Tooth.\n\nVaulting gait — Hyperextended knee, vaulting over the leg. Limb length discrepancy, JIA with knee involvement.",evidence:"Clark MC, Thompson A. UpToDate 2025, Table 2."},
+imaging:{title:"Imaging Approach",pearls:"Localized pain → Plain radiographs (AP + lateral) of the painful site\n\nHip pain or knee pain with hip limitation → AP + frog-leg of BILATERAL pelvis (do NOT order unilateral hip — small SCFE can be missed)\n\nSuspected septic hip → Emergency ultrasound (bedside if available) → aspiration if effusion present\n\nNon-localizable limp in toddler → AP + lateral tibia-fibula first; consider femur and foot if normal\n\nNormal radiographs do NOT exclude: toddler's fracture, early osteomyelitis, septic arthritis, or early SCFE\n\nAdvanced imaging (MRI): consider for suspected osteomyelitis with negative radiographs, disc herniation, spinal pathology, stress fractures, or pyomyositis",evidence:"ACR Appropriateness Criteria: Acutely limping child up to age 5, revised 2018. Clark MC, Thompson A. UpToDate 2025."},
+disposition:{title:"Disposition Guidance",pearls:"Emergent consult / admit:\n• Septic hip → OR for surgical drainage\n• SCFE → non-weight-bearing + urgent orthopedic fixation\n• Osteomyelitis → IV antibiotics + possible surgical debridement\n• Malignancy → staging workup + oncology\n• Compartment syndrome → emergency fasciotomy\n• NAT concerns → skeletal survey, social work, CPS\n\nOutpatient follow-up:\n• Suspected toddler's fracture (negative XR) → immobilize + reimage 7–10 days\n• Transient synovitis (low Kocher) → NSAIDs + follow-up 24–48h\n• Legg-Calvé-Perthes → orthopedic referral\n• JIA suspected → rheumatology referral\n\nDischarge with precautions:\n• Afebrile, normal radiographs, pain controlled with ibuprofen → PCP follow-up\n• Strict return precautions: worsening pain, fever, inability to bear weight, night pain, swelling",evidence:"Clark MC, Thompson A. UpToDate 2025. Perry DC, Bruce C. BMJ 2010."},
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,ibu:Math.round(wt*10),apap:Math.round(wt*15),ketorolac:Math.round(wt*0.5*10)/10,ketoMax:Math.min(Math.round(wt*0.5*10)/10,30),bolus:Math.round(wt*20),cefazolin:Math.round(wt*25),cefazolinMax:Math.min(Math.round(wt*25),1000),clinda:Math.round(wt*10),clindaMax:Math.min(Math.round(wt*10),600),vanc:Math.round(wt*15),nafcillin:Math.round(wt*50)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+// ── PRIMITIVES ──
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Pediatric Limp</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · 2025</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function TeachBox({id,teaching}){if(!teaching||!TEACH[id])return null;var t=TEACH[id];if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});var st=useState(t.pearls?"pearls":tabs[0]?tabs[0].key:"patho"),tab=st[0],setTab=st[1];return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 6px"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",borderBottom:"1px solid "+C.tealBorder,padding:"0 10px"}}>{tabs.map(function(tb){return <button key={tb.key} onClick={function(){setTab(tb.key)}} style={{padding:"6px 10px",background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:tab===tb.key?700:500,color:tab===tb.key?C.teal:C.muted,borderBottom:tab===tb.key?"2px solid "+C.teal:"2px solid transparent",marginBottom:-1}}>{tb.label}</button>})}</div><div style={{padding:"10px 14px 12px"}}><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[tab]}</div></div></div>);}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+// ═══════════════════════════════
+// FLOWCHART
+// ═══════════════════════════════
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-3.5)+","+(p.y2-6)+" "+(p.x2+3.5)+","+(p.y2-6)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Pediatric limp · All ages · Acute and chronic</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 520" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={520} fill="#fafaf8" rx={6}/>
+          <Box x={120} y={6} w={240} h={28} fill={tBg} stroke={tBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={tC}>CHILD WITH LIMP / REFUSAL TO WALK</T><T x={240} y={28} size={6} color={mC}>History · Gait observation · Systematic exam</T></Box>
+          <Arrow x1={240} y1={34} x2={240} y2={50}/>
+          <g transform="translate(240,66)"><polygon points="0,-16 65,0 0,16 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={7} weight={700}>Obvious benign</T><T x={0} y={7} size={7} weight={700}>cause?</T></g>
+          <line x1={305} y1={66} x2={420} y2={66} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={420} y1={66} x2={420} y2={82} color={gC}/>
+          <T x={370} y={62} size={6} color={gC} weight={600}>Yes</T>
+          <Box x={380} y={82} w={80} h={24} fill={gBg} stroke={gBd}><T x={420} y={92} size={6} weight={700} color={gC}>TREAT CAUSE</T><T x={420} y={102} size={5.5}>Wound care / splint</T></Box>
+          <Arrow x1={240} y1={82} x2={240} y2={100}/>
+          <T x={210} y={96} size={6} color={rC} weight={600}>No</T>
+          <g transform="translate(240,116)"><polygon points="0,-16 65,0 0,16 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={7} weight={700}>Febrile or signs</T><T x={0} y={7} size={7} weight={700}>of infection?</T></g>
+          <Arrow x1={175} y1={116} x2={80} y2={146} color={rC}/>
+          <T x={118} y={130} size={6} color={rC} weight={600}>Yes</T>
+          <Arrow x1={305} y1={116} x2={400} y2={146}/>
+          <T x={360} y={130} size={6} color={gC} weight={600}>No</T>
+          {/* Febrile branch */}
+          <Box x={10} y={146} w={140} h={50} fill={rBg} stroke={rBd} sw={1.5}><T x={80} y={158} size={7} weight={700} color={rC}>INFECTION WORKUP</T><T x={80} y={168} size={6}>Joint pain → US hip · Labs</T><T x={80} y={178} size={6}>CBC, ESR/CRP, blood cx</T><T x={80} y={188} size={6} color={rC}>Kocher criteria → Aspiration?</T></Box>
+          <Arrow x1={80} y1={196} x2={80} y2={214}/>
+          <g transform="translate(80,228)"><polygon points="0,-14 50,0 0,14 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Septic</T><T x={0} y={7} size={6} weight={700}>joint?</T></g>
+          <Arrow x1={30} y1={228} x2={10} y2={252} color={rC}/>
+          <T x={14} y={244} size={5.5} color={rC}>Yes</T>
+          <Box x={2} y={252} w={50} h={28} fill={rBg} stroke={rBd} sw={2}><T x={27} y={264} size={6} weight={700} color={rC}>OR</T><T x={27} y={274} size={5.5} color={rC}>Drainage</T></Box>
+          <Arrow x1={130} y1={228} x2={150} y2={252} color={aC}/>
+          <T x={144} y={244} size={5.5} color={aC}>No</T>
+          <Box x={106} y={252} w={70} h={28} fill={aBg} stroke={aBd}><T x={141} y={264} size={6} weight={700} color={aC}>Trans. syn?</T><T x={141} y={274} size={5.5}>NSAIDs · f/u 48h</T></Box>
+          {/* Afebrile branch */}
+          <Box x={320} y={146} w={150} h={22} fill={blBg} stroke={blBd} radius={10}><T x={395} y={159} size={7} weight={700} color={blC}>AFEBRILE · NO INFECTION</T></Box>
+          <Arrow x1={395} y1={168} x2={395} y2={186}/>
+          <g transform="translate(395,200)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Can localize</T><T x={0} y={7} size={6} weight={700}>pain?</T></g>
+          <Arrow x1={340} y1={200} x2={270} y2={228}/>
+          <T x={298} y={216} size={5.5}>No</T>
+          <Arrow x1={450} y1={200} x2={460} y2={228} color={blC}/>
+          <T x={458} y={216} size={5.5} color={blC}>Yes</T>
+          <Box x={210} y={228} w={120} h={36} fill={aBg} stroke={aBd}><T x={270} y={240} size={6} weight={700} color={aC}>NON-LOCALIZABLE</T><T x={270} y={250} size={5.5}>Toddler → XR tib/fib</T><T x={270} y={260} size={5.5}>Consider femur, foot</T></Box>
+          <Box x={410} y={228} w={60} h={36} fill={blBg} stroke={blBd}><T x={440} y={240} size={6} weight={700} color={blC}>XR</T><T x={440} y={250} size={5.5}>AP+lateral</T><T x={440} y={260} size={5.5}>of site</T></Box>
+          {/* Age-specific emergencies */}
+          <Box x={40} y={300} w={400} h={18} fill={pBg} stroke={pBd} radius={9}><T x={240} y={311} size={8} weight={700} color={pC}>AGE-SPECIFIC EMERGENCIES TO RULE OUT</T></Box>
+          <Box x={10} y={328} w={150} h={46} fill={rBg} stroke={rBd}><T x={85} y={340} size={7} weight={700} color={rC}>TODDLER (1–5 yr)</T><T x={85} y={352} size={5.5}>Septic hip · Toddler's fx</T><T x={85} y={362} size={5.5}>NAT · Discitis</T><T x={85} y={372} size={5.5} color={rC}>Malignancy</T></Box>
+          <Box x={170} y={328} w={140} h={46} fill={aBg} stroke={aBd}><T x={240} y={340} size={7} weight={700} color={aC}>SCHOOL AGE (5–12)</T><T x={240} y={352} size={5.5}>Legg-Calvé-Perthes</T><T x={240} y={362} size={5.5}>Transient synovitis</T><T x={240} y={372} size={5.5} color={aC}>Osteomyelitis</T></Box>
+          <Box x={320} y={328} w={150} h={46} fill={blBg} stroke={blBd}><T x={395} y={340} size={7} weight={700} color={blC}>ADOLESCENT (13–19)</T><T x={395} y={352} size={5.5}>SCFE · Stress fracture</T><T x={395} y={362} size={5.5}>Ligament injury</T><T x={395} y={372} size={5.5} color={blC}>Gonococcal arthritis</T></Box>
+          {/* Red flags */}
+          <Box x={20} y={392} w={440} h={42} fill={rBg} stroke={rBd} radius={8}><T x={240} y={404} size={7} weight={700} color={rC}>RED FLAGS — ALWAYS CONSIDER</T><T x={240} y={416} size={6} color={mC}>Night pain / pain at rest → malignancy · SCFE → immediate non-weight-bearing</T><T x={240} y={428} size={6} color={mC}>Septic hip → emergent drainage · NAT → skeletal survey · Compartment syn → ortho STAT</T></Box>
+          {/* Disposition */}
+          <Box x={20} y={448} w={440} h={58} fill="#f1f5f9" stroke="#e2e8f0" radius={6}>
+            <T x={130} y={460} size={7} weight={700} color={rC}>ADMIT / EMERGENT</T>
+            <T x={130} y={470} size={6} color={mC}>Septic arthritis → OR</T>
+            <T x={130} y={480} size={6} color={mC}>SCFE → non-WB + ortho</T>
+            <T x={130} y={490} size={6} color={mC}>Osteomyelitis · Malignancy</T>
+            <T x={130} y={500} size={6} color={mC}>NAT · Compartment syn</T>
+            <T x={370} y={460} size={7} weight={700} color={gC}>OUTPATIENT</T>
+            <T x={370} y={470} size={6} color={mC}>Trans. synovitis → f/u 48h</T>
+            <T x={370} y={480} size={6} color={mC}>Suspected toddler fx → splint + reimage</T>
+            <T x={370} y={490} size={6} color={mC}>Afebrile, normal XR → PCP f/u</T>
+            <T x={370} y={500} size={6} color={mC}>Return: fever, worse pain, can't walk</T>
+          </Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════
+// WALK-THROUGH WIZARD
+// ═══════════════════════════════
+function Wizard({teaching,weightKg,doses}){
+  var s1=useState(null),obvious=s1[0],setObvious=s1[1];
+  var s2=useState(null),febrile=s2[0],setFebrile=s2[1];
+  var s3=useState(null),jointConcern=s3[0],setJointConcern=s3[1];
+  var s4=useState(null),kocherRisk=s4[0],setKocherRisk=s4[1];
+  var s5=useState(null),ageGroup=s5[0],setAgeGroup=s5[1];
+  var s6=useState(null),redFlags=s6[0],setRedFlags=s6[1];
+  var s7=useState(null),localizable=s7[0],setLocalizable=s7[1];
+  var s8=useState(null),hipConcern=s8[0],setHipConcern=s8[1];
+
+  function reset(){setObvious(null);setFebrile(null);setJointConcern(null);setKocherRisk(null);setAgeGroup(null);setRedFlags(null);setLocalizable(null);setHipConcern(null);}
+
+  return(<Pad>
+    <Q text="Walk-Through" sub="Systematic evaluation of the limping child"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* STEP 1: Obvious cause */}
+    <Card title="Step 1 — Obvious Cause?" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>
+        <strong>Is there an obvious benign cause for the limp?</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>Superficial soft tissue injury · Insect bite/sting · Plantar wart · HFMD vesicles · Friction blister · Poorly fitting shoes · Recent IM vaccination</span>
+      </div>
+      <WizBtn label="Yes — Obvious Benign Cause" sub="Treat the specific cause; no further workup needed" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={obvious==="yes"} onClick={function(){setObvious("yes")}}/>
+      <WizBtn label="No — No Obvious Cause" sub="Proceed with systematic evaluation" color={C.primary} bg={C.pLight} border={C.pBorder} selected={obvious==="no"} onClick={function(){setObvious("no")}}/>
+      {obvious==="yes"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Treat Specific Cause">Manage the identified condition. No further limp workup needed unless symptoms persist or worsen.</Alert>}
+    </Card>
+
+    {/* STEP 2: Febrile / infection signs */}
+    {obvious==="no"&&(<Card title="Step 2 — Fever or Signs of Infection?" color={C.red}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Does the child have fever or localized signs of infection?</strong><br/><span style={{fontSize:12,color:C.muted}}>Fever · Exquisite joint tenderness with marked ROM limitation · Focal redness/warmth/swelling · Ill appearance</span></div>
+      <WizBtn label="Yes — Febrile or Signs of Infection" sub="Evaluate for septic arthritis, osteomyelitis" color={C.red} bg={C.redBg} border={C.redBorder} selected={febrile==="yes"} onClick={function(){setFebrile("yes")}}/>
+      <WizBtn label="No — Afebrile, No Infection Signs" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={febrile==="no"} onClick={function(){setFebrile("no")}}/>
+    </Card>)}
+
+    {/* STEP 3a: Febrile — Joint concern */}
+    {obvious==="no"&&febrile==="yes"&&(<Card title="Step 3 — Septic Joint Evaluation" color={C.red}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Is there concern for septic arthritis (especially hip)?</strong><br/><span style={{fontSize:12,color:C.muted}}>Exquisitely painful joint · Refusal to bear weight · Hip held in flexion/abduction/ER · Pain with any ROM attempt</span></div>
+      <div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:10}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.amberMid,marginBottom:4}}>Kocher Criteria for Septic Hip</div>
+        <div style={{fontSize:11,lineHeight:1.6}}>1. Fever &gt;38.5°C<br/>2. Non-weight-bearing<br/>3. ESR &gt;40 mm/hr<br/>4. WBC &gt;12,000/µL<br/>(+5th: CRP &gt;2 mg/dL)<br/><strong>0 = &lt;0.2% · 1 = 3% · 2 = 40% · 3 = 93% · 4 = 99%</strong></div>
+      </div>
+      <WizBtn label="High Suspicion — Likely Septic Joint" sub="≥2 Kocher criteria OR clinical gestalt" color={C.red} bg={C.redBg} border={C.redBorder} selected={jointConcern==="septic"} onClick={function(){setJointConcern("septic")}}/>
+      <WizBtn label="Moderate Suspicion — Possible Septic vs Transient Synovitis" sub="0–1 Kocher criteria, some ROM tolerated, child not toxic" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={jointConcern==="moderate"} onClick={function(){setJointConcern("moderate")}}/>
+      <WizBtn label="Low Suspicion — Likely Not Septic Joint" sub="Localized to bone/soft tissue, not joint; or cellulitis/abscess" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={jointConcern==="low"} onClick={function(){setJointConcern("low")}}/>
+
+      {jointConcern==="septic"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="EMERGENT — Septic Joint">
+        <strong>Emergency bedside US</strong> of the hip (or affected joint)<br/>
+        <strong>Labs:</strong> CBC, ESR, CRP, blood culture<br/>
+        <strong>If effusion present → Aspiration</strong> (WBC count, gram stain, culture)<br/>
+        <strong>Orthopedic consult STAT</strong> — surgical drainage if confirmed<br/>
+        <strong>IV Antibiotics</strong> after culture obtained:<br/>
+        — Cefazolin {doses?doses.cefazolinMax+" mg":"25 mg/kg"} IV (covers MSSA, Kingella)<br/>
+        — Add Vancomycin {doses?doses.vanc+" mg":"15 mg/kg"} if MRSA concern<br/>
+        <strong>→ Admit</strong>
+      </Alert>)}
+      {jointConcern==="moderate"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🟡" title="Transient Synovitis vs Septic — Evaluate Further">
+        <strong>Obtain:</strong> CBC, ESR, CRP, blood culture<br/>
+        <strong>US hip</strong> — if effusion present and clinical ambiguity → <strong>aspirate</strong><br/>
+        If markers low + child bearing some weight + afebrile/low-grade: likely transient synovitis<br/>
+        — Ibuprofen {doses?doses.ibu+" mg":"10 mg/kg"} PO Q6h<br/>
+        — Discharge with <strong>mandatory 24–48h follow-up</strong><br/>
+        — Return immediately if fever, unable to walk, or worsening pain
+      </Alert>)}
+      {jointConcern==="low"&&(<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="ℹ️" title="Evaluate for Osteomyelitis / Soft Tissue Infection">
+        <strong>Focal bone tenderness:</strong> XR of affected area + CBC, ESR, CRP, blood culture → osteomyelitis workup<br/>
+        <strong>Cellulitis/abscess:</strong> Consider US for abscess/foreign body<br/>
+        <strong>Myositis:</strong> If bilateral calf/thigh pain + influenza symptoms → check CK if severe
+      </Alert>)}
+      <TeachBox id="septicHip" teaching={teaching}/>
+      <TeachBox id="transientSynovitis" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 3b: Afebrile — Age group */}
+    {obvious==="no"&&febrile==="no"&&(<Card title="Step 3 — Age Group" color={C.primary}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>What is the child's age?</strong><br/><span style={{fontSize:12,color:C.muted}}>Age-specific diagnoses drive the evaluation</span></div>
+      <WizBtn label="Toddler / Young Child (1–5 years)" sub="Toddler's fracture · Transient synovitis · DDH · NAT · Discitis · Malignancy" color={C.red} bg={C.redBg} border={C.redBorder} selected={ageGroup==="toddler"} onClick={function(){setAgeGroup("toddler")}}/>
+      <WizBtn label="School Age (5–12 years)" sub="Legg-Calvé-Perthes · Transient synovitis · Osteomyelitis · Apophysitis · JIA" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={ageGroup==="school"} onClick={function(){setAgeGroup("school")}}/>
+      <WizBtn label="Adolescent (13–19 years)" sub="SCFE · Stress fracture · Ligament injury · Apophysitis · Osgood-Schlatter · OCD" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={ageGroup==="adolescent"} onClick={function(){setAgeGroup("adolescent")}}/>
+    </Card>)}
+
+    {/* STEP 4: Red flags */}
+    {obvious==="no"&&febrile==="no"&&ageGroup!==null&&(<Card title="Step 4 — Red Flag Screen" color={C.red}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Are any red flags present?</strong></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:12}}>
+        {["Night pain / pain at rest","Inability to bear weight","Persistent or worsening limp >2 weeks","Systemic symptoms (pallor, weight loss, bruising)","Suspected NAT (inconsistent mechanism)","Hip pain with decreased internal rotation","Neurologic deficits (weakness, sensory changes)","Back pain with fever or neuro symptoms"].map(function(item){return <div key={item} style={{background:C.redBg,border:"1px solid "+C.redBorder,borderRadius:6,padding:"6px 8px",fontSize:11,fontWeight:500}}>{item}</div>})}
+      </div>
+      <WizBtn label="Red Flag(s) Present" sub="Warrants urgent workup — labs, imaging, possible consultation" color={C.red} bg={C.redBg} border={C.redBorder} selected={redFlags==="yes"} onClick={function(){setRedFlags("yes")}}/>
+      <WizBtn label="No Red Flags" sub="Proceed with age-appropriate evaluation" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={redFlags==="no"} onClick={function(){setRedFlags("no")}}/>
+
+      {redFlags==="yes"&&ageGroup==="adolescent"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Adolescent Red Flags">
+        <strong>If hip pain with decreased internal rotation → SCFE until proven otherwise:</strong><br/>
+        — <strong>Immediate non-weight-bearing</strong> (crutches or wheelchair)<br/>
+        — AP + frog-leg lateral of <strong>BILATERAL pelvis</strong><br/>
+        — <strong>Urgent orthopedic consult</strong> for operative fixation<br/><br/>
+        <strong>Night pain / rest pain → malignancy screen:</strong> CBC with diff, ESR/CRP, LDH, ALP, uric acid + XR of painful area
+      </Alert>)}
+      {redFlags==="yes"&&ageGroup==="school"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="School-Age Red Flags">
+        <strong>Hip pain with Trendelenburg gait → XR bilateral pelvis</strong> (Legg-Calvé-Perthes, early SCFE)<br/>
+        <strong>Night pain → malignancy screen:</strong> CBC, ESR/CRP, LDH, ALP + XR<br/>
+        <strong>Back pain + fever → consider:</strong> discitis, vertebral osteomyelitis, spinal epidural abscess (MRI if neuro findings)
+      </Alert>)}
+      {redFlags==="yes"&&ageGroup==="toddler"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Toddler Red Flags">
+        <strong>Cannot bear weight → XR tibia/fibula</strong> (toddler's fx). If negative, consider femur, foot XR.<br/>
+        <strong>Mechanism inconsistent with developmental stage → NAT:</strong> skeletal survey, social work, CPS<br/>
+        <strong>Night pain / systemic symptoms → malignancy screen</strong><br/>
+        <strong>Back tenderness → discitis or spinal pathology</strong>
+      </Alert>)}
+      <TeachBox id="scfe" teaching={teaching}/>
+      <TeachBox id="malignancy" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 5: Localizable? */}
+    {obvious==="no"&&febrile==="no"&&ageGroup!==null&&redFlags==="no"&&(<Card title="Step 5 — Can You Localize the Pain?" color={C.blue}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Can you identify a specific site of pain or tenderness on exam?</strong></div>
+      <WizBtn label="Yes — Localized" sub="XR AP + lateral of the affected site · Hip pain → bilateral pelvis XR" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={localizable==="yes"} onClick={function(){setLocalizable("yes")}}/>
+      <WizBtn label="No — Non-Localizable" sub="Common in young/nonverbal children" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={localizable==="no"} onClick={function(){setLocalizable("no")}}/>
+
+      {localizable==="yes"&&(<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="📋" title="Localized — Targeted Imaging">
+        <strong>XR AP + lateral of the painful area</strong><br/>
+        Knee pain with hip limitation → also get <strong>bilateral pelvis XR</strong> (rule out SCFE, Perthes)<br/>
+        Point tenderness at apophysis → may diagnose clinically (Osgood-Schlatter, Sever disease)<br/><br/>
+        <strong>If XR negative + afebrile + pain controlled:</strong><br/>
+        Ibuprofen {doses?doses.ibu+" mg":"10 mg/kg"} PO Q6h · PCP follow-up · Return precautions<br/>
+        Consider immobilization if fracture suspected despite negative XR
+      </Alert>)}
+      {localizable==="no"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🟡" title="Non-Localizable — Systematic Approach">
+        {ageGroup==="toddler"&&<span><strong>Start with XR tibia-fibula AP + lateral</strong> (toddler's fracture most common occult fx)<br/>If negative → consider XR femur, foot<br/><strong>If all negative + suspected occult fracture → immobilize + reimage 7–10 days</strong><br/></span>}
+        {ageGroup!=="toddler"&&<span><strong>Examine hips carefully</strong> — log roll, internal rotation assessment<br/>XR bilateral pelvis (AP + frog-leg) if any hip concern<br/></span>}
+        If child is afebrile, ambulatory, with normal gait and exam → <strong>may not need imaging at initial visit</strong><br/>
+        Discharge with close follow-up and strict return precautions
+      </Alert>)}
+      <TeachBox id="toddlerFx" teaching={teaching}/>
+      <TeachBox id="imaging" teaching={teaching}/>
+    </Card>)}
+
+    {/* RESET */}
+    {obvious!==null&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+
+// ═══════════════════════════════
+// REFERENCE MODE TABS
+// ═══════════════════════════════
+function RefTriage({teaching}){return(<Pad>
+<Q text="Triage & Assessment" sub="Systematic evaluation of the limping child"/>
+<TeachBox id="overview" teaching={teaching}/>
+<Card title="Life-Threatening / Emergency Conditions" color={C.red}><div style={{marginTop:8}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+{["Septic arthritis (especially hip)","Osteomyelitis","Slipped capital femoral epiphysis","Compartment syndrome","Malignancy (leukemia, bone tumors)","Occult fracture (NAT)","Spinal epidural abscess","Pyomyositis","Testicular torsion","Spontaneous hemarthrosis (hemophilia)"].map(function(item){return <div key={item} style={{background:C.redBg,border:"1px solid "+C.redBorder,borderRadius:6,padding:"6px 8px",fontSize:11,fontWeight:500}}>{item}</div>})}
+</div>
+</div></Card>
+<Card title="Causes by Age" color={C.primary}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"8px"}}><div style={{fontSize:11,fontWeight:700,color:C.red,marginBottom:4}}>Toddler (1–5 yr)</div><div style={{fontSize:10,lineHeight:1.5}}>Toddler's fracture<br/>Transient synovitis<br/>Septic hip<br/>Discitis<br/>DDH<br/>NAT<br/>Leukemia<br/>Hand-foot-mouth</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"8px"}}><div style={{fontSize:11,fontWeight:700,color:C.amberMid,marginBottom:4}}>School Age (5–12)</div><div style={{fontSize:10,lineHeight:1.5}}>Transient synovitis<br/>Legg-Calvé-Perthes<br/>Osteomyelitis<br/>JIA<br/>Sever disease<br/>Osteochondritis dissecans<br/>Growing pains<br/>Tarsal coalition</div></div>
+<div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"8px"}}><div style={{fontSize:11,fontWeight:700,color:C.blue,marginBottom:4}}>Adolescent (13–19)</div><div style={{fontSize:10,lineHeight:1.5}}>SCFE<br/>Osgood-Schlatter<br/>Stress fracture<br/>Ligament injury<br/>Spondylolysis/listhesis<br/>Osteosarcoma/Ewing<br/>Gonococcal arthritis<br/>Complex regional pain syn</div></div>
+</div>
+</div></Card>
+<Card title="Gait Types" color={C.blue} defaultOpen={false}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+{[["Antalgic","Short stance phase on affected side; pain with weight-bearing","Fracture, infection, inflammation, tumor"],["Trendelenburg","Pelvic tilt toward unaffected side","SCFE, Perthes, DDH, JDM"],["Toe-walking","Child walks on toes","Sever disease, cerebral palsy, tethered cord, myositis"],["Stooping","Hip flexed throughout gait cycle","Appendicitis, psoas abscess, PID, torsion"],["Steppage","Exaggerated hip/knee flexion (foot drop)","Peroneal nerve injury, Charcot-Marie-Tooth"],["Vaulting","Hyperextended knee, vaults over leg","Limb length discrepancy, JIA"]].map(function(r){return <div key={r[0]} style={{marginBottom:8,padding:"6px 8px",background:"#f9fafb",borderRadius:6,border:"1px solid "+C.rule}}><div style={{fontWeight:700,fontSize:12,color:C.primary}}>{r[0]}</div><div style={{fontSize:11,color:C.muted}}>{r[1]}</div><div style={{fontSize:11,marginTop:2}}>{r[2]}</div></div>})}
+</div><TeachBox id="gaitTypes" teaching={teaching}/></Card>
+<Card title="Key Exam Maneuvers" color={C.primary} defaultOpen={false}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
+<strong>Log roll test:</strong> Roll thigh with child supine — pain suggests hip inflammation, infection, or trauma<br/><br/>
+<strong>Internal rotation (prone):</strong> Decreased internal rotation → SCFE, Perthes, or septic hip. The pelvis must be flat on the table.<br/><br/>
+<strong>Galeazzi test:</strong> Flex hips and knees, feet on table — unequal knee heights suggests DDH or leg length discrepancy<br/><br/>
+<strong>Trendelenburg test:</strong> Stand on affected leg — pelvic tilt toward unaffected side = positive (SCFE, Perthes, DDH)<br/><br/>
+<strong>FABERE test (figure of 4):</strong> Flexion, abduction, external rotation at hip — pain suggests sacroiliac joint pathology<br/><br/>
+<strong>Also examine:</strong> Abdomen (appendicitis, psoas abscess), genitalia (testicular torsion), spine (discitis, epidural abscess), feet (foreign body, warts, blisters)
+</div></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+<Q text="Decision Pathways" sub="Organized by acuity, fever, localizability, and age"/>
+<Card title="Febrile + Joint Concern → Septic vs Synovitis" color={C.red}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:8}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>Septic Arthritis (≥2 Kocher criteria)</div><div style={{fontSize:12,marginTop:2}}>Emergency US → Aspiration → OR for drainage · IV antibiotics after culture · Admit</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>Transient Synovitis (0–1 Kocher criteria)</div><div style={{fontSize:12,marginTop:2}}>NSAIDs · Rest · Discharge with mandatory 24–48h follow-up · Return precautions</div></div>
+</div><TeachBox id="septicHip" teaching={teaching}/></Card>
+<Card title="Afebrile — Localized Findings" color={C.blue}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+XR AP + lateral of the painful site<br/>
+Hip or knee pain → AP + frog-leg of <strong>bilateral pelvis</strong><br/>
+Point tenderness at apophysis → clinical diagnosis may suffice (Osgood-Schlatter, Sever)<br/>
+Normal XR + afebrile + pain controlled → ibuprofen + PCP follow-up + return precautions
+</div><TeachBox id="imaging" teaching={teaching}/></Card>
+<Card title="Afebrile — Non-Localizable (Toddler)" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+XR tibia-fibula AP + lateral first (toddler's fracture most common)<br/>
+If negative → consider XR femur, foot<br/>
+<strong>If suspected occult fracture:</strong> immobilize (splint/CAM boot) + reimage 7–10 days + ortho follow-up<br/>
+If asymptomatic out of immobilization → discontinue without further imaging<br/>
+<strong>Always consider NAT</strong> if mechanism inconsistent with developmental stage
+</div><TeachBox id="toddlerFx" teaching={teaching}/></Card>
+<Card title="SCFE — Immediate Actions" color={C.red}><div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:C.red,fontWeight:600,marginBottom:6}}>Obese adolescent + hip/knee pain + decreased internal rotation = SCFE until proven otherwise</div>
+<strong>1. Immediate NON-WEIGHT-BEARING</strong> (crutches or wheelchair)<br/>
+<strong>2. XR bilateral pelvis</strong> (AP + frog-leg lateral) — do NOT order unilateral hip series<br/>
+<strong>3. Urgent orthopedic consultation</strong> for operative fixation<br/>
+Do not force internal rotation on exam — this can worsen the slip<br/>
+Bilateral SCFE in 20–40% of cases
+</div><TeachBox id="scfe" teaching={teaching}/></Card>
+<PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+<Q text="Medications" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+{!doses&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>)}
+<Card title="Analgesics" color={C.blue}><div style={{marginTop:8}}>
+<DoseRow label="Ibuprofen (10 mg/kg) PO Q6h" value={doses?doses.ibu:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Acetaminophen (15 mg/kg) PO Q4h" value={doses?doses.apap:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Ketorolac (0.5 mg/kg) IV Q6h (max 30 mg)" value={doses?doses.ketoMax:"—"} unit={doses?"mg":""}/>
+</div></Card>
+<Card title="Antibiotics — Septic Arthritis / Osteomyelitis" color={C.red}><div style={{marginTop:8}}>
+<DoseRow label="Cefazolin (25 mg/kg) IV Q8h" value={doses?doses.cefazolinMax:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Clindamycin (10 mg/kg) IV Q8h — MRSA cover" value={doses?doses.clindaMax:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Vancomycin (15 mg/kg) IV Q6–8h — severe MRSA" value={doses?doses.vanc:"—"} unit={doses?"mg":""}/>
+<DoseRow label="Nafcillin (50 mg/kg) IV Q6h — MSSA" value={doses?doses.nafcillin:"—"} unit={doses?"mg":""}/>
+<div style={{fontSize:12,color:C.muted,marginTop:6}}>Antibiotic choice depends on local resistance patterns. Obtain blood cultures and joint aspirate cultures before starting antibiotics. In children &lt;5 years, also cover Kingella kingae (cefazolin covers this).</div>
+</div></Card>
+<Card title="IV Fluids" color={C.primary}><div style={{marginTop:8}}>
+<DoseRow label="NS bolus (20 mL/kg) — if sepsis concern" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/>
+</div></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+<Q text="Disposition & References"/>
+<Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>EMERGENT CONSULT / ADMIT</div><div style={{fontSize:12,marginTop:2}}>Septic arthritis → OR drainage · SCFE → non-WB + urgent ortho fixation · Osteomyelitis → IV antibiotics · Compartment syndrome → fasciotomy · Malignancy → staging + oncology · NAT → skeletal survey, social work, CPS · Spinal epidural abscess → MRI + neurosurgery</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>OUTPATIENT SPECIALTY REFERRAL</div><div style={{fontSize:12,marginTop:2}}>Suspected toddler's fracture (neg XR) → immobilize + reimage 7–10 days · Legg-Calvé-Perthes → orthopedics · JIA suspected → rheumatology · Provisional diagnosis apparent → appropriate specialist</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE WITH PRECAUTIONS</div><div style={{fontSize:12,marginTop:2}}>Afebrile + normal XR + pain controlled with ibuprofen → PCP follow-up · Transient synovitis (low Kocher) → NSAIDs + f/u 24–48h</div></div>
+</div><TeachBox id="disposition" teaching={teaching}/></Card>
+<Card title="Return Precautions" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>Return immediately for:</strong><br/>
+— Fever develops<br/>
+— Worsening pain or inability to bear weight<br/>
+— Night pain or pain that wakes child from sleep<br/>
+— Swelling, redness, or warmth of a joint<br/>
+— Limp not improving within 7–10 days<br/>
+— Any new neurologic symptoms (weakness, numbness, bowel/bladder changes)
+</div></Card>
+<Card title="Differential Reminder — Don't Forget to Examine" color={C.blue} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>Hip pathology causes knee pain</strong> — always examine both<br/>
+<strong>Abdominal pathology causes hip/thigh pain</strong> — appendicitis, psoas abscess, PID<br/>
+<strong>Back pathology causes leg pain</strong> — discitis, epidural abscess, disc herniation<br/>
+<strong>GU pathology:</strong> testicular torsion presents with wide-based gait<br/>
+<strong>Feet:</strong> always check soles for foreign bodies, warts, blisters<br/>
+<strong>Skin:</strong> check for rashes (IgA vasculitis, Lyme, serum sickness, rheumatic fever)
+</div></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Clark MC, Thompson A. Evaluation of limp in children. <em>UpToDate</em> 2025.<br/>2. Fischer SU, Beattie TF. The limping child: epidemiology, assessment and outcome. <em>J Bone Joint Surg Br</em> 1999; 81:1029.<br/>3. Perry DC, Bruce C. Evaluating the child who presents with an acute limp. <em>BMJ</em> 2010; 341:c4250.<br/>4. Kocher MS et al. Differentiating between septic arthritis and transient synovitis of the hip. <em>J Bone Joint Surg Am</em> 1999; 81:1662.<br/>5. Caird MS et al. Validation of a clinical prediction algorithm for the differentiation of septic arthritis. <em>J Bone Joint Surg Am</em> 2006; 88:1251.<br/>6. ACR Appropriateness Criteria: Acutely Limping Child Up to Age 5. Revised 2018.<br/>7. Morancie NA, Helton MR. Evaluating the Child With a Limp. <em>Am Fam Physician</em> 2023; 107:474.</div></Card>
+</Pad>)}
+
+
+// ═══════════════════════════════
+// APP
+// ═══════════════════════════════
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageYrs=s5[0],setAgeYrs=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decision",label:"Decisions"},{key:"meds",label:"Medications"},{key:"special",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (years)</label><input type="number" inputMode="decimal" value={ageYrs} onChange={function(e){setAgeYrs(e.target.value)}} placeholder="4" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="16" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} weightKg={weightKg} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="special"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/><strong style={{color:C.amberMid}}>⚠ DRAFT — Not yet reviewed or approved by the OHSU/Doernbecher Department of Emergency Medicine.</strong>
+        <br/>Doernbecher Children's Hospital · PED · Pediatric Limp Clinical Pathway · 2025
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
