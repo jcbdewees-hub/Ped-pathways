@@ -194,9 +194,8 @@ function PathwayFlowchart(){
           {/* Cerebral edema box */}
           <Box x={20} y={420} w={440} h={36} fill={rBg} stroke={rBd} sw={2} radius={8}><T x={240} y={430} size={8} weight={700} color={rC}>⚠ CEREBRAL EDEMA — MONITOR THROUGHOUT</T><T x={240} y={442} size={6} color={mC}>Headache · Bradycardia · AMS · Incontinence · Neuro deficits</T><T x={240} y={452} size={6} weight={700} color={rC}>→ Elevate HOB · 3% NaCl 5 mL/kg · Mannitol 0.5–1 g/kg · Head CT</T></Box>
 
-          {/* PICU criteria */}
-          <Box x={20} y={464} w={215} h={28} fill={rBg} stroke={rBd} radius={6}><T x={127} y={474} size={7} weight={700} color={rC}>PICU CRITERIA</T><T x={127} y={488} size={6} color={mC}>Unstable · AMS · Insulin gtt · K {'<'}3.5</T></Box>
-          <Box x={245} y={464} w={215} h={28} fill={aBg} stroke={aBd} radius={6}><T x={352} y={474} size={7} weight={700} color={aC}>CONSIDER PICU</T><T x={352} y={488} size={6} color={mC}>New onset · HCO₃ {'<'}12 · Cerebral edema</T></Box>
+          {/* PICU criteria — single box per PDF */}
+          <Box x={20} y={464} w={440} h={28} fill={rBg} stroke={rBd} radius={6}><T x={240} y={474} size={7} weight={700} color={rC}>PICU ADMISSION (any one)</T><T x={240} y={488} size={6} color={mC}>Unstable · AMS · Insulin gtt · K {'<'}3.5 · New onset + HCO₃ {'<'}12 · Cerebral edema</T></Box>
 
           {/* HHS */}
           <Box x={20} y={500} w={440} h={22} fill={puBg} stroke={puBd} radius={6}><T x={240} y={509} size={7} weight={700} color={puC}>HHS: BG {'>'}600 · Osm {'>'}320 · May have HCO₃ {'>'}15 → Contact Endocrine</T><T x={240} y={519} size={6} color={mC}>May develop hypotension if osm falls rapidly</T></Box>
@@ -268,14 +267,12 @@ function Wizard({teaching,doses}){
     {excl==="no"&&dehydrated!==null&&(<Card title="Step 3 — PICU Screen" color={C.red}>
       <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
         <strong>Does the patient meet any PICU criteria?</strong><br/>
-        <span style={{fontSize:12,color:C.muted}}>This determines disposition planning and should be assessed early.</span>
+        <span style={{fontSize:12,color:C.muted}}>Any one: hemodynamically unstable, AMS, insulin drip needed, K {'<'}3.5, new onset + HCO₃ {'<'}12, cerebral edema</span>
       </div>
-      <WizBtn label="Yes — PICU required" sub="Hemodynamically unstable · AMS · K <3.5 · Insulin drip needed" color={C.red} bg={C.redBg} border={C.redBorder} selected={picuCrit==="yes"} onClick={function(){setPicuCrit("yes")}}/>
-      <WizBtn label="Consider PICU" sub="New-onset DKA · HCO₃ <12 · Signs of cerebral edema" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={picuCrit==="consider"} onClick={function(){setPicuCrit("consider")}}/>
-      <WizBtn label="No — Ward admission likely" sub="Stable, may resolve with treatment" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={picuCrit==="no"} onClick={function(){setPicuCrit("no")}}/>
+      <WizBtn label="Yes — PICU admission" sub="Unstable · AMS · Insulin drip · K <3.5 · New onset + HCO₃ <12 · Cerebral edema" color={C.red} bg={C.redBg} border={C.redBorder} selected={picuCrit==="yes"} onClick={function(){setPicuCrit("yes")}}/>
+      <WizBtn label="No — Ward admission likely" sub="Stable, none of the above criteria" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={picuCrit==="no"} onClick={function(){setPicuCrit("no")}}/>
 
       {picuCrit==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="Plan PICU Admission">Consult PICU + Endocrinology. Proceed with management below while arranging PICU bed.</Alert>}
-      {picuCrit==="consider"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="PICU May Be Needed">Consult endocrinology. Reassess after initial resuscitation — patient may need PICU if not improving.</Alert>}
       {picuCrit==="no"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="🏥" title="Plan Ward Admission">Consult hospitalist + endocrinology. Continue management below.</Alert>}
       <TeachBox id="picu" teaching={teaching}/>
     </Card>)}
@@ -392,8 +389,7 @@ function RefMeds({teaching,doses}){return(<Pad>
 function RefDispo({teaching}){return(<Pad>
 <Q text="Disposition & References"/>
 <Card title="PICU Admission Criteria" color={C.red}><div style={{marginTop:8}}>
-<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU — Any One:</div><div style={{fontSize:12,marginTop:2}}>Hemodynamically unstable · Altered mental status · Insulin drip required · Hypokalemia (K {'<'}3.5)</div></div>
-<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>Consider PICU:</div><div style={{fontSize:12,marginTop:2}}>New-onset DKA · HCO₃ {'<'}12 · Signs of cerebral edema · Signs of shock</div></div>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU — Any One:</div><div style={{fontSize:12,marginTop:2}}>Hemodynamically unstable · Altered mental status · Insulin drip required · Hypokalemia (K {'<'}3.5) · New-onset DKA with HCO₃ {'<'}12 · Cerebral edema</div></div>
 <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>Ward Admission:</div><div style={{fontSize:12,marginTop:2}}>Stable, acidosis resolving, transitioning to SQ insulin. Consult hospitalist + endocrinology.</div></div>
 </div><TeachBox id="picu" teaching={teaching}/></Card>
 <Card title="Resolution Criteria" color={C.greenMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>pH {'>'}7.3 AND HCO₃ {'>'}15 → <strong>transition to SQ insulin</strong><br/>Consult endocrinology for SQ dosing<br/>Continue glucose monitoring · Resume PO intake when stable</div></Card>
