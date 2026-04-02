@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Non-Accidental Trauma — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#b91c1c",pLight:"#fef2f2",pBorder:"#fca5a5",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{
+  title:"Pathway Rationale — Non-Accidental Trauma",
+  patho:"Child physical abuse is a leading cause of morbidity and mortality in young children. Abusive head trauma (AHT) is the most common cause of traumatic death in infants. The ED plays a critical role in identification because many abused children present with injuries attributed to other mechanisms. Key pathophysiologic patterns include: shearing forces causing subdural hemorrhages and retinal hemorrhages in AHT; metaphyseal corner fractures from traction/twisting forces on extremities; and patterned burns or bruises from implements.\n\nYounger children are at highest risk — infants cannot report abuse and have limited mobility, so injuries in pre-mobile infants are highly suspicious. The TEN-4 rule identifies high-risk bruising: bruises on the Torso, Ears, or Neck in a child <4 years, or ANY bruise in a child <4 months.",
+  pearls:"The pathway is activated for any suspected or confirmed NAT in patients birth through 18 years. Clinically unstable patients should be resuscitated first. The key principle is: when in doubt, work it up. Missing abuse has potentially fatal consequences for the child.\n\nMandatory consults for ALL suspected/confirmed NAT: Pediatric Surgery, Social Work, and SCAN Team (Suspected Child Abuse and Neglect). DHS (Department of Human Services) must be notified — social work can assist with this call. Document the legal decision maker.",
+  evidence:"Standardized NAT evaluation protocols improve detection rates by 160% (Riney, Pediatrics 2018). Age-stratified imaging per ACR Appropriateness Criteria (Wootton-Gorges 2017). (OHSU DCH ED NAT Pathway Jan 2025, Schermerhorn Children 2024)"
+},
+imaging:{
+  title:"Age-Stratified Imaging Requirements",
+  patho:"Imaging strategy is age-dependent because injury patterns and the ability to communicate vary by developmental stage. Infants <6 months cannot report symptoms and have the highest risk for occult fractures and intracranial hemorrhage — mandatory skeletal survey AND neuroimaging. Between 6–24 months, skeletal survey remains mandatory because occult fractures are common, and neuroimaging should be strongly considered. After 24 months, skeletal survey is selective based on clinical concern.\n\nSkeletal survey requires daytime radiology — if presenting at night, admit for skeletal survey in the morning. Do NOT use PECARN head injury rules for suspected NAT — these were not designed for this population.",
+  pearls:"<6 months: MANDATORY skeletal survey + neuroimaging\n6–24 months: MANDATORY skeletal survey, STRONGLY consider neuroimaging\n24 months–5 years: Skeletal survey IF severe injury, high suspicion, severe developmental delay, or FTT\n\nAny age with head/face concerns: consider head CT (often initial), MRI may be needed later. Do NOT use PECARN for NAT.\nCT abdomen/pelvis: if AST or ALT >80, or lipase >100, or clinical concern\nC-spine imaging: if head injury, inability to clinically clear, or high suspicion\n\nDiscuss all imaging with SCAN provider.",
+  evidence:"ACR Appropriateness Criteria for Suspected Physical Abuse (Wootton-Gorges 2017). Skeletal survey sensitivity varies by age — highest yield <2 years. (OHSU DCH ED NAT Pathway Jan 2025)"
+},
+labs:{
+  title:"Laboratory Evaluation",
+  patho:"Labs serve dual purposes in NAT: (1) identifying occult organ injury (liver, pancreas, kidney, heart) that may not be clinically apparent, and (2) excluding medical mimics of abuse (bleeding disorders, metabolic bone disease). AST/ALT >80 or lipase >100 are thresholds for abdominal CT because they indicate hepatic or pancreatic injury with high sensitivity. Coagulation studies and von Willebrand panel help exclude hemophilia and VWD, which can mimic bruising from abuse.",
+  pearls:"Initial labs (all): CBC with diff, CMP, lipase, UA, urine toxicology screen.\n\nIf bruising or intracranial injury concern: coagulation panel (PT/PTT/INR). Consider vWF panel, Factor IX, Platelet Function Assay. If intracranial hemorrhage: add Factor XIII.\n\nIf fracture: calcium, phosphorus, PTH, Vitamin D 25-OH (to exclude metabolic bone disease/rickets).\n\nIf chest/abdominal injury OR ill and >3 months: troponin.\n\nIf altered mental status: ETOH, acetaminophen, salicylates.\n\nDiscuss labs with SCAN provider.",
+  evidence:"AST/ALT >80 threshold for abdominal CT: sensitivity ~80% for hepatic injury in NAT. Coagulation workup recommended by AAP to exclude bleeding disorders. (OHSU DCH ED NAT Pathway Jan 2025, Escobar APSA Position Statement 2019)"
+},
+skinSurvey:{
+  title:"Undressed Physical Exam & Skin Survey",
+  patho:"The skin survey is the most important component of the NAT physical exam. Children must be fully undressed and examined in all areas including behind ears, scalp (palpate for subgaleal hematomas), oral mucosa (frenulum tears from forced feeding), buttocks, inner thighs, and genitalia. Patterned injuries (loop marks from cords, linear marks from belts, circular burns from cigarettes, immersion burns with stocking/glove pattern) are pathognomonic for abuse.",
+  pearls:"Document ALL findings: bruises, petechiae, abrasions, lacerations, scarring, bite marks, suction bruises. Note distinct shapes, patterns, distribution, and concerning locations (non-exposed areas: buttocks, thighs, genitals, ears, frenulum).\n\nPhotograph ALL injuries — include a measurement reference in each image. Sensitive area photos (genitals) should be taken with digital camera and uploaded to OnBase (secure server), not placed in the patient chart. Haiku is useful for isolated skin findings viewed remotely by SCAN.\n\nOral exam: check mucosa, palate, upper and lower frenula, tongue, gums, lips, teeth.\nEyes: if AHT suspected → consider fundoscopic exam/ultrasound or ophthalmology consult during admission."
+},
+consults:{
+  title:"Mandatory Consults & Reporting",
+  pearls:"MANDATORY for ALL suspected/confirmed NAT <18 years:\n• Pediatric Surgery\n• Social Work\n• SCAN Team (Suspected Child Abuse and Neglect)\n\nPediatric Emergency Medicine administrator is on call for problem-solving.\n\nDHS (Department of Human Services): Alert hotline for the appropriate county of residence. Social work can assist with this call. Ensure calls to DHS and/or law enforcement are documented.\n\nIf concern for strangulation: IP consult to RSI/SANE RN for Oregon Strangulation Forensic Evidence Kit (SKIT)."
+},
+disposition:{
+  title:"Disposition",
+  pearls:"ADMIT if: clinically indicated by injury severity, OR if in consultation with DHS and SCAN it is determined that the patient cannot be discharged to a safe environment. Admit to Pediatric Surgery when the injury warrants inpatient care; otherwise admit to Pediatric Hospitalist with Pediatric Surgery consult.\n\nAlso admit if skeletal survey is needed and presenting at night (requires daytime radiology).\n\nDISCHARGE only if: in consultation with DHS, it is determined the patient can go to a safe environment with reliable follow-up. Ensure DHS/law enforcement calls documented. Arrange medical follow-up for primary care, physical injuries, and counseling. Discuss with SCAN whether referral to county Child Advocacy Center is needed."
+},
+ftt:{
+  title:"Failure to Thrive — NAT Consideration",
+  pearls:"AAP defines FTT as prolonged cessation of appropriate weight gain: weight-for-age crossing 2 major percentile channels, or weight-for-length <80% of ideal weight. Actual weight <70% of predicted weight-for-length requires urgent attention. FTT can be a manifestation of neglect and is an indication for skeletal survey in children 24 months–5 years.\n\nCaution: growth variants are common — diagnose FTT based on pattern, not single measurements."
+}
+};
+
+function calcDoses(w){var wt=parseFloat(w)||0;if(wt<=0)return null;return{w:wt,bolus:Math.round(wt*20)};}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Non-Accidental Trauma</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · January 2025</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+function TeachBox({id,teaching}){
+  var s=useState("pearls"),tab=s[0],setTab=s[1];
+  if(!teaching||!TEACH[id])return null;var t=TEACH[id];
+  if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}
+  var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;
+  var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;
+  return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>{tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}</div><div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeKey]||""}</div></div>);
+}
+
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Suspected/confirmed NAT · Birth–18 years · Undressed exam · Age-stratified imaging · Mandatory consults</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 420" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={420} fill="#fafaf8" rx={6}/>
+          <Box x={100} y={8} w={280} h={30} fill={rBg} stroke={rBd} sw={1.5} radius={14}><T x={240} y={20} size={9} weight={700} color={rC}>SUSPECTED / CONFIRMED NAT</T><T x={240} y={31} size={6} color={mC}>ESI II · Undress + gown · Vitals · Document legal decision maker</T></Box>
+          <Arrow x1={240} y1={38} x2={240} y2={56}/>
+
+          <Box x={100} y={56} w={280} h={28} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={68} size={7} weight={700} color={tC}>UNDRESSED EXAM WITH SKIN SURVEY</T><T x={240} y={80} size={6} color={mC}>Document + photograph all injuries · Oral exam · Eye exam if AHT</T></Box>
+          <Arrow x1={240} y1={84} x2={240} y2={100}/>
+
+          <Box x={100} y={100} w={280} h={22} fill={blBg} stroke={blBd} sw={1.5}><T x={240} y={110} size={7} weight={700} color={blC}>LABS: CBC, CMP, Lipase, UA, Urine Tox</T><T x={240} y={120} size={5.5} color={mC}>+ Coags/vWF if bruising · Ca/Phos/PTH/VitD if fracture · Troponin if abd/chest</T></Box>
+          <Arrow x1={240} y1={122} x2={240} y2={140}/>
+
+          <g transform="translate(240,154)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Age?</T></g>
+
+          <Arrow x1={185} y1={154} x2={70} y2={184} color={rC}/><T x={115} y={168} size={6} weight={600} color={rC}>{"<"}6 mo</T>
+          <Arrow x1={240} y1={168} x2={240} y2={184} color={aC}/><T x={250} y={180} size={6} weight={600} color={aC} anchor="start">6–24 mo</T>
+          <Arrow x1={295} y1={154} x2={410} y2={184} color={blC}/><T x={365} y={168} size={6} weight={600} color={blC}>24mo–5yr</T>
+
+          <Box x={10} y={184} w={120} h={46} fill={rBg} stroke={rBd} sw={1.5}><T x={70} y={196} size={7} weight={700} color={rC}>{"<"} 6 MONTHS</T><T x={70} y={207} size={6} weight={600} color={rC}>MANDATORY:</T><T x={70} y={217} size={6} color={mC}>Skeletal survey</T><T x={70} y={226} size={6} color={mC}>+ Neuroimaging</T></Box>
+          <Box x={170} y={184} w={140} h={46} fill={aBg} stroke={aBd} sw={1.5}><T x={240} y={196} size={7} weight={700} color={aC}>6–24 MONTHS</T><T x={240} y={207} size={6} weight={600} color={aC}>MANDATORY:</T><T x={240} y={217} size={6} color={mC}>Skeletal survey</T><T x={240} y={226} size={6} color={mC}>Strongly consider neuro</T></Box>
+          <Box x={345} y={184} w={125} h={46} fill={blBg} stroke={blBd} sw={1.5}><T x={408} y={196} size={7} weight={700} color={blC}>24 MO – 5 YR</T><T x={408} y={207} size={6} weight={600} color={blC}>SELECTIVE:</T><T x={408} y={217} size={6} color={mC}>Skeletal survey IF:</T><T x={408} y={226} size={5.5} color={mC}>severe · high suspicion · FTT</T></Box>
+
+          <Arrow x1={70} y1={230} x2={160} y2={258}/><Arrow x1={240} y1={230} x2={240} y2={258}/><Arrow x1={408} y1={230} x2={320} y2={258}/>
+
+          <Box x={100} y={258} w={280} h={28} fill={pBg} stroke={pBd} sw={2}><T x={240} y={268} size={8} weight={700} color={pC}>MANDATORY CONSULTS</T><T x={240} y={282} size={6} color={mC}>Pediatric Surgery · Social Work · SCAN Team · DHS Hotline</T></Box>
+          <Arrow x1={240} y1={286} x2={240} y2={306}/>
+
+          <g transform="translate(240,320)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Safe discharge possible?</T><T x={0} y={7} size={5} color={mC}>(with DHS + SCAN agreement)</T></g>
+
+          <Arrow x1={170} y1={320} x2={80} y2={350} color={rC}/><T x={112} y={334} size={6} weight={600} color={rC}>No</T>
+          <Arrow x1={310} y1={320} x2={400} y2={350} color={gC}/><T x={368} y={334} size={6} weight={600} color={gC}>Yes</T>
+
+          <Box x={15} y={350} w={130} h={30} fill={rBg} stroke={rBd} radius={8}><T x={80} y={362} size={8} weight={700} color={rC}>ADMIT</T><T x={80} y={374} size={6} color={mC}>Surgery or Hospitalist</T></Box>
+          <Box x={335} y={350} w={135} h={30} fill={gBg} stroke={gBd} radius={8}><T x={403} y={362} size={7} weight={700} color={gC}>DISCHARGE</T><T x={403} y={374} size={6} color={mC}>Safe plan · DHS · F/U · CAC</T></Box>
+
+          <Box x={10} y={394} w={460} h={18} fill={blBg} stroke={blBd} radius={6}><T x={240} y={406} size={6} weight={600} color={blC}>Skeletal survey requires daytime radiology — admit if presenting at night · Do NOT use PECARN for NAT</T></Box>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Wizard({teaching,doses}){
+  var s1=useState(null),stable=s1[0],setStable=s1[1];
+  var s2=useState(null),ageGroup=s2[0],setAgeGroup=s2[1];
+  var s3=useState(null),dispo=s3[0],setDispo=s3[1];
+  function reset(){setStable(null);setAgeGroup(null);setDispo(null);}
+
+  return(<Pad>
+    <Q text="NAT Walk-Through" sub="Systematic evaluation of suspected non-accidental trauma"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    <Card title="Step 1 — Stabilization & Initial Assessment" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Is the patient clinically stable? (Unstable patients should be resuscitated before using this pathway.)</div>
+      <WizBtn label="Stable — Proceed with NAT evaluation" sub="ESI II · Undress and gown · Full vitals · Document legal decision maker" color={C.primary} bg={C.pLight} border={C.pBorder} selected={stable==="yes"} onClick={function(){setStable("yes")}}/>
+      <WizBtn label="Unstable — Resuscitate first" sub="Stabilize, then return to this pathway" color={C.red} bg={C.redBg} border={C.redBorder} selected={stable==="no"} onClick={function(){setStable("no")}}/>
+      {stable==="no"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Resuscitate">Clinically unstable patients should be resuscitated prior to this pathway. Return once hemodynamically stable.</Alert>}
+    </Card>
+
+    {stable==="yes"&&<Card title="Step 2 — Undressed Exam & Skin Survey" color={C.primary}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="👁️" title="Mandatory: Full Undressed Exam">
+        Fully undress patient. Inspect ALL skin surfaces including behind ears, scalp, oral mucosa (frenulum), buttocks, inner thighs, genitalia.<br/>
+        <strong>Document:</strong> all bruises, petechiae, abrasions, lacerations, scarring, pattern injuries (bite marks, suction bruises, implement shapes), burns.<br/>
+        <strong>Photograph ALL injuries</strong> with measurement reference. Sensitive area photos → digital camera → OnBase (secure server).<br/>
+        <strong>Oral exam:</strong> mucosa, palate, frenula, tongue, gums, lips, teeth.<br/>
+        <strong>Anogenital exam:</strong> external anterior and posterior. If sexual assault concern → use Sexual Assault pathway.
+      </Alert>
+      <TeachBox id="skinSurvey" teaching={teaching}/>
+    </Card>}
+
+    {stable==="yes"&&<Card title="Step 3 — Laboratory Evaluation" color={C.blue}>
+      <div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+        <strong>Initial labs (all patients):</strong> CBC with diff, CMP, lipase, urinalysis, urine toxicology screen<br/><br/>
+        <strong>Additional labs based on findings:</strong><br/>
+        If bruising or intracranial concern → Coagulation panel (consider vWF panel, Factor IX, PFA; add Factor XIII if ICH)<br/>
+        If fracture → Calcium, phosphorus, PTH, Vitamin D 25-OH<br/>
+        If chest/abdominal injury OR ill and {'>'}3 months → Troponin<br/>
+        If altered mental status → ETOH, acetaminophen, salicylates<br/><br/>
+        <strong>CT abdomen/pelvis:</strong> if AST or ALT {'>'}80 or lipase {'>'}100<br/>
+        <span style={{fontSize:12,fontWeight:700,color:C.red}}>Discuss all labs and imaging with SCAN provider</span>
+      </div>
+      <TeachBox id="labs" teaching={teaching}/>
+    </Card>}
+
+    {stable==="yes"&&<Card title="Step 4 — Age-Stratified Imaging" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Select the patient's age for imaging recommendations:</div>
+      <WizBtn label="< 6 months" sub="MANDATORY: Skeletal survey + Neuroimaging" color={C.red} bg={C.redBg} border={C.redBorder} selected={ageGroup==="lt6"} onClick={function(){setAgeGroup("lt6")}}/>
+      <WizBtn label="6–24 months" sub="MANDATORY: Skeletal survey · STRONGLY consider Neuroimaging" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={ageGroup==="6to24"} onClick={function(){setAgeGroup("6to24")}}/>
+      <WizBtn label="24 months – 5 years" sub="SELECTIVE: Skeletal survey if severe injury, high suspicion, developmental delay, FTT" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={ageGroup==="2to5"} onClick={function(){setAgeGroup("2to5")}}/>
+      <WizBtn label="> 5 years" sub="Imaging directed by clinical findings and SCAN discussion" color={C.muted} bg={C.white} border={C.rule} selected={ageGroup==="gt5"} onClick={function(){setAgeGroup("gt5")}}/>
+
+      {ageGroup==="lt6"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🦴" title="< 6 Months — Mandatory Imaging"><strong>Skeletal survey</strong> (requires daytime radiology — admit if presenting at night)<br/><strong>Neuroimaging</strong> (often CT initially, MRI may be needed later)</Alert>}
+      {ageGroup==="6to24"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🦴" title="6–24 Months — Mandatory Skeletal Survey"><strong>Skeletal survey</strong> mandatory<br/><strong>Strongly consider neuroimaging</strong> — discuss with SCAN</Alert>}
+      {ageGroup==="2to5"&&<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🦴" title="24 Months – 5 Years — Selective Imaging">Skeletal survey IF: severe injury, high suspicion, severe developmental delay, failure to thrive, or at request of abuse specialist</Alert>}
+
+      <div style={{marginTop:8,padding:"8px 12px",background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.amberMid}}>Any Age — Additional Imaging Considerations:</div>
+        <div style={{fontSize:12,marginTop:4}}>Head/face bruising or swelling, abnormal neuro, seizure, recurrent vomiting, fussiness, respiratory compromise, or high suspicion → <strong>Head CT</strong> (do NOT use PECARN)<br/>Head injury or inability to clear clinically → <strong>C-spine imaging</strong><br/>AST or ALT {'>'}80 or lipase {'>'}100 → <strong>CT abdomen/pelvis</strong></div>
+      </div>
+      <TeachBox id="imaging" teaching={teaching}/>
+    </Card>}
+
+    {stable==="yes"&&ageGroup!==null&&<Card title="Step 5 — Mandatory Consults & Reporting" color={C.purple}>
+      <Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="📞" title="MANDATORY Consults — ALL Suspected/Confirmed NAT">
+        <strong>1. Pediatric Surgery</strong><br/>
+        <strong>2. Social Work</strong><br/>
+        <strong>3. SCAN Team</strong> (Suspected Child Abuse and Neglect)<br/><br/>
+        <strong>DHS Hotline:</strong> Alert for appropriate county of residence (social work can assist)<br/>
+        PEM administrator on call for problem-solving<br/>
+        If strangulation concern → IP consult RSI/SANE RN for Oregon SKIT
+      </Alert>
+      <TeachBox id="consults" teaching={teaching}/>
+    </Card>}
+
+    {stable==="yes"&&ageGroup!==null&&<Card title="Step 6 — Disposition" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>In consultation with DHS and SCAN, can the patient be safely discharged?</div>
+      <WizBtn label="Admit — Injury requires inpatient care or no safe discharge plan" sub="Peds Surgery (if injury warrants) or Peds Hospitalist (with Surgery consult)" color={C.red} bg={C.redBg} border={C.redBorder} selected={dispo==="admit"} onClick={function(){setDispo("admit")}}/>
+      <WizBtn label="Admit — Skeletal survey needed, presenting at night" sub="Requires daytime radiology" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={dispo==="admitnight"} onClick={function(){setDispo("admitnight")}}/>
+      <WizBtn label="Discharge — DHS + SCAN agree safe environment exists" sub="DHS/LE calls documented · Medical + counseling F/U arranged · Consider CAC referral" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={dispo==="discharge"} onClick={function(){setDispo("discharge")}}/>
+      {dispo==="admit"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="Admit">Admit to Pediatric Surgery if injury warrants inpatient care. Otherwise admit to Pediatric Hospitalist with Pediatric Surgery consult. Ensure DHS and law enforcement calls documented.</Alert>}
+      {dispo==="admitnight"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🏥" title="Admit for Daytime Skeletal Survey">Skeletal survey requires daytime radiology. Admit overnight for imaging in the morning.</Alert>}
+      {dispo==="discharge"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Discharge to Safe Environment">DHS and SCAN agree on safe discharge plan. Ensure: DHS/law enforcement calls documented in chart, medical follow-up for primary care + physical injuries + counseling arranged, discuss with SCAN whether county Child Advocacy Center referral is needed.</Alert>}
+      <TeachBox id="disposition" teaching={teaching}/>
+    </Card>}
+
+    {stable!==null&&<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>}
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+function RefTriage({teaching}){return(<Pad>
+  <Q text="Triage & Initial Assessment" sub="Suspected or confirmed NAT · Birth through 18 years"/>
+  <TeachBox id="overview" teaching={teaching}/>
+  <Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Patients from birth through age 18 with suspected or confirmed non-accidental trauma.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Clinically unstable → resuscitate first. Suspected sexual assault → use Sexual Assault pathway.</Alert></div></Card>
+  <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong> if NAT known or suspected<br/>Undress and gown patient for thorough exam<br/>Place IV and collect urine PRN<br/>Full vitals including temperature<br/><strong>Document legal decision maker</strong></div></Card>
+  <Card title="Physical Exam — Skin Survey" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Inspect all areas with child unclothed. Document and photograph all injuries with measurement reference.<br/><strong>High-yield areas:</strong> behind ears, scalp, oral frenula, buttocks, inner thighs, genitalia<br/><strong>Pattern injuries:</strong> loop marks (cords), linear marks (belts), circular burns (cigarettes), immersion burns, bite marks<br/>Oral exam: mucosa, palate, frenula, tongue<br/>Eyes: fundoscopy/US or ophthalmology consult if AHT suspected</div><TeachBox id="skinSurvey" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDecisions({teaching}){return(<Pad>
+  <Q text="Decision Tree" sub="Labs · Age-stratified imaging · Mandatory consults · Disposition"/>
+  <Card title="Laboratory Evaluation" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>All:</strong> CBC w/diff, CMP, lipase, UA, urine tox<br/><strong>Bruising/ICH:</strong> coags, consider vWF, Factor IX, PFA, Factor XIII<br/><strong>Fracture:</strong> Ca, Phos, PTH, Vitamin D 25-OH<br/><strong>Chest/abd injury or ill ({'>'}3 mo):</strong> troponin<br/><strong>Altered mental status:</strong> ETOH, acetaminophen, salicylates<br/><strong>CT abd/pelvis:</strong> AST or ALT {'>'}80 or lipase {'>'}100</div><TeachBox id="labs" teaching={teaching}/></Card>
+  <Card title="Age-Stratified Imaging" color={C.primary}><div style={{marginTop:8}}>{[{age:"< 6 months",req:"MANDATORY: Skeletal survey + Neuroimaging",c:C.red,bg:C.redBg,bd:C.redBorder},{age:"6–24 months",req:"MANDATORY: Skeletal survey · STRONGLY consider Neuroimaging",c:C.amberMid,bg:C.amberBg,bd:C.amberBorder},{age:"24 mo – 5 yr",req:"SELECTIVE: Skeletal survey if severe, high suspicion, dev delay, FTT",c:C.blue,bg:C.blueBg,bd:C.blueBorder}].map(function(r){return <div key={r.age} style={{background:r.bg,border:"1.5px solid "+r.bd,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:r.c}}>{r.age}</div><div style={{fontSize:12,marginTop:2}}>{r.req}</div></div>})}<div style={{fontSize:12,color:C.muted,marginTop:4}}>Skeletal survey requires daytime radiology. Do NOT use PECARN for NAT imaging decisions.</div></div><TeachBox id="imaging" teaching={teaching}/></Card>
+  <Card title="Mandatory Consults" color={C.purple}><div style={{marginTop:8}}>{["Pediatric Surgery","Social Work","SCAN Team","DHS Hotline (county of residence)"].map(function(c){return <div key={c} style={{background:C.purpleBg,border:"1px solid "+C.purpleBorder,borderRadius:6,padding:"6px 8px",fontSize:12,fontWeight:600,color:C.purple,marginBottom:4}}>{c}</div>})}</div><TeachBox id="consults" teaching={teaching}/></Card>
+  <PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+  <Q text="Management" sub="Treat pain, nausea, anxiety as clinically indicated"/>
+  {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight">Enter weight for fluid calculations.</Alert>}
+  <Card title="Fluids" color={C.primary}><div style={{marginTop:8}}><DoseRow label="NS bolus (20 mL/kg) — if needed" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/></div></Card>
+  <Card title="Medications" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Treat pain, nausea, anxiety, and other health concerns as clinically indicated. Medication selection depends on injury type and severity — no standardized regimen for NAT. Consult with managing surgical or medical team.</div></Card>
+  <Card title="Failure to Thrive Reference" color={C.muted} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Weight-for-age decreasing across 2 major percentile channels from established pattern, or weight-for-length {"<"}80% of ideal. Actual weight {"<"}70% of predicted weight-for-length requires urgent attention. FTT may indicate neglect and is an indication for skeletal survey in 24mo–5yr age group.</div><TeachBox id="ftt" teaching={teaching}/></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+  <Q text="Disposition & References"/>
+  <Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+    <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT</div><div style={{fontSize:12,marginTop:2}}>Clinically indicated by injury · Cannot discharge to safe environment (DHS + SCAN agreement) · Skeletal survey needed and presenting at night<br/>Peds Surgery if injury warrants · Otherwise Peds Hospitalist with Surgery consult</div></div>
+    <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE (with DHS + SCAN agreement)</div><div style={{fontSize:12,marginTop:2}}>Safe environment confirmed · DHS/LE calls documented · Medical + counseling follow-up arranged · Consider county Child Advocacy Center referral</div></div>
+  </div><TeachBox id="disposition" teaching={teaching}/></Card>
+  <Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Non-Accidental Trauma Clinical Pathway, January 2025<br/>Rosen NG et al. Child physical abuse trauma evaluation and management: WTA/PTS critical decisions algorithm. J Trauma Acute Care Surg 2021;90(4):641-651<br/>Schermerhorn SMV et al. Identification and Evaluation of NAT in the Pediatric Population. Children 2024;11(4):413<br/>Escobar MA Jr et al. Child abuse and the pediatric surgeon: APSA position statement. J Pediatr Surg 2019;54(7):1277-1285<br/>Christian CW, Levin AV. Eye examination in evaluation of child abuse. Pediatrics 2018;142(2):20181411<br/>Wootton-Gorges SL et al. ACR Appropriateness Criteria: Suspected Physical Abuse—Child. J Am Coll Radiol 2017;14(5S):S338-S349<br/>Riney LC et al. Standardizing the Evaluation of NAT in a Large Pediatric ED. Pediatrics 2018;141(1):e20171994<br/>Authors: Sara Kirkpatrick DO, Sunhee Chung MD, Beech Burns MD</div></Card>
+</Pad>)}
+
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decisions",label:"Decisions"},{key:"meds",label:"Management"},{key:"dispo",label:"Dispo & Refs"}];
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (months)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="4" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="6" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decisions"&&<RefDecisions teaching={teaching}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}><strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.<br/>Doernbecher Children's Hospital · PED · Non-Accidental Trauma Clinical Pathway · January 2025</div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
