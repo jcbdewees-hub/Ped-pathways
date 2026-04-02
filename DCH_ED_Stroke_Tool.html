@@ -143,7 +143,8 @@ function Wizard({teaching,doses}){
       {urgency==="emergent"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="STAT CT < 15 Minutes">Head CT without contrast. If hemorrhage → consult Peds Neurosurgery immediately. Consider interventions for elevated ICP. If no hemorrhage and ischemia suspected → proceed to stroke team evaluation for revascularization.</Alert>}
       {urgency==="revasc"&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="🚨" title="STROKE ALERT — Revascularization Candidate">Peds Neurology activates Stroke Alert. Imaging per stroke team: CT/CTA/CT perfusion OR MRI Rapid Swift (DWI, T2, FLAIR, MRA).<br/><span style={{fontSize:12,color:C.red,fontWeight:600}}>SCD patients: NO tPA — contact Hematology for exchange transfusion.</span></Alert>}
       {urgency==="revasc"&&<Card title="Step 3b — Acute Therapy: Thrombolysis Candidacy" color={C.purple}>
-        <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Per Neurology — walk through the acute therapy flowchart. Maintain normals throughout:<br/><span style={{fontSize:12,color:C.muted}}>O₂ SpO₂ ≥95% · Normothermia ({"<"}37.5°C) · Normoglycemia · Normotension (SBP 50th–115% of 95th %ile) · Normovolemia · VS Q1h · Neuro Q15min</span></div>
+        <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:4}}>Per Neurology — walk through the acute therapy flowchart. Maintain normals throughout:<br/><span style={{fontSize:12,color:C.muted}}>O₂ SpO₂ ≥95% · Normothermia ({"<"}37.5°C) · Normoglycemia · Normotension (SBP 50th–115% of 95th %ile) · Normovolemia · VS Q1h · Neuro Q15min</span></div>
+        <Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="📋" title="PedNIHSS — Administer Now">Peds Neurology or Adult Neurology to administer PedNIHSS. Score is required for thrombolysis candidacy assessment below (Step C).</Alert>
 
         <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>A. Patient age group?</div>
         <WizBtn label="Age ≥12 years" sub="NIHSS ≥4 and ≤24 or potentially disabling deficits" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaAge==="gte12"} onClick={function(){setTpaAge("gte12");setTpaTime(null);setTpaNIHSS(null);setTpaContra(null)}}/>
@@ -169,16 +170,14 @@ function Wizard({teaching,doses}){
         {(tpaTime==="gt8"||tpaTime==="outside")&&<Alert color={C.muted} border={C.rule} bg={C.white} icon="ℹ️" title="Outside thrombolysis/endovascular window">Continue standard stroke management. Consult Hematology. Consider anticoagulation/antiplatelet therapy after discussion with Neurology. Admit PICU.</Alert>}
 
         {tpaAge==="gte12"&&(tpaTime==="lt3"||tpaTime==="3to8")&&<div>
-          <div style={{fontSize:13,fontWeight:700,marginBottom:4,marginTop:12}}>C. PedNIHSS score?</div>
-          <div style={{fontSize:12,color:C.purple,fontWeight:600,marginBottom:6}}>Peds Neurology or Adult Neurology to administer PedNIHSS</div>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:6,marginTop:12}}>C. PedNIHSS score (per Neurology)?</div>
           <WizBtn label="NIHSS ≥4 and ≤24" sub="Meets threshold for age ≥12" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaNIHSS==="meets"} onClick={function(){setTpaNIHSS("meets");setTpaContra(null)}}/>
           <WizBtn label="Potentially disabling deficits (NIHSS may be low)" sub="Complete hemianopsia · Severe aphasia · Visual/sensory extinction · Weakness limiting effort against gravity · Any deficit potentially disabling" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaNIHSS==="disabling"} onClick={function(){setTpaNIHSS("disabling");setTpaContra(null)}}/>
           <WizBtn label="NIHSS <4 (mild) or >24 (severe)" sub="Does not meet thrombolysis criteria" color={C.muted} bg={C.white} border={C.rule} selected={tpaNIHSS==="nomeet"} onClick={function(){setTpaNIHSS("nomeet");setTpaContra(null)}}/>
         </div>}
 
         {tpaAge==="4to12"&&(tpaTime==="ant24"||tpaTime==="post48")&&<div>
-          <div style={{fontSize:13,fontWeight:700,marginBottom:4,marginTop:12}}>C. PedNIHSS score?</div>
-          <div style={{fontSize:12,color:C.purple,fontWeight:600,marginBottom:6}}>Peds Neurology or Adult Neurology to administer PedNIHSS</div>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:6,marginTop:12}}>C. PedNIHSS score (per Neurology)?</div>
           <WizBtn label="NIHSS ≥8" sub="Meets threshold for age 4–12" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaNIHSS==="meets"} onClick={function(){setTpaNIHSS("meets");setTpaContra(null)}}/>
           <WizBtn label="Potentially disabling deficits (NIHSS may be low)" sub="Complete hemianopsia · Severe aphasia · Visual/sensory extinction · Weakness limiting effort against gravity · Any deficit potentially disabling" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaNIHSS==="disabling"} onClick={function(){setTpaNIHSS("disabling");setTpaContra(null)}}/>
           <WizBtn label="NIHSS <8" sub="Does not meet endovascular criteria" color={C.muted} bg={C.white} border={C.rule} selected={tpaNIHSS==="nomeet"} onClick={function(){setTpaNIHSS("nomeet");setTpaContra(null)}}/>
