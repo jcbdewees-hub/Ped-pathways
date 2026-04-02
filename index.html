@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCH PED Clinical Decision Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3;color:#1a1d21}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+
+const PATHWAYS=[
+  // Respiratory
+  {name:"Asthma",sub:"Acute exacerbation · PAS scoring",file:"DCH_ED_Asthma_Tool.html",cat:"resp",color:"#0f766e",scoring:true},
+  {name:"Bronchiolitis",sub:"PBST scoring · HFNC algorithm",file:"DCH_ED_Bronchiolitis_Tool.html",cat:"resp",color:"#1e40af",scoring:true},
+  {name:"Croup",sub:"Westley score · Dexamethasone · Racemic epi",file:"DCH_ED_Croup_Tool.html",cat:"resp",color:"#1e40af"},
+
+  // GI / Surgical
+  {name:"Appendicitis",sub:"pARC/PAS scoring · Imaging algorithm",file:"DCH_ED_Appendicitis_Tool.html",cat:"gi",color:"#166534",scoring:true},
+  {name:"Dehydration",sub:"Severity assessment · ORT vs IV",file:"DCH_ED_Dehydration_Tool.html",cat:"gi",color:"#166534"},
+  {name:"Foreign Body Ingestion",sub:"Location-based management",file:"DCH_ED_ForeignBody_Tool.html",cat:"gi",color:"#166534"},
+  {name:"G-Tube Displacement",sub:"Tract maturity · Replacement algorithm",file:"DCH_ED_GTubeDisplacement_Tool.html",cat:"gi",color:"#166534"},
+  {name:"Intussusception",sub:"Ultrasound-guided enema · Recurrence",file:"DCH_ED_Intussusception_Tool.html",cat:"gi",color:"#0f766e"},
+
+  // Infectious Disease
+  {name:"Central Line with Fever",sub:"Line type · Biofilm · Empiric ABX",file:"DCH_ED_CentralLineFever_Tool.html",cat:"id",color:"#9f1239"},
+  {name:"Fever 29–60 Days",sub:"Inflammatory markers · LP decision",file:"DCH_ED_Fever29to60_Tool.html",cat:"id",color:"#b45309"},
+  {name:"MIS-C",sub:"Diagnostic criteria · Immunomodulation",file:"DCH_ED_MISC_Tool.html",cat:"id",color:"#9f1239"},
+  {name:"Neonatal Fever",sub:"≤28 days · Age-stratified workup",file:"DCH_ED_NeonatalFever_Tool.html",cat:"id",color:"#b91c1c"},
+  {name:"Neutropenic Fever",sub:"Risk stratification · Empiric ABX",file:"DCH_ED_NeutropenicFever_Tool.html",cat:"id",color:"#6b21a8"},
+  {name:"Sepsis (≥60 Days)",sub:"Recognition · Fluid resuscitation · Vasopressors",file:"DCH_ED_Sepsis_Tool.html",cat:"id",color:"#b91c1c"},
+  {name:"Sickle Cell — Fever",sub:"Risk stratification · Empiric ABX",file:"DCH_ED_SickleCellFever_Tool.html",cat:"id",color:"#6b21a8"},
+
+  // Neonatal
+  {name:"Hyperbilirubinemia",sub:"Neonate · Nomogram · Phototherapy",file:"DCH_ED_Hyperbilirubinemia_Tool.html",cat:"neonatal",color:"#b45309"},
+  {name:"Infant Hypothermia",sub:"≤60 days · REAL BIGS assessment",file:"DCH_ED_Hypothermia_Tool.html",cat:"neonatal",color:"#b45309"},
+
+  // Heme / Onc
+  {name:"Sickle Cell — VOE",sub:"Pain escalation · Complication screening",file:"DCH_ED_SickleCellVOE_Tool.html",cat:"heme",color:"#3730a3"},
+
+  // Neuro
+  {name:"Seizure — Status Epilepticus",sub:"4-tier benzo escalation · Weight-based",file:"DCH_ED_Seizure_Tool.html",cat:"neuro",color:"#c2410c"},
+  {name:"Suspected Stroke",sub:"AIS · CVST · tPA · Thrombectomy",file:"DCH_ED_Stroke_Tool.html",cat:"neuro",color:"#1e40af"},
+  {name:"VP Shunt / ETV",sub:"Malfunction assessment · Imaging",file:"DCH_ED_VPShunt_Tool.html",cat:"neuro",color:"#6b21a8"},
+
+  // GU
+  {name:"Scrotal Pain",sub:"TWIST score · Torsion evaluation",file:"DCH_ED_ScrotalPain_Tool.html",cat:"gu",color:"#0f766e",scoring:true},
+
+  // Metabolic
+  {name:"DKA",sub:"Two-bag system · Cerebral edema protocol",file:"DCH_ED_DKA_Tool.html",cat:"metabolic",color:"#c2410c"},
+
+  // Trauma / Abuse
+  {name:"Non-Accidental Trauma",sub:"Age-stratified imaging · TEN-4 · DHS",file:"DCH_ED_NAT_Tool.html",cat:"trauma",color:"#b91c1c"},
+  {name:"Pediatric Sexual Assault",sub:"Forensic · SAFE kit · Karly's Law",file:"DCH_ED_SexualAssault_Tool.html",cat:"trauma",color:"#475569"},
+
+  // Psych / Other
+  {name:"Acute Psych / Behavioral",sub:"ASQ · NMI · Agitation meds",file:"DCH_ED_PsychBehavioral_Tool.html",cat:"psych",color:"#475569"},
+];
+
+const CATS={
+  all:{label:"All",icon:"📋"},
+  resp:{label:"Respiratory",icon:"🫁"},
+  gi:{label:"GI / Surgical",icon:"🔪"},
+  id:{label:"Infectious Disease",icon:"🦠"},
+  neonatal:{label:"Neonatal",icon:"👶"},
+  heme:{label:"Heme / Onc",icon:"🩸"},
+  neuro:{label:"Neuro",icon:"🧠"},
+  gu:{label:"GU",icon:"🔬"},
+  metabolic:{label:"Metabolic",icon:"⚗️"},
+  trauma:{label:"Trauma / Abuse",icon:"🛡️"},
+  psych:{label:"Psych",icon:"💬"},
+};
+
+function App(){
+  var _f=useState("all"),filter=_f[0],setFilter=_f[1];
+  var _s=useState(""),search=_s[0],setSearch=_s[1];
+  var _w=useState(window.innerWidth),width=_w[0],setWidth=_w[1];
+
+  useEffect(function(){
+    function onResize(){setWidth(window.innerWidth)}
+    window.addEventListener("resize",onResize);
+    return function(){window.removeEventListener("resize",onResize)};
+  },[]);
+
+  var maxW=width<640?520:860;
+
+  var filtered=useMemo(function(){
+    return PATHWAYS.filter(function(p){
+      var catMatch=filter==="all"||p.cat===filter;
+      var searchMatch=!search||p.name.toLowerCase().indexOf(search.toLowerCase())>=0||p.sub.toLowerCase().indexOf(search.toLowerCase())>=0;
+      return catMatch&&searchMatch;
+    });
+  },[filter,search]);
+
+  var scoringCount=PATHWAYS.filter(function(p){return p.scoring}).length;
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",transition:"max-width 0.2s"}}>
+      {/* Header */}
+      <div style={{background:"linear-gradient(135deg, #1e293b 0%, #334155 100%)",color:"#fff",borderRadius:"12px 12px 0 0",padding:"24px 20px 20px"}}>
+        <div style={{fontSize:10,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",opacity:0.7,marginBottom:6}}>Doernbecher Children's Hospital · Pediatric Emergency Department</div>
+        <div style={{fontSize:22,fontWeight:700,letterSpacing:"-0.01em",lineHeight:1.2}}>Clinical Decision Tools</div>
+        <div style={{fontSize:12,fontWeight:400,opacity:0.65,marginTop:4}}>Evidence-based pathway tools with teaching · Built from DCH PED clinical pathways</div>
+
+        {/* Stats row */}
+        <div style={{display:"flex",gap:12,marginTop:16,flexWrap:"wrap"}}>
+          {[
+            {n:PATHWAYS.length,l:"Pathways",c:"#60a5fa"},
+            {n:PATHWAYS.length,l:"Live",c:"#4ade80"},
+            {n:scoringCount,l:"w/ Scoring",c:"#facc15"},
+          ].map(function(s){
+            return <div key={s.l} style={{background:"rgba(255,255,255,0.08)",borderRadius:8,padding:"8px 14px",display:"flex",alignItems:"baseline",gap:6}}>
+              <span style={{fontSize:20,fontWeight:700,color:s.c,fontFamily:"'IBM Plex Mono',monospace"}}>{s.n}</span>
+              <span style={{fontSize:11,fontWeight:500,opacity:0.8}}>{s.l}</span>
+            </div>;
+          })}
+        </div>
+      </div>
+
+      {/* Search + Filter bar */}
+      <div style={{background:"#fff",borderBottom:"1px solid #e5e2db",padding:"12px 20px"}}>
+        <input
+          type="text"
+          placeholder="Search pathways..."
+          value={search}
+          onChange={function(e){setSearch(e.target.value)}}
+          style={{width:"100%",padding:"8px 12px",border:"1.5px solid #e5e2db",borderRadius:8,fontSize:14,fontFamily:"'IBM Plex Sans',sans-serif",outline:"none",background:"#f7f6f3",marginBottom:10}}
+        />
+        <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+          {Object.keys(CATS).map(function(k){
+            var active=filter===k;
+            return <button key={k} onClick={function(){setFilter(k)}} style={{
+              padding:"4px 10px",borderRadius:20,fontSize:11,fontWeight:active?600:400,
+              border:active?"1.5px solid #334155":"1.5px solid #e5e2db",
+              background:active?"#1e293b":"#fff",color:active?"#fff":"#6b7280",
+              cursor:"pointer",fontFamily:"'IBM Plex Sans',sans-serif",transition:"all 0.15s",
+              whiteSpace:"nowrap"
+            }}>
+              {CATS[k].icon} {CATS[k].label}
+            </button>;
+          })}
+        </div>
+      </div>
+
+      {/* Pathway cards */}
+      <div style={{padding:"12px 16px 24px",display:"grid",gridTemplateColumns:width>=640?"1fr 1fr":"1fr",gap:8}}>
+        {filtered.length===0&&<div style={{gridColumn:"1/-1",padding:40,textAlign:"center",color:"#6b7280",fontSize:14}}>No pathways match your search.</div>}
+        {filtered.map(function(p){
+          return <a key={p.file} href={p.file} style={{textDecoration:"none",color:"inherit",display:"block"}}>
+            <div style={{
+              background:"#fff",border:"1.5px solid #e5e2db",borderRadius:10,padding:"14px 16px",
+              transition:"all 0.15s",cursor:"pointer",borderLeft:"4px solid "+p.color,
+              position:"relative"
+            }}
+            onMouseEnter={function(e){e.currentTarget.style.borderColor="#94a3b8";e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.06)"}}
+            onMouseLeave={function(e){e.currentTarget.style.borderColor="#e5e2db";e.currentTarget.style.boxShadow="none"}}
+            >
+              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:14,fontWeight:600,color:"#1a1d21",lineHeight:1.3}}>{p.name}</div>
+                  <div style={{fontSize:11,color:"#6b7280",marginTop:2,lineHeight:1.4}}>{p.sub}</div>
+                </div>
+                <div style={{display:"flex",gap:4,flexShrink:0,alignItems:"center"}}>
+                  <span style={{fontSize:9,fontWeight:700,letterSpacing:"0.05em",background:"#dcfce7",color:"#166534",padding:"2px 7px",borderRadius:10}}>LIVE</span>
+                  {p.scoring&&<span style={{fontSize:9,fontWeight:700,letterSpacing:"0.05em",background:"#fef9c3",color:"#854d0e",padding:"2px 7px",borderRadius:10}}>SCORE</span>}
+                </div>
+              </div>
+              <div style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"#cbd5e1",fontWeight:300}}>→</div>
+            </div>
+          </a>;
+        })}
+      </div>
+
+      {/* Footer */}
+      <div style={{padding:"16px 20px",fontSize:10,color:"#6b7280",lineHeight:1.6,borderTop:"1px solid #e5e2db",background:"#fff",borderRadius:"0 0 12px 12px"}}>
+        <strong style={{color:"#b91c1c"}}>DISCLAIMER:</strong> These tools support but do not replace clinical judgment. Verify all orders against institutional protocols and pharmacy references.
+        <br/>Doernbecher Children's Hospital · PED · {PATHWAYS.length} Clinical Pathways · OHSU
+        <br/><span style={{opacity:0.6}}>Built from DCH PED clinical pathway PDFs · Last updated April 2026</span>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
