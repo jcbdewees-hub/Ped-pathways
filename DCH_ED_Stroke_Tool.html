@@ -67,6 +67,14 @@ function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==f
 function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
 function TeachBox({id,teaching}){var s=useState("pearls"),tab=s[0],setTab=s[1];if(!teaching||!TEACH[id])return null;var t=TEACH[id];if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;var activeKey=tabs.find(function(x){return x.key===tab})?tab:tabs[0].key;return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden",borderLeft:"4px solid "+C.teal}}><div style={{padding:"10px 14px 0"}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6}}>📖 {t.title}</div></div><div style={{display:"flex",gap:0,padding:"8px 14px 0",borderBottom:"1px solid "+C.tealBorder}}>{tabs.map(function(tb){var act=tb.key===activeKey;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted,padding:"4px 10px 8px",borderBottom:act?"2px solid "+C.teal:"2px solid transparent",whiteSpace:"nowrap"}}>{tb.label}</button>)})}</div><div style={{padding:"10px 14px 12px",fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeKey]||""}</div></div>);}
 
+function BPReference(){
+  var s=useState(false),open=s[0],setOpen=s[1];
+  var bpM=[{age:"1–4 years",p50:90,p95:112,gt15:129,gt20:134},{age:"5 years",p50:95,p95:113,gt15:130,gt20:136},{age:"6–10 years",p50:96,p95:121,gt15:139,gt20:145},{age:"11–18 years",p50:105,p95:140,gt15:161,gt20:168},{age:">18 years",p50:110,p95:140,gt15:161,gt20:168}];
+  var bpF=[{age:"1–4 years",p50:90,p95:111,gt15:128,gt20:133},{age:"5 years",p50:94,p95:113,gt15:130,gt20:136},{age:"6–10 years",p50:96,p95:121,gt15:139,gt20:145},{age:"11–18 years",p50:105,p95:131,gt15:151,gt20:157},{age:">18 years",p50:110,p95:140,gt15:161,gt20:168}];
+  function BPTable({title,data}){return(<div style={{marginBottom:8}}><div style={{fontSize:12,fontWeight:700,color:C.purple,marginBottom:4}}>{title}</div><table style={{width:"100%",fontSize:11,borderCollapse:"collapse"}}><thead><tr style={{background:C.purpleBg}}>{["Age","50th %","95th %",">15% above 95th",">20% above 95th"].map(function(h){return <th key={h} style={{padding:"4px 6px",textAlign:"left",borderBottom:"1.5px solid "+C.purpleBorder,fontWeight:600}}>{h}</th>})}</tr></thead><tbody>{data.map(function(r){return <tr key={r.age} style={{borderBottom:"1px solid "+C.rule}}><td style={{padding:"3px 6px",fontWeight:500}}>{r.age}</td><td style={{padding:"3px 6px"}}>{r.p50}</td><td style={{padding:"3px 6px"}}>{r.p95}</td><td style={{padding:"3px 6px",color:C.red,fontWeight:600}}>{r.gt15}</td><td style={{padding:"3px 6px",color:C.red,fontWeight:600}}>{r.gt20}</td></tr>})}</tbody></table></div>)}
+  return(<div style={{marginTop:10}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"8px 10px",background:C.purpleBg,border:"1.5px solid "+C.purpleBorder,borderRadius:8,cursor:"pointer",textAlign:"left"}}><span style={{fontSize:12,fontWeight:700,color:C.purple}}>📊 tPA Systolic BP Parameters by Age/Sex</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"10px 8px",border:"1.5px solid "+C.purpleBorder,borderTop:"none",borderRadius:"0 0 8px 8px"}}><div style={{fontSize:11,color:C.red,fontWeight:600,marginBottom:8}}>tPA contraindicated if persistent SBP {">"} 15% above 95th %ile</div><BPTable title="Male" data={bpM}/><BPTable title="Female" data={bpF}/></div>}</div>)
+}
+
 function PathwayFlowchart(){
   return(<div style={{marginTop:20}}>
     <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
@@ -89,7 +97,11 @@ function Wizard({teaching,doses}){
   var s1=useState(null),excl=s1[0],setExcl=s1[1];
   var s2=useState(null),urgency=s2[0],setUrgency=s2[1];
   var s3=useState(null),imgResult=s3[0],setImgResult=s3[1];
-  function reset(){setExcl(null);setUrgency(null);setImgResult(null);}
+  var s6=useState(null),tpaAge=s6[0],setTpaAge=s6[1];
+  var s7=useState(null),tpaTime=s7[0],setTpaTime=s7[1];
+  var s8=useState(null),tpaNIHSS=s8[0],setTpaNIHSS=s8[1];
+  var s9=useState(null),tpaContra=s9[0],setTpaContra=s9[1];
+  function reset(){setExcl(null);setUrgency(null);setImgResult(null);setTpaAge(null);setTpaTime(null);setTpaNIHSS(null);setTpaContra(null);}
 
   return(<Pad>
     <Q text="Suspected Stroke Walk-Through" sub="Time-critical evaluation · LIP eval <10 min · Imaging <15–120 min"/>
@@ -129,7 +141,130 @@ function Wizard({teaching,doses}){
       <WizBtn label="Possible revascularization candidate (age ≥4, known onset)" sub="STROKE ALERT: CT/CTA/CT perfusion OR MRI Rapid Swift — Neurology directs" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={urgency==="revasc"} onClick={function(){setUrgency("revasc")}}/>
       <WizBtn label="Moderate-high suspicion, stable, not revascularization candidate" sub="MRI within 2–3 hours if available · Otherwise quick brain MRI with DWI" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={urgency==="standard"} onClick={function(){setUrgency("standard")}}/>
       {urgency==="emergent"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="STAT CT < 15 Minutes">Head CT without contrast. If hemorrhage → consult Peds Neurosurgery immediately. Consider interventions for elevated ICP. If no hemorrhage and ischemia suspected → proceed to stroke team evaluation for revascularization.</Alert>}
-      {urgency==="revasc"&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="🚨" title="STROKE ALERT — Revascularization Candidate">Peds Neurology activates Stroke Alert. Imaging per stroke team: CT/CTA/CT perfusion OR MRI Rapid Swift (DWI, T2, FLAIR, MRA). tPA candidacy assessment by Neurology (see Meds tab for criteria). SCD patients: NO tPA — contact Hematology for exchange transfusion.</Alert>}
+      {urgency==="revasc"&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="🚨" title="STROKE ALERT — Revascularization Candidate">Peds Neurology activates Stroke Alert. Imaging per stroke team: CT/CTA/CT perfusion OR MRI Rapid Swift (DWI, T2, FLAIR, MRA).<br/><span style={{fontSize:12,color:C.red,fontWeight:600}}>SCD patients: NO tPA — contact Hematology for exchange transfusion.</span></Alert>}
+      {urgency==="revasc"&&<Card title="Step 3b — Acute Therapy: Thrombolysis Candidacy" color={C.purple}>
+        <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>Per Neurology — walk through the acute therapy flowchart. Maintain normals throughout:<br/><span style={{fontSize:12,color:C.muted}}>O₂ SpO₂ ≥95% · Normothermia ({"<"}37.5°C) · Normoglycemia · Normotension (SBP 50th–115% of 95th %ile) · Normovolemia · VS Q1h · Neuro Q15min</span></div>
+
+        <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>A. Patient age group?</div>
+        <WizBtn label="Age ≥12 years" sub="NIHSS ≥4 and ≤24 or potentially disabling deficits" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaAge==="gte12"} onClick={function(){setTpaAge("gte12");setTpaTime(null);setTpaNIHSS(null);setTpaContra(null)}}/>
+        <WizBtn label="Age 4–12 years" sub="NIHSS ≥8 or potentially disabling deficits" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaAge==="4to12"} onClick={function(){setTpaAge("4to12");setTpaTime(null);setTpaNIHSS(null);setTpaContra(null)}}/>
+        <WizBtn label="Age <4 years" sub="Not a thrombolysis candidate per this pathway" color={C.muted} bg={C.white} border={C.rule} selected={tpaAge==="lt4"} onClick={function(){setTpaAge("lt4");setTpaTime(null);setTpaNIHSS(null);setTpaContra(null)}}/>
+
+        {tpaAge==="lt4"&&<Alert color={C.muted} border={C.rule} bg={C.white} icon="ℹ️" title="Age <4 — Not a thrombolysis candidate">Continue standard stroke management. Consult Hematology. Consider anticoagulation/antiplatelet therapy after discussion with Neurology. Admit PICU.</Alert>}
+
+        {tpaAge==="gte12"&&<div>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:6,marginTop:12}}>B. Time from symptom onset?</div>
+          <WizBtn label="<3 hours from onset" sub="May be IV tPA candidate" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaTime==="lt3"} onClick={function(){setTpaTime("lt3");setTpaNIHSS(null);setTpaContra(null)}}/>
+          <WizBtn label="3–8 hours from onset" sub="May be endovascular therapy candidate" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={tpaTime==="3to8"} onClick={function(){setTpaTime("3to8");setTpaNIHSS(null);setTpaContra(null)}}/>
+          <WizBtn label=">8 hours from onset" sub="Outside thrombolysis window" color={C.muted} bg={C.white} border={C.rule} selected={tpaTime==="gt8"} onClick={function(){setTpaTime("gt8");setTpaNIHSS(null);setTpaContra(null)}}/>
+        </div>}
+
+        {tpaAge==="4to12"&&<div>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:6,marginTop:12}}>B. Circulation type & time from onset?</div>
+          <WizBtn label="Anterior circulation ≤24 hours" sub="Hemiparesis, sensory loss, aphasia, focal weakness" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaTime==="ant24"} onClick={function(){setTpaTime("ant24");setTpaNIHSS(null);setTpaContra(null)}}/>
+          <WizBtn label="Posterior circulation ≤48 hours" sub="Ataxia, vertigo, dizziness, nystagmus, blurry vision, diplopia" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaTime==="post48"} onClick={function(){setTpaTime("post48");setTpaNIHSS(null);setTpaContra(null)}}/>
+          <WizBtn label="Outside time window" sub="Not a thrombolysis/endovascular candidate" color={C.muted} bg={C.white} border={C.rule} selected={tpaTime==="outside"} onClick={function(){setTpaTime("outside");setTpaNIHSS(null);setTpaContra(null)}}/>
+        </div>}
+
+        {(tpaTime==="gt8"||tpaTime==="outside")&&<Alert color={C.muted} border={C.rule} bg={C.white} icon="ℹ️" title="Outside thrombolysis/endovascular window">Continue standard stroke management. Consult Hematology. Consider anticoagulation/antiplatelet therapy after discussion with Neurology. Admit PICU.</Alert>}
+
+        {tpaAge==="gte12"&&(tpaTime==="lt3"||tpaTime==="3to8")&&<div>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:6,marginTop:12}}>C. PedNIHSS score?</div>
+          <WizBtn label="NIHSS ≥4 and ≤24" sub="Meets threshold for age ≥12" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaNIHSS==="meets"} onClick={function(){setTpaNIHSS("meets");setTpaContra(null)}}/>
+          <WizBtn label="Potentially disabling deficits (NIHSS may be low)" sub="Complete hemianopsia · Severe aphasia · Visual/sensory extinction · Weakness limiting effort against gravity · Any deficit potentially disabling" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaNIHSS==="disabling"} onClick={function(){setTpaNIHSS("disabling");setTpaContra(null)}}/>
+          <WizBtn label="NIHSS <4 (mild) or >24 (severe)" sub="Does not meet thrombolysis criteria" color={C.muted} bg={C.white} border={C.rule} selected={tpaNIHSS==="nomeet"} onClick={function(){setTpaNIHSS("nomeet");setTpaContra(null)}}/>
+        </div>}
+
+        {tpaAge==="4to12"&&(tpaTime==="ant24"||tpaTime==="post48")&&<div>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:6,marginTop:12}}>C. PedNIHSS score?</div>
+          <WizBtn label="NIHSS ≥8" sub="Meets threshold for age 4–12" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaNIHSS==="meets"} onClick={function(){setTpaNIHSS("meets");setTpaContra(null)}}/>
+          <WizBtn label="Potentially disabling deficits (NIHSS may be low)" sub="Complete hemianopsia · Severe aphasia · Visual/sensory extinction · Weakness limiting effort against gravity · Any deficit potentially disabling" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={tpaNIHSS==="disabling"} onClick={function(){setTpaNIHSS("disabling");setTpaContra(null)}}/>
+          <WizBtn label="NIHSS <8" sub="Does not meet endovascular criteria" color={C.muted} bg={C.white} border={C.rule} selected={tpaNIHSS==="nomeet"} onClick={function(){setTpaNIHSS("nomeet");setTpaContra(null)}}/>
+        </div>}
+
+        {tpaNIHSS==="nomeet"&&<Alert color={C.muted} border={C.rule} bg={C.white} icon="ℹ️" title="Does not meet thrombolysis/endovascular criteria">Continue standard stroke management. Consult Hematology. Consider anticoagulation/antiplatelet therapy after discussion with Neurology. Admit PICU.</Alert>}
+
+        {(tpaNIHSS==="meets"||tpaNIHSS==="disabling")&&<div>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:6,marginTop:12}}>D. tPA contraindication screening</div>
+          <div style={{fontSize:12,color:C.muted,marginBottom:8}}>Review for ANY of the following exclusion criteria:</div>
+          <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+            <div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4}}>General Exclusions</div>
+            <div style={{fontSize:11,lineHeight:1.7}}>
+              Unknown time of symptom onset<br/>
+              Pregnancy<br/>
+              Clinical presentation suggestive of SAH (even if imaging negative)<br/>
+              Patient would decline blood transfusion<br/>
+              History of prior intracranial hemorrhage<br/>
+              Known cerebral AVM, aneurysm, or neoplasm<br/>
+              Persistent SBP {">"} 15% above 95th %ile for age<br/>
+              Glucose {"<"} 50 or {">"} 400 mg/dL<br/>
+              Bleeding diathesis: platelets {"<"}100K, INR {">"}1.4 (PT {">"}15s), or elevated aPTT<br/>
+              Acute MI or post-MI pericarditis<br/>
+              Prior stroke, major head trauma, or intracranial injury within 3 months<br/>
+              Major surgery or parenchymal biopsy within 10 days (relative)<br/>
+              GI or urinary bleeding within 21 days (relative)<br/>
+              Arterial puncture at non-compressible site or LP within 7 days (relative)<br/>
+              Malignancy or within 1 month of cancer treatment completion<br/>
+              Significant underlying bleeding disorder
+            </div>
+          </div>
+          <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+            <div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4}}>Stroke-Related Exclusions</div>
+            <div style={{fontSize:11,lineHeight:1.7}}>
+              PedNIHSS {"<"}4 at tPA infusion start or sedation for neuroimaging<br/>
+              Pre-tPA PedNIHSS {">"}24 (large territory stroke)<br/>
+              Suspected SBE, moyamoya, SCD, meningitis, bone marrow/air/fat emboli<br/>
+              Primary angiitis of CNS or secondary CNS vasculitis (FCA is NOT a contraindication)
+            </div>
+          </div>
+          <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+            <div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4}}>Neuroimaging Exclusions</div>
+            <div style={{fontSize:11,lineHeight:1.7}}>
+              Intracranial hemorrhage on pre-treatment imaging (even petechial)<br/>
+              Intracranial dissection (at or distal to ophthalmic artery)<br/>
+              Large infarct volume (≥1/3 MCA territory on MRI)<br/>
+              Absence of occlusion on vascular imaging
+            </div>
+          </div>
+          <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+            <div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4}}>Drug-Related Exclusions</div>
+            <div style={{fontSize:11,lineHeight:1.7}}>
+              Known allergy to tPA<br/>
+              On anticoagulation with INR ≥ 1.5<br/>
+              Received heparin within 4 hours with abnormal aPTT<br/>
+              LMWH within past 24 hours
+            </div>
+          </div>
+          <WizBtn label="No contraindications identified" sub={(tpaAge==="gte12"&&tpaTime==="lt3")?"→ May be IV tPA candidate":(tpaAge==="gte12"&&tpaTime==="3to8")?"→ May be endovascular therapy candidate":"→ May be endovascular therapy candidate"} color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={tpaContra==="none"} onClick={function(){setTpaContra("none")}}/>
+          <WizBtn label="Contraindication(s) present" sub="Not a tPA/endovascular candidate — continue standard stroke management" color={C.red} bg={C.redBg} border={C.redBorder} selected={tpaContra==="yes"} onClick={function(){setTpaContra("yes")}}/>
+        </div>}
+
+        {tpaContra==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="tPA Contraindicated">Continue standard stroke management. Consult Hematology. Consider anticoagulation/antiplatelet therapy after discussion with Neurology. Admit PICU.</Alert>}
+
+        {tpaContra==="none"&&tpaAge==="gte12"&&tpaTime==="lt3"&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="💉" title="May Be IV tPA Candidate">
+          <strong>Administer ONLY after Neurology discussion.</strong><br/>
+          tPA (Alteplase) 0.9 mg/kg IV, max 90 mg — first 10% bolus over 1 minute, remainder infused over 1 hour.<br/>
+          {doses&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>Total: {doses.tpa} mg · Bolus: {doses.tpaBolus} mg · Infusion: {doses.tpaInf} mg</span>}
+          {!doses&&<span style={{color:C.amberMid,fontWeight:600}}>Enter weight above for dose calculation.</span>}<br/>
+          Peds Neurology vs adult Neurology to administer NIHSS.<br/>
+          Admit directly to IR for thrombectomy if indicated, then PICU. Otherwise admit PICU.
+        </Alert>}
+
+        {tpaContra==="none"&&tpaAge==="gte12"&&tpaTime==="3to8"&&<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🧠" title="May Be Endovascular Therapy Candidate">
+          <strong>Stroke team determines intervention.</strong><br/>
+          CT/CT perfusion/CTA OR MRI Rapid Swift per stroke team.<br/>
+          Admit directly to IR for thrombectomy if indicated, then PICU. Otherwise admit PICU.
+        </Alert>}
+
+        {tpaContra==="none"&&tpaAge==="4to12"&&<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🧠" title="May Be Endovascular Therapy Candidate">
+          <strong>Stroke team determines intervention.</strong><br/>
+          CT/CT perfusion/CTA OR MRI Rapid Swift per stroke team.<br/>
+          Admit directly to IR for thrombectomy if indicated, then PICU. Otherwise admit PICU.
+        </Alert>}
+
+        <BPReference/>
+        <TeachBox id="tpa" teaching={teaching}/>
+      </Card>}
       {urgency==="standard"&&<Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🧠" title="MRI — Standard Evaluation">MRI Rapid Swift if available within 2–3 hours (DWI, T2, FLAIR, MRA brain). Otherwise: quick brain MRI with DWI + MRI w/o contrast + MRA head w/o + MRA neck with/without dissection protocol. Goal: within 120 minutes of presentation.</Alert>}
       <TeachBox id="imaging" teaching={teaching}/>
     </Card>}
