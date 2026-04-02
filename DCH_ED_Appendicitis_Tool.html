@@ -277,85 +277,85 @@ function PathwayFlowchart() {
           </Box>
 
           {/* ─── HIGH ─── */}
-          <Arrow x1={305} y1={92} x2={410} y2={112} color={rC}/>
-          <Box x={350} y={112} w={126} h={44} fill={rBg} stroke={rBd} sw={1.5}>
-            <T x={413} y={122} size={7.5} weight={700} color={rC}>HIGH</T>
-            <T x={413} y={132} size={5.5} color={mC}>PAS/Alv ≥7 · High pARC</T>
-            <T x={413} y={144} size={5.5}>NPO · IV pain · Bolus</T>
-            <T x={413} y={153} size={5.5} weight={700} color={rC}>→ US abdomen</T>
+          <Arrow x1={305} y1={92} x2={413} y2={112} color={rC}/>
+          <Box x={348} y={112} w={128} h={44} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={412} y={122} size={7.5} weight={700} color={rC}>HIGH</T>
+            <T x={412} y={132} size={5.5} color={mC}>PAS/Alv ≥7 · High pARC</T>
+            <T x={412} y={144} size={5.5}>NPO · IV pain · Bolus</T>
+            <T x={412} y={153} size={5.5} weight={700} color={rC}>→ US abdomen</T>
           </Box>
 
-          {/* ═══ US RESULTS ═══ */}
-          <Arrow x1={198} y1={156} x2={240} y2={180} color={aC}/>
-          <Arrow x1={413} y1={156} x2={350} y2={180} color={rC}/>
+          {/* ═══ US RESULTS — centered at x=255 ═══ */}
+          <Arrow x1={198} y1={156} x2={218} y2={180} color={aC}/>
+          <Arrow x1={412} y1={156} x2={320} y2={180} color={rC}/>
 
-          <g transform="translate(295,192)">
+          <g transform="translate(255,192)">
             <polygon points="0,-12 60,0 0,12 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
             <T x={0} y={2} size={7} weight={700}>US Result?</T>
           </g>
 
-          {/* US POSITIVE → Appendicitis */}
-          <line x1={355} y1={192} x2={430} y2={192} stroke={rC} strokeWidth={1}/>
-          <T x={392} y={186} size={5.5} weight={600} color={rC}>Positive</T>
-          <Arrow x1={430} y1={192} x2={430} y2={210} color={rC}/>
+          {/* US POSITIVE → Appendicitis (right) */}
+          <line x1={315} y1={192} x2={380} y2={192} stroke={rC} strokeWidth={1}/>
+          <T x={348} y={186} size={5.5} weight={600} color={rC}>Positive</T>
+          <Arrow x1={380} y1={192} x2={380} y2={210} color={rC}/>
 
-          {/* US NEGATIVE → Likely not */}
-          <line x1={235} y1={192} x2={80} y2={192} stroke={gC} strokeWidth={1}/>
-          <T x={155} y={186} size={5.5} weight={600} color={gC}>Negative</T>
-          <Arrow x1={80} y1={192} x2={80} y2={210} color={gC}/>
+          {/* US NEGATIVE → Likely not (left) */}
+          <line x1={195} y1={192} x2={95} y2={192} stroke={gC} strokeWidth={1}/>
+          <T x={142} y={186} size={5.5} weight={600} color={gC}>Negative</T>
+          <Arrow x1={95} y1={192} x2={95} y2={210} color={gC}/>
 
-          {/* US NOT SEEN → Inconclusive */}
-          <Arrow x1={295} y1={204} x2={295} y2={224} color={aC}/>
-          <T x={320} y={218} size={5.5} weight={600} color={aC}>Not seen</T>
+          {/* US NOT SEEN → Inconclusive (down) */}
+          <Arrow x1={255} y1={204} x2={255} y2={224} color={aC}/>
+          <T x={280} y={218} size={5.5} weight={600} color={aC}>Not seen</T>
 
           {/* ─── LIKELY NOT APPY ─── */}
-          <Box x={14} y={210} w={130} h={34} fill={gBg} stroke={gBd}>
-            <T x={79} y={221} size={6.5} weight={700} color={gC}>LIKELY NOT APPY</T>
-            <T x={79} y={232} size={5}>Repeat PE · Alt dx</T>
-            <T x={79} y={241} size={5} color={gC}>PO challenge · D/C vs obs</T>
+          <Box x={24} y={210} w={140} h={34} fill={gBg} stroke={gBd}>
+            <T x={94} y={221} size={6.5} weight={700} color={gC}>LIKELY NOT APPY</T>
+            <T x={94} y={232} size={5}>Repeat PE · Alt dx</T>
+            <T x={94} y={241} size={5} color={gC}>PO challenge · D/C vs obs</T>
           </Box>
 
           {/* ─── APPENDICITIS ─── */}
-          <Box x={374} y={210} w={102} h={34} fill={rBg} stroke={rBd} sw={2}>
-            <T x={425} y={221} size={7} weight={700} color={rC}>APPENDICITIS</T>
-            <T x={425} y={232} size={5.5}>Consult Peds Surgery</T>
-            <T x={425} y={241} size={5} color={mC}>Abx if perf / per surgery</T>
+          <Box x={360} y={210} w={116} h={34} fill={rBg} stroke={rBd} sw={2}>
+            <T x={418} y={221} size={7} weight={700} color={rC}>APPENDICITIS</T>
+            <T x={418} y={232} size={5.5}>Consult Peds Surgery</T>
+            <T x={418} y={241} size={5} color={mC}>Abx if perf / per surgery</T>
           </Box>
 
           {/* ─── INCONCLUSIVE → MRI ─── */}
-          <Box x={210} y={224} w={170} h={30} fill={aBg} stroke={aBd}>
-            <T x={295} y={234} size={6.5} weight={700} color={aC}>INCONCLUSIVE</T>
-            <T x={295} y={244} size={5}>Repeat PE · Consider alt dx</T>
-            <T x={295} y={252} size={5} weight={700} color={pC}>→ MRI appendicitis protocol</T>
+          <Box x={170} y={224} w={170} h={30} fill={aBg} stroke={aBd}>
+            <T x={255} y={234} size={6.5} weight={700} color={aC}>INCONCLUSIVE</T>
+            <T x={255} y={244} size={5}>Repeat PE · Consider alt dx</T>
+            <T x={255} y={252} size={5} weight={700} color={pC}>→ MRI appendicitis protocol</T>
           </Box>
-          <T x={295} y={264} size={4.5} color={mC}>CT if: age {'<'}5 · can't stay still · obese · suspected rupture</T>
+          <T x={255} y={264} size={4.5} color={mC}>CT if: age {'<'}5 · can't stay still · obese · suspected rupture</T>
 
-          {/* ═══ MRI RESULTS ═══ */}
-          <Arrow x1={295} y1={268} x2={295} y2={284}/>
-          <g transform="translate(295,296)">
+          {/* ═══ MRI RESULTS — centered at x=255 ═══ */}
+          <Arrow x1={255} y1={268} x2={255} y2={284}/>
+          <g transform="translate(255,296)">
             <polygon points="0,-12 55,0 0,12 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
             <T x={0} y={2} size={6.5} weight={700}>MRI Result?</T>
           </g>
 
-          {/* MR POSITIVE → Appendicitis */}
-          <line x1={350} y1={296} x2={430} y2={296} stroke={rC} strokeWidth={1}/>
-          <T x={390} y={290} size={5.5} weight={600} color={rC}>Positive</T>
-          <Arrow x1={430} y1={296} x2={430} y2={244} color={rC}/>
+          {/* MR POSITIVE → Appendicitis (arrow right, then up) */}
+          <line x1={310} y1={296} x2={418} y2={296} stroke={rC} strokeWidth={1}/>
+          <T x={364} y={290} size={5.5} weight={600} color={rC}>Positive</T>
+          <Arrow x1={418} y1={296} x2={418} y2={244} color={rC}/>
 
-          {/* MR NEGATIVE → Likely not */}
-          <line x1={240} y1={296} x2={80} y2={296} stroke={gC} strokeWidth={1}/>
-          <T x={158} y={290} size={5.5} weight={600} color={gC}>Negative</T>
-          <Arrow x1={80} y1={296} x2={80} y2={244} color={gC}/>
+          {/* MR NEGATIVE → Likely not (arrow left, then up) */}
+          <line x1={200} y1={296} x2={94} y2={296} stroke={gC} strokeWidth={1}/>
+          <T x={145} y={290} size={5.5} weight={600} color={gC}>Negative</T>
+          <Arrow x1={94} y1={296} x2={94} y2={244} color={gC}/>
 
-          {/* MR EQUIVOCAL → Diagnosis uncertain */}
-          <Arrow x1={295} y1={308} x2={295} y2={326} color={aC}/>
-          <T x={325} y={320} size={5.5} weight={600} color={aC}>Equivocal</T>
+          {/* MR EQUIVOCAL → Diagnosis uncertain (down) */}
+          <Arrow x1={255} y1={308} x2={255} y2={326} color={aC}/>
+          <T x={285} y={320} size={5.5} weight={600} color={aC}>Equivocal</T>
 
           {/* ─── DIAGNOSIS UNCERTAIN ─── */}
-          <Box x={210} y={326} w={170} h={28} fill={aBg} stroke={aBd}>
-            <T x={295} y={336} size={6.5} weight={700} color={aC}>DIAGNOSIS UNCERTAIN</T>
-            <T x={295} y={347} size={5}>Consult Peds Surgery</T>
-            <T x={295} y={354} size={5} color={aC}>Avoid empiric abx unless perf suspected</T>
+          <Box x={170} y={326} w={170} h={28} fill={aBg} stroke={aBd}>
+            <T x={255} y={336} size={6.5} weight={700} color={aC}>DIAGNOSIS UNCERTAIN</T>
+            <T x={255} y={347} size={5}>Consult Peds Surgery</T>
+            <T x={255} y={354} size={5} color={aC}>Avoid empiric abx unless perf suspected</T>
           </Box>
 
           {/* ═══ ANTIBIOTICS REFERENCE ═══ */}
@@ -367,8 +367,8 @@ function PathwayFlowchart() {
 
           {/* ═══ SLIM SUMMARY ═══ */}
           <Box x={15} y={410} w={450} h={16} fill="#f1f5f9" stroke="#e2e8f0" radius={4}>
-            <T x={145} y={421} size={6} weight={700} color={gC}>Low risk → D/C · PCP {'<'}24h</T>
-            <T x={350} y={421} size={6} weight={700} color={rC}>Confirmed → Peds Surgery · IVF · ±Abx</T>
+            <T x={130} y={421} size={6} weight={700} color={gC}>Low risk → D/C · PCP {'<'}24h</T>
+            <T x={355} y={421} size={6} weight={700} color={rC}>Confirmed → Peds Surgery · IVF · ±Abx</T>
           </Box>
 
         </svg>
