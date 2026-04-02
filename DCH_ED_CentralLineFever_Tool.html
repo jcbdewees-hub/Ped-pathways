@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central Line with Fever — DCH PED Clinical Decision Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',-apple-system,sans-serif;background:#f7f6f3}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+const C={primary:"#9f1239",pLight:"#fff1f2",pBorder:"#fda4af",red:"#b91c1c",redBg:"#fef2f2",redBorder:"#fca5a5",amber:"#92400e",amberBg:"#fffbeb",amberBorder:"#fcd34d",amberMid:"#d97706",green:"#166534",greenBg:"#f0fdf4",greenBorder:"#86efac",greenMid:"#16a34a",blue:"#1e40af",blueBg:"#eff6ff",blueBorder:"#93c5fd",purple:"#6b21a8",purpleBg:"#faf5ff",purpleBorder:"#c4b5fd",teal:"#0f766e",tealBg:"#f0fdfa",tealBorder:"#5eead4",muted:"#6b7280",ink:"#1a1d21",paper:"#f7f6f3",white:"#fff",rule:"#e5e2db"};
+
+const TEACH={
+overview:{title:"CLABSI — Pathogenesis & Risk Stratification",
+patho:"Central line–associated bloodstream infections (CLABSI) arise from bacterial colonization of the catheter surface, forming biofilm. Organisms can enter via the hub/lumen (intraluminal — most common in long-term catheters), along the external catheter surface from the insertion site (extraluminal), or hematogenously from a distant focus.\n\nBiofilm formation on the catheter surface is the key pathological feature. Within 24 hours of placement, catheters develop a fibrin sheath that serves as a scaffold for bacterial adhesion. Biofilm-embedded bacteria are 100–1000× more resistant to antibiotics than planktonic (free-floating) organisms, which is why catheter removal is sometimes necessary for cure.",
+pearls:"Risk for bacteremia varies dramatically by underlying condition. Intestinal failure patients on TPN have the highest rates (47–69% when presenting with fever to the ED) because TPN provides a rich growth medium and these patients have disrupted gut barriers with bacterial translocation. This risk stratification drives the population-based branching in this pathway.",
+evidence:"CLABSI rates vary from 2–26.5 infections/1000 catheter days in intestinal failure patients. Patients tend to have recurrent infections with the same organisms, which is why reviewing culture results from the past 6 months is critical for empiric antibiotic selection. (Chesshyre 2015; Eisenberg 2017)"},
+cultures:{title:"Blood Culture Strategy — Why CVC Only",
+patho:"Blood cultures from central venous catheters sample the intraluminal environment where biofilm-associated organisms reside. The catheter lumen is the source of infection — culturing from this site maximizes sensitivity for detecting CLABSI. Peripheral cultures detect bacteremia only after organisms have disseminated systemically.\n\nThe differential time to positivity (DTP) — when a CVC culture turns positive >2 hours before a peripheral culture — has been used diagnostically, but this requires paired cultures and adds complexity.",
+pearls:"Draw from ALL lumens — different lumens may harbor different organisms or have different colony counts. Peripheral cultures are NOT routinely needed. This is a deliberate choice prioritizing sensitivity over specificity, and acknowledging that peripheral phlebotomy in chronically ill children is painful, difficult, and may require multiple attempts.\n\nFor patients ≥16 years, use adult aerobic AND anaerobic bottles (min 3 mL / recommended 20 mL equally distributed). For <16 years, use pediatric bottles (min 1 mL / recommended 4 mL).",
+evidence:"CVC blood cultures have higher sensitivity and negative predictive value than peripheral cultures for ruling out BSI. While peripheral cultures are more specific, the workgroup consensus is that in the pediatric ED population, sensitivity is the priority. (DesJardin 1999; Chesshyre 2015)"},
+antibiotics:{title:"Empiric Antibiotic Selection — Rationale",
+patho:"The most common CLABSI organisms are coagulase-negative staphylococci (CoNS), S. aureus, Enterococcus, gram-negative enterics (E. coli, Klebsiella, Pseudomonas), and Candida species. The organism distribution varies by patient population: intestinal failure patients have higher rates of gram-negative and polymicrobial infections; hematology patients have higher rates of gram-positive organisms.\n\nCeftriaxone provides broad gram-negative coverage including most Enterobacteriaceae. Cefepime adds Pseudomonal coverage, which is critical in neutropenic patients who are at high risk for Pseudomonas bacteremia.",
+pearls:"The most important step: review culture results from the past 6 months BEFORE choosing empiric antibiotics. Patients with recurrent CLABSI often reinfect with the same organisms. If previous cultures grew an ESBL-producing organism, ceftriaxone will be inadequate.\n\nDefault to ceftriaxone for most populations. Switch to cefepime only if the patient is immunosuppressed AND neutropenic (ANC <500). Always assess for vancomycin and fluconazole add-on indications.",
+evidence:"Empiric antibiotic selection guided by prior culture data improves appropriateness of initial therapy and reduces time to effective treatment. The ceftriaxone-first approach balances broad coverage with antibiotic stewardship. (IDSA CLABSI Guidelines 2009; Chesshyre 2015)"},
+vancomycin:{title:"Vancomycin — When to Add",
+patho:"Vancomycin targets gram-positive organisms by inhibiting cell wall synthesis (binding to D-ala-D-ala peptidoglycan precursors). Its role in CLABSI is to cover MRSA and methicillin-resistant CoNS, which are common catheter-colonizing organisms. Vancomycin also provides Enterococcal coverage.\n\nRoutine empiric vancomycin is NOT recommended because it drives vancomycin-resistant Enterococcus (VRE) emergence. It should be added only when specific risk factors are present.",
+pearls:"Add vancomycin (15 mg/kg IV, max 3 g) for: ill/septic appearance, MRSA history, suspected MRSA soft tissue infection (cellulitis/abscess at line site), concern for CNS infection, or close MRSA contact. These are the patients where delayed gram-positive coverage could be catastrophic.\n\nDo NOT add vancomycin empirically for all line infections — this is a stewardship-conscious decision.",
+evidence:"IDSA guidelines recommend against routine empiric vancomycin for suspected CLABSI, reserving it for patients with specific risk factors for MRSA or severe sepsis. Judicious vancomycin use slows VRE emergence. (Mermel 2009, IDSA)"},
+fluconazole:{title:"Fluconazole — Fungal Risk Assessment",
+patho:"Candidemia in CVC patients arises from biofilm colonization by Candida species, most commonly C. albicans and C. parapsilosis. Candida thrives in the TPN-enriched intraluminal environment and forms robust biofilms on catheter surfaces. Risk factors include prolonged broad-spectrum antibiotic exposure (which eliminates competing bacterial flora) and prior fungal infections.\n\nFluconazole inhibits the fungal cytochrome P450 enzyme lanosterol 14-alpha-demethylase, blocking ergosterol synthesis and disrupting the fungal cell membrane.",
+pearls:"Consider fluconazole (12 mg/kg, max 800 mg) if: history of prior fungal infection, or broad-spectrum antibiotics within the last 2 months. These are the two key risk factors that should trigger antifungal consideration.\n\nFluconazole does NOT cover C. krusei (intrinsic resistance) or some C. glabrata isolates. If the patient has a history of non-albicans Candida, discuss with ID.",
+evidence:"Candidemia carries significant morbidity and mortality in pediatric patients with central lines. Early empiric antifungal therapy in high-risk patients reduces time to effective treatment and improves outcomes. (Pappas 2016, IDSA Candidiasis Guidelines)"},
+sepsis:{title:"Sepsis — The Priority Gate",
+patho:"Sepsis in the CVC patient follows the same pathophysiology as any bacteremia-driven sepsis: pathogen-associated molecular patterns (PAMPs) activate the innate immune system via toll-like receptors, triggering a cytokine cascade (TNF-alpha, IL-1, IL-6) that causes systemic vasodilation, capillary leak, and distributive shock.\n\nCVC patients are at particular risk because the catheter provides a direct intravascular portal for large bacterial inocula — organisms don't need to cross mucosal barriers to enter the bloodstream.",
+pearls:"The Sepsis/Shock Screen takes absolute priority over the CLI pathway. If the patient meets Huddle criteria or is in severe shock → initiate the Sepsis Pathway for fluid resuscitation and stabilization FIRST. The CLI-specific antibiotic and disposition decisions come after the patient is stabilized.\n\nDo not delay fluid resuscitation to draw cultures — but ideally get cultures from all lumens before or during the first bolus.",
+evidence:"Time to antibiotics is the critical outcome metric in sepsis. Each hour of delay in appropriate antibiotic administration increases mortality by 4–8% in septic shock. The sepsis pathway prioritization ensures that the most time-sensitive intervention is not delayed by CLI-specific decision trees. (Kumar 2006; Weiss 2020, Surviving Sepsis Campaign Pediatric)"},
+intestinal:{title:"Intestinal Failure / TPN — Highest Risk Population",
+patho:"Intestinal failure patients have multiple converging risk factors for CLABSI: (1) TPN provides an ideal growth medium (high glucose, amino acids, lipids) that bacteria can directly access via the catheter lumen; (2) disrupted intestinal mucosa (short gut, chronic inflammation) permits bacterial translocation from the gut lumen into the mesenteric venous system; (3) long-term catheter dwell time increases biofilm maturity.\n\nThe combination of nutrient-rich intraluminal environment + compromised gut barrier + chronic catheter presence creates CLABSI rates of 2–26.5/1000 catheter days — far exceeding other CVC populations.",
+pearls:"ALL intestinal failure patients with fever or systemic symptoms need admission — the pretest probability of CLABSI is simply too high to observe at home. However, NOT all get empiric antibiotics: fever without clear source → empiric ceftriaxone + admit; fever with possible source (e.g., URI symptoms) or vomiting/malaise without fever → admit for observation WITHOUT empiric abx.\n\nUrgent GI issues (bloody stool) need GI consultation in the ED. Non-urgent GI questions (TPN adjustment) can wait for inpatient GI involvement.",
+evidence:"Retrospective studies within the pediatric ED identified CLABSI rates of 47–69% in intestinal failure children who presented with fever. This justifies universal empiric antibiotic therapy in this population. (Eisenberg 2017)"},
+heme:{title:"Heme Patients — The Discharge-Eligible Exception",
+patho:"Non-oncology, non-BMT hematology patients (hemophilia, thalassemia) with CVCs represent a fundamentally different risk profile. They are not immunosuppressed, their gut barrier is intact, and their catheters are typically accessed less frequently. Their baseline CLABSI risk is substantially lower than intestinal failure or oncology patients.",
+pearls:"This is the ONLY population that may be discharged from the ED with empiric ceftriaxone and outpatient follow-up. The criteria are strict: isolated fever, well-appearing (normal vitals, tolerating feeds, no focal source, no line site infection).\n\nNotify PHO of discharge so the family can be contacted for prompt clinic follow-up. If cultures return positive after discharge — including coag-negative staph — contact hem/onc on call immediately.",
+evidence:"Risk-stratified management of febrile CVC patients allows safe outpatient treatment of low-risk populations while ensuring high-risk patients receive appropriate inpatient monitoring. (DCH institutional protocol; Chesshyre 2015)"},
+immunosuppressed:{title:"Immunosuppressed Heme — Why They Stay",
+patho:"Immunosuppressive medications (mycophenolate, tacrolimus, sirolimus) impair T-cell and B-cell function, reducing the patient's ability to contain and clear bacteremia. Neutropenia (ANC <500) eliminates the primary innate immune defense against bacterial invasion. These patients cannot mount an effective immune response to even low-virulence organisms like CoNS.",
+pearls:"All immunosuppressed heme patients are admitted with empiric antibiotics regardless of clinical appearance. Use ceftriaxone if ANC >500; cefepime if ANC <500 (adding Pseudomonal coverage for the neutropenic patient). Always assess for vancomycin and fluconazole add-on indications.\n\nThese patients can deteriorate rapidly — a well-appearing immunosuppressed patient can become septic within hours.",
+evidence:"Neutropenic patients with CLABSI have higher rates of gram-negative bacteremia (including Pseudomonas) and higher mortality than non-neutropenic patients. Cefepime provides the anti-pseudomonal coverage that ceftriaxone lacks. (Lehrnbecher 2017)"},
+ethanol:{title:"Ethanol Lock Protocol",
+pearls:"If the patient has an ethanol lock and the line does not draw: consult Vascular Access Team (VAT). Do NOT flush the line — flushing can push concentrated ethanol systemically or dislodge a clot.\n\nEthanol locks are used prophylactically in high-risk CVC patients to prevent biofilm formation. The ethanol denatures proteins and disrupts biofilm structure within the catheter lumen.",
+evidence:"Ethanol lock therapy reduces CLABSI rates by 60–80% in high-risk pediatric populations, particularly intestinal failure patients on long-term TPN. (Oliveira 2014)"},
+renal:{title:"Renal / Hemodialysis",
+pearls:"Hemodialysis catheter infections require Nephrology-directed management because antibiotic selection, dosing, and catheter decision-making (salvage vs removal) depend on dialysis-specific factors: drug clearance during dialysis sessions, catheter lock solutions, and the significant morbidity of catheter replacement in a patient with limited vascular access.\n\nConsult Nephrology early — they will guide both antibiotic choice and disposition.",
+evidence:"Hemodialysis catheter-related BSI management follows KDOQI and IDSA guidelines, which differ from general CLABSI management in antibiotic lock therapy recommendations and catheter salvage strategies. (KDOQI 2019)"},
+linecare:{title:"Line Access & CLABSI Prevention Bundle",
+pearls:"Central line access per CLABSI Prevention Bundle (HC-NSG-259-POL and HC-NSG-260-PRO). Port-a-cath access should occur within 15–30 minutes or 2 attempts. After 2 failed attempts → IP consult to VAT for port access AND place a PIV to continue the pathway.\n\nStrict aseptic technique during all line access is non-negotiable — each access event is an opportunity for intraluminal contamination. Maximal barrier precautions for any line manipulation.",
+evidence:"CLABSI prevention bundles (hand hygiene, maximal barriers, chlorhexidine skin prep, optimal site selection, daily necessity review) reduce CLABSI rates by 50–70% across pediatric institutions. (Pronovost 2006)"},
+disposition:{title:"Disposition — Nearly All Admit",
+pearls:"Almost all patients with CVC + fever/malaise/vomiting should be admitted for observation regardless of whether empiric antibiotics are initiated. The sole exception: well-appearing, non-immunocompromised heme patients with isolated fever → ceftriaxone + discharge.\n\nAdmission allows: serial clinical assessments during the 24–48 hours needed for blood culture results, early detection of clinical deterioration, and IV antibiotic adjustment based on susceptibilities.",
+evidence:"Observation-based admission for CVC patients with suspected infection ensures that the ~50% of intestinal failure patients who are truly bacteremic receive appropriate inpatient monitoring and antibiotic escalation. (Eisenberg 2017; DCH institutional protocol)"},
+};
+function calcDoses(w){
+  var wt=parseFloat(w)||0;if(wt<=0)return null;
+  var ceftri=Math.min(Math.round(wt*50),2000);
+  var cefepime=Math.min(Math.round(wt*50),2000);
+  var vanco=Math.min(Math.round(wt*15),3000);
+  var fluc=Math.min(Math.round(wt*12),800);
+  var bolus=Math.round(wt*20);
+  return{w:wt,ceftri:ceftri,cefepime:cefepime,vanco:vanco,fluc:fluc,bolus:bolus};
+}
+
+function useResponsive(){var s=useState(typeof window!=='undefined'?window.innerWidth:520),w=s[0],setW=s[1];useEffect(function(){var h=function(){setW(window.innerWidth)};window.addEventListener('resize',h);return function(){window.removeEventListener('resize',h)};},[]);return{maxW:w>=640?800:520};}
+
+// ── PRIMITIVES ──
+function Header({teaching,onToggleTeach,mode,onToggleMode}){return(<div style={{background:C.primary,color:C.white,padding:"16px 20px",borderRadius:"12px 12px 0 0"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:13,opacity:0.8,letterSpacing:"0.05em",textTransform:"uppercase",fontWeight:600}}>Doernbecher Children's Hospital · PED</div><div style={{fontSize:21,fontWeight:700,marginTop:4,lineHeight:1.2}}>Central Line with Fever</div><div style={{fontSize:14,opacity:0.85,marginTop:2}}>Clinical Decision Tool · July 2021</div></div><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><button onClick={onToggleMode} style={{background:mode==="wizard"?"#ffffff30":"#ffffff15",border:"1.5px solid "+(mode==="wizard"?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{mode==="wizard"?"🔀 Walk-Through":"📋 Reference"}</button><button onClick={onToggleTeach} style={{background:teaching?"#ffffff30":"#ffffff15",border:"1.5px solid "+(teaching?"#fff":"#ffffff40"),color:C.white,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{teaching?"📖 Teaching ON":"📖 Teach"}</button></div></div></div>);}
+function TabBar({current,tabs,onChange}){return(<div style={{display:"flex",padding:"0 12px",background:C.white,borderBottom:"1px solid "+C.rule,overflowX:"auto"}}>{tabs.map(function(t){var act=t.key===current;return(<button key={t.key} onClick={function(){onChange(t.key)}} style={{padding:"11px 14px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:act?700:500,color:act?C.primary:C.muted,borderBottom:act?"2.5px solid "+C.primary:"2.5px solid transparent",whiteSpace:"nowrap",marginBottom:-1}}>{t.label}</button>)})}</div>);}
+function Pad({children}){return <div style={{padding:"20px"}}>{children}</div>}
+function Q({text,sub}){return(<div style={{marginBottom:16}}><div style={{fontSize:17,fontWeight:700,color:C.ink,lineHeight:1.3}}>{text}</div>{sub&&<div style={{fontSize:13,color:C.muted,marginTop:4,lineHeight:1.5}}>{sub}</div>}</div>)}
+function Alert({color,border,bg,icon,title,children}){return(<div style={{background:bg,border:"1.5px solid "+border,borderRadius:10,padding:"12px 14px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:color,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>{icon} {title}</div><div style={{fontSize:13,lineHeight:1.5,color:C.ink}}>{children}</div></div>)}
+function DoseRow({label,value,unit}){return(<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"4px 0",borderBottom:"1px dashed "+C.rule}}><span style={{fontSize:13,fontWeight:500}}>{label}</span><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:14,fontWeight:600,color:C.primary}}>{value} {unit||""}</span></div>)}
+function TeachBox({id,teaching}){var s=useState("pearls"),tab=s[0],setTab=s[1];if(!teaching||!TEACH[id])return null;var t=TEACH[id];if(t.content&&!t.patho&&!t.pearls&&!t.evidence){return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,padding:"12px 14px",marginBottom:12,borderLeft:"4px solid "+C.teal}}><div style={{fontSize:12,fontWeight:700,color:C.teal,display:"flex",alignItems:"center",gap:6,marginBottom:4}}>📖 {t.title}</div><div style={{fontSize:12,lineHeight:1.6,color:C.ink,whiteSpace:"pre-wrap"}}>{t.content}</div></div>);}var tabs=[];if(t.patho)tabs.push({key:"patho",label:"🧠 Pathophysiology"});if(t.pearls)tabs.push({key:"pearls",label:"🩺 Clinical Pearls"});if(t.evidence)tabs.push({key:"evidence",label:"📊 Evidence"});if(tabs.length===0)return null;var activeTab=tab;if(!t[activeTab])activeTab=tabs[0].key;return(<div style={{background:C.tealBg,border:"1.5px solid "+C.tealBorder,borderRadius:10,marginBottom:12,overflow:"hidden"}}><div style={{background:"#ccfbf1",padding:"8px 12px",borderBottom:"1px solid "+C.tealBorder,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13,fontWeight:700,color:C.teal}}>📖 {t.title}</span></div>{tabs.length>1&&(<div style={{display:"flex",background:C.white,borderBottom:"1px solid "+C.rule}}>{tabs.map(function(tb){var act=activeTab===tb.key;return(<button key={tb.key} onClick={function(){setTab(tb.key)}} style={{flex:1,padding:"8px 0",background:act?C.tealBg:"#f8fafc",border:"none",borderBottom:act?"2.5px solid "+C.teal:"2.5px solid transparent",cursor:"pointer",fontSize:11,fontWeight:act?700:500,color:act?C.teal:C.muted}}>{tb.label}</button>)})}</div>)}<div style={{padding:"12px 14px",fontSize:12,lineHeight:1.65,color:C.ink,whiteSpace:"pre-wrap"}}>{t[activeTab]}</div></div>);}
+function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==false),open=s[0],setOpen=s[1];return(<div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,marginBottom:12,overflow:"hidden"}}><button onClick={function(){setOpen(!open)}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"12px 14px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:14,fontWeight:700,color:color}}>{title}</span><span style={{fontSize:12,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</span></button>{open&&<div style={{padding:"0 14px 14px",borderTop:"1px solid "+C.rule}}>{children}</div>}</div>)}
+function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
+
+// Helper for vanc/fluc add-on checklist
+function AddOnChecklist({doses,teaching}){
+  var s1=useState(false),showVanc=s1[0],setShowVanc=s1[1];
+  var s2=useState(false),showFluc=s2[0],setShowFluc=s2[1];
+  return(<div style={{marginTop:8}}>
+    <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:6}}>Assess add-on indications:</div>
+    <button onClick={function(){setShowVanc(!showVanc)}} style={{display:"block",width:"100%",textAlign:"left",background:showVanc?C.redBg:C.white,border:"2px solid "+(showVanc?C.red:C.rule),borderRadius:10,padding:"10px 14px",marginBottom:6,cursor:"pointer"}}>
+      <div style={{fontSize:13,fontWeight:700,color:showVanc?C.red:C.ink}}>+ Vancomycin {showVanc?"— INDICATED":"— check indications"}</div>
+      <div style={{fontSize:11,color:C.muted,marginTop:2}}>Ill appearance · Hx MRSA · Suspected MRSA infection · CNS concern · MRSA contact</div>
+    </button>
+    {showVanc&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="💊" title="Add Vancomycin"><strong>Vancomycin</strong> {doses?doses.vanco+" mg":"15 mg/kg (max 3 g)"} IV</Alert>}
+
+    <button onClick={function(){setShowFluc(!showFluc)}} style={{display:"block",width:"100%",textAlign:"left",background:showFluc?C.purpleBg:C.white,border:"2px solid "+(showFluc?C.purple:C.rule),borderRadius:10,padding:"10px 14px",marginBottom:6,cursor:"pointer"}}>
+      <div style={{fontSize:13,fontWeight:700,color:showFluc?C.purple:C.ink}}>+ Fluconazole {showFluc?"— INDICATED":"— check indications"}</div>
+      <div style={{fontSize:11,color:C.muted,marginTop:2}}>Hx fungal infection · Broad-spectrum abx within 2 months</div>
+    </button>
+    {showFluc&&<Alert color={C.purple} border={C.purpleBorder} bg={C.purpleBg} icon="💊" title="Consider Fluconazole"><strong>Fluconazole</strong> {doses?doses.fluc+" mg":"12 mg/kg (max 800 mg)"}</Alert>}
+    <TeachBox id="vancomycin" teaching={teaching}/>
+    <TeachBox id="fluconazole" teaching={teaching}/>
+  </div>);
+}
+
+
+// ═══════════════════════════════
+// FLOWCHART
+// ═══════════════════════════════
+function PathwayFlowchart(){
+  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
+  var rsC="#9f1239",rsBg="#fff1f2",rsBd="#fda4af";
+  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
+  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
+  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
+
+  return(
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Indwelling CVC + fever/rigors/malaise/vomiting · Population-based branching</div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
+        <svg viewBox="0 0 480 740" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={740} fill="#fafaf8" rx={6}/>
+
+          {/* ═══ ENTRY ═══ */}
+          <Box x={100} y={6} w={280} h={26} fill={rsBg} stroke={rsBd} sw={1.5} radius={14}>
+            <T x={240} y={17} size={8.5} weight={700} color={rsC}>CVC + FEVER / RIGORS / MALAISE</T>
+            <T x={240} y={28} size={5.5} color={mC}>Temp ≥38.0°C · Vomiting · Lethargy</T>
+          </Box>
+          <Arrow x1={240} y1={32} x2={240} y2={46}/>
+
+          {/* ═══ IMMEDIATE ACTION ═══ */}
+          <Box x={110} y={46} w={260} h={30} fill={rsBg} stroke={rsBd}>
+            <T x={240} y={56} size={7.5} weight={700} color={rsC}>IMMEDIATE ACTION</T>
+            <T x={240} y={66} size={5.5} color={mC}>Cultures ALL lumens · CBC/CMP/Procal</T>
+            <T x={240} y={73} size={5.5} color={mC}>Consider 20 mL/kg bolus · Sepsis screen</T>
+          </Box>
+          <Arrow x1={240} y1={76} x2={240} y2={92}/>
+
+          {/* ═══ SEPSIS CHECK ═══ */}
+          <g transform="translate(240,104)">
+            <polygon points="0,-12 55,0 0,12 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={2} size={7} weight={700}>Sepsis?</T>
+          </g>
+          <line x1={295} y1={104} x2={410} y2={104} stroke={rC} strokeWidth={1}/>
+          <T x={350} y={98} size={5.5} weight={600} color={rC}>Yes</T>
+          <Arrow x1={410} y1={104} x2={410} y2={118} color={rC}/>
+          <Box x={375} y={118} w={80} h={22} fill={rBg} stroke={rBd} sw={2}>
+            <T x={415} y={128} size={7} weight={700} color={rC}>SEPSIS</T>
+            <T x={415} y={137} size={5.5} color={mC}>Pathway</T>
+          </Box>
+
+          <T x={220} y={120} size={5.5} weight={600} color={gC}>No</T>
+          <Arrow x1={240} y1={116} x2={240} y2={138}/>
+
+          {/* ═══ POPULATION DIAMOND ═══ */}
+          <g transform="translate(240,150)">
+            <polygon points="0,-12 65,0 0,12 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={2} size={7} weight={700}>Population?</T>
+          </g>
+
+          {/* Four branches */}
+          {/* Column centers: c1=55 (Intestinal), c2=175 (Heme+IS), c3=310 (Heme no IS), c4=435 (Renal) */}
+
+          <Arrow x1={175} y1={150} x2={55} y2={174} color={aC}/>
+          <Arrow x1={210} y1={158} x2={175} y2={174} color={pC}/>
+          <Arrow x1={270} y1={158} x2={310} y2={174} color={pC}/>
+          <Arrow x1={305} y1={150} x2={435} y2={174} color={tC}/>
+
+          {/* ═══ COL 1: INTESTINAL FAILURE ═══ */}
+          <Box x={4} y={174} w={102} h={30} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={55} y={184} size={6.5} weight={700} color={aC}>INTESTINAL</T>
+            <T x={55} y={194} size={5.5} color={mC}>TPN · Short gut</T>
+            <T x={55} y={202} size={5.5} color={mC}>Home parenteral nutrition</T>
+          </Box>
+          <Arrow x1={55} y1={204} x2={55} y2={220}/>
+
+          {/* Intestinal presentation diamond */}
+          <g transform="translate(55,232)">
+            <polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={-1} size={5} weight={700}>Fever w/o source</T>
+            <T x={0} y={7} size={5} weight={700}>or V/M w/o fever?</T>
+          </g>
+
+          {/* Yes → Admit + empiric abx */}
+          <T x={22} y={250} size={5} weight={600} color={aC}>Yes</T>
+          <Arrow x1={55} y1={244} x2={55} y2={262} color={aC}/>
+          <Box x={4} y={262} w={102} h={30} fill={aBg} stroke={aBd}>
+            <T x={55} y={272} size={5.5} weight={700} color={aC}>ADMIT + ABX</T>
+            <T x={55} y={282} size={5} color={mC}>Ceftriaxone ± Vanc/Fluc</T>
+            <T x={55} y={290} size={5} color={aC}>Gen Med service</T>
+          </Box>
+
+          {/* No (fever with possible source) → Admit without abx */}
+          <line x1={105} y1={232} x2={130} y2={232} stroke={gC} strokeWidth={1}/>
+          <T x={120} y={226} size={4.5} weight={600} color={gC}>Source</T>
+          <Arrow x1={130} y1={232} x2={130} y2={262} color={gC}/>
+          <Box x={108} y={262} w={56} h={30} fill={gBg} stroke={gBd}>
+            <T x={136} y={272} size={5} weight={700} color={gC}>ADMIT</T>
+            <T x={136} y={282} size={4.5} color={mC}>No empiric</T>
+            <T x={136} y={290} size={4.5} color={mC}>abx</T>
+          </Box>
+
+          {/* GI consult note */}
+          <T x={80} y={304} size={4.5} color={aC}>GI consult if urgent (e.g. bloody stool)</T>
+
+          {/* ═══ COL 2: HEME + IS ═══ */}
+          <Box x={124} y={174} w={102} h={30} fill={pBg} stroke={pBd} sw={1.5}>
+            <T x={175} y={184} size={6.5} weight={700} color={pC}>HEME + IS</T>
+            <T x={175} y={194} size={5} color={mC}>Immunosuppressed</T>
+            <T x={175} y={202} size={5} color={mC}>(mycophenolate, tacro, siro)</T>
+          </Box>
+          <Arrow x1={175} y1={204} x2={175} y2={224} color={pC}/>
+          <Box x={124} y={224} w={102} h={34} fill={pBg} stroke={pBd}>
+            <T x={175} y={234} size={5.5} weight={700} color={pC}>ADMIT Hem/Onc</T>
+            <T x={175} y={244} size={5}>Ceftri (or Cefepime</T>
+            <T x={175} y={253} size={5}>if neutropenic)</T>
+          </Box>
+
+          {/* ═══ COL 3: HEME NO IS ═══ */}
+          <Box x={246} y={174} w={128} h={30} fill={pBg} stroke={pBd} sw={1.5}>
+            <T x={310} y={184} size={6.5} weight={700} color={pC}>HEME (no IS)</T>
+            <T x={310} y={194} size={5} color={mC}>Hemophilia · Thalassemia</T>
+            <T x={310} y={202} size={5} color={mC}>CVC, no immunocompromise</T>
+          </Box>
+          <Arrow x1={310} y1={204} x2={310} y2={220}/>
+
+          {/* Well? diamond */}
+          <g transform="translate(310,232)">
+            <polygon points="0,-12 50,0 0,12 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
+            <T x={0} y={2} size={6} weight={700}>Well?</T>
+          </g>
+
+          {/* Well-appearing → D/C */}
+          <Arrow x1={260} y1={232} x2={220} y2={262} color={gC}/>
+          <T x={232} y={248} size={5} weight={600} color={gC}>Yes</T>
+          <Box x={170} y={262} w={102} h={42} fill={gBg} stroke={gBd}>
+            <T x={221} y={272} size={5.5} weight={700} color={gC}>WELL-APPEARING</T>
+            <T x={221} y={282} size={4.5} color={mC}>Isolated fever · Normal VS</T>
+            <T x={221} y={290} size={4.5} color={mC}>Tolerating feeds · No soft</T>
+            <T x={221} y={298} size={4.5} color={mC}>tissue infxn at line site</T>
+          </Box>
+          <Arrow x1={221} y1={304} x2={221} y2={320} color={gC}/>
+          <Box x={175} y={320} w={92} h={26} fill={gBg} stroke={gBd} sw={1.5}>
+            <T x={221} y={330} size={6} weight={700} color={gC}>Ceftri → D/C</T>
+            <T x={221} y={340} size={5} color={mC}>Hem/Onc f/u · Notify PHO</T>
+          </Box>
+
+          {/* Ill / concern → Admit */}
+          <Arrow x1={360} y1={232} x2={400} y2={262} color={rC}/>
+          <T x={388} y={248} size={5} weight={600} color={rC}>No</T>
+          <Box x={354} y={262} w={102} h={30} fill={rBg} stroke={rBd}>
+            <T x={405} y={272} size={5.5} weight={700} color={rC}>ILL / CONCERN</T>
+            <T x={405} y={282} size={5} color={mC}>Deterioration risk</T>
+          </Box>
+          <Arrow x1={405} y1={292} x2={405} y2={310} color={rC}/>
+          <Box x={354} y={310} w={102} h={26} fill={rBg} stroke={rBd}>
+            <T x={405} y={320} size={5.5} weight={700} color={rC}>Ceftri ± Vanc</T>
+            <T x={405} y={330} size={5} color={rC}>ADMIT Hem/Onc</T>
+          </Box>
+
+          {/* ═══ COL 4: RENAL / HD ═══ */}
+          <Box x={390} y={174} w={86} h={30} fill={tBg} stroke={tBd} sw={1.5}>
+            <T x={433} y={184} size={6.5} weight={700} color={tC}>RENAL / HD</T>
+            <T x={433} y={194} size={5} color={mC}>Hemodialysis</T>
+          </Box>
+          <Arrow x1={433} y1={204} x2={433} y2={224} color={tC}/>
+          <Box x={390} y={224} w={86} h={22} fill={tBg} stroke={tBd}>
+            <T x={433} y={233} size={5.5} weight={700} color={tC}>Consult Nephro</T>
+            <T x={433} y={243} size={5} color={tC}>ADMIT</T>
+          </Box>
+
+          {/* ═══ LINE DYSFUNCTION CALLOUT ═══ */}
+          <Box x={4} y={316} w={160} h={30} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={84} y={326} size={5.5} weight={700} color={aC}>LINE DYSFUNCTION?</T>
+            <T x={84} y={336} size={5} color={mC}>Consult vascular access team</T>
+            <T x={84} y={344} size={5} color={mC}>Peds surgery if continued dysfunction</T>
+          </Box>
+
+          {/* ═══ REFERENCE BARS ═══ */}
+
+          {/* Labs */}
+          <Box x={10} y={362} w={460} h={22} fill={blBg} stroke={blBd} radius={4}>
+            <T x={240} y={371} size={6} weight={700} color={blC}>ALL: CULTURES FROM ALL LUMENS · CBC/CMP/PROCAL · SEPSIS SCREEN</T>
+            <T x={240} y={381} size={5} color={mC}>Peripheral cultures NOT needed · ≥16y: aerobic + anaerobic bottles</T>
+          </Box>
+
+          {/* Default abx */}
+          <Box x={10} y={390} w={460} h={22} fill={rsBg} stroke={rsBd} radius={4}>
+            <T x={240} y={399} size={6} weight={700} color={rsC}>DEFAULT ABX: CEFTRIAXONE 50 mg/kg IV (max 2 g)</T>
+            <T x={240} y={409} size={5.5} color={mC}>Cefepime 50 mg/kg if immunosuppressed + ANC {'<'}500</T>
+          </Box>
+
+          {/* Vanc + Fluc side by side */}
+          <Box x={10} y={418} w={225} h={22} fill={rsBg} stroke={rsBd} radius={4}>
+            <T x={122} y={427} size={5.5} weight={700} color={rsC}>+ VANCOMYCIN 15 mg/kg</T>
+            <T x={122} y={437} size={5} color={mC}>Ill · MRSA hx/contact · CNS</T>
+          </Box>
+          <Box x={245} y={418} w={225} h={22} fill={pBg} stroke={pBd} radius={4}>
+            <T x={358} y={427} size={5.5} weight={700} color={pC}>+ FLUCONAZOLE 12 mg/kg</T>
+            <T x={358} y={437} size={5} color={mC}>Fungal hx · Broad-spec abx {'<'}2 mo</T>
+          </Box>
+
+          {/* Admit rule */}
+          <Box x={10} y={448} w={460} h={22} fill="#f1f5f9" stroke="#e2e8f0" radius={4}>
+            <T x={240} y={457} size={5.5} weight={700} color={mC}>ADMIT ALL (except well-appearing non-IS heme → Ceftri + D/C)</T>
+            <T x={240} y={467} size={5} color={mC}>Line dysfunction → Consult VAT · Ethanol lock + no draw → Do NOT flush</T>
+          </Box>
+
+          {/* Positive culture callback */}
+          <Box x={10} y={476} w={460} h={22} fill={aBg} stroke={aBd} radius={4}>
+            <T x={240} y={486} size={5.5} weight={700} color={aC}>IF CULTURES POSITIVE AFTER D/C</T>
+            <T x={240} y={496} size={5} color={mC}>Contact Hem/Onc on call · Clinic hrs: f/u for repeat cx · After hrs: return to ED ± admit</T>
+          </Box>
+
+          {/* Exclusion */}
+          <Box x={10} y={504} w={460} h={14} fill={aBg} stroke={aBd} radius={4}>
+            <T x={240} y={514} size={5} weight={600} color={aC}>EXCLUDE: Oncology/BMT → Neutropenic Fever pathway · SCD → Sickle Cell Fever pathway · CF</T>
+          </Box>
+
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════
+// WALK-THROUGH WIZARD
+// ═══════════════════════════════
+function Wizard({teaching,doses}){
+  var s1=useState(null),excl=s1[0],setExcl=s1[1];
+  var s2=useState(null),sepsis=s2[0],setSepsis=s2[1];
+  var s3=useState(null),pop=s3[0],setPop=s3[1];
+  // Intestinal failure
+  var s4=useState(null),ifPresent=s4[0],setIfPresent=s4[1];
+  var s5=useState(null),giUrgent=s5[0],setGiUrgent=s5[1];
+  // Heme
+  var s6=useState(null),hemeWell=s6[0],setHemeWell=s6[1];
+
+  function reset(){setExcl(null);setSepsis(null);setPop(null);setIfPresent(null);setGiUrgent(null);setHemeWell(null);}
+
+  return(<Pad>
+    <Q text="Walk-Through" sub="Step-by-step evaluation for central line with fever"/>
+    <TeachBox id="overview" teaching={teaching}/>
+
+    {/* STEP 1: Inclusion */}
+    <Card title="Step 1 — Inclusion Check" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8,marginBottom:10}}>
+        <strong>Does the patient have an indwelling CVC with symptoms?</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>Fever ≥38.0°C, rigors, vomiting, malaise, lethargy, or other systemic symptoms suggesting CLI</span>
+      </div>
+      <WizBtn label="Yes — On Pathway" sub="Indwelling CVC + fever/rigors/malaise/vomiting" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={excl==="no"} onClick={function(){setExcl("no")}}/>
+      <WizBtn label="Excluded — Off Pathway" sub="Oncology / anti-neoplastic chemo → Neutropenic Fever pathway · BMT / solid organ transplant · Sickle cell → SCD Fever pathway · CF · Line dysfunction without systemic symptoms · Tunnel infection at line site" color={C.red} bg={C.redBg} border={C.redBorder} selected={excl==="yes"} onClick={function(){setExcl("yes")}}/>
+      {excl==="yes"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Off Pathway">Use the appropriate alternative pathway (Neutropenic Fever, Sickle Cell Fever, etc.).</Alert>}
+    </Card>
+
+    {/* STEP 2: Immediate Actions */}
+    {excl==="no"&&(<Card title="Step 2 — Immediate Actions" color={C.red}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Initiate on Arrival">
+        <strong>ESI Triage Level II</strong><br/>
+        Full vital signs + <strong>Sepsis/Shock Screen</strong><br/>
+        <strong>Cultures from ALL catheter lumens</strong> (peripheral cultures NOT needed)<br/>
+        {'<'}16y: Pediatric blood culture bottle (min 1 mL / recommended 4 mL)<br/>
+        ≥16y: Aerobic + anaerobic bottles (min 3 mL / recommended 20 mL equally distributed)<br/>
+        Labs: <strong>CBC, CMP, Mg, Phos, Procalcitonin</strong><br/>
+        Consider <strong>NS bolus {doses?doses.bolus+" mL":"20 mL/kg"}</strong>
+      </Alert>
+      <TeachBox id="cultures" teaching={teaching}/>
+      <TeachBox id="linecare" teaching={teaching}/>
+
+      <div style={{fontSize:13,marginBottom:10,marginTop:4}}><strong>Concern for sepsis?</strong></div>
+      <WizBtn label="Yes — Sepsis / Shock" sub="Meeting Huddle criteria or in severe shock" color={C.red} bg={C.redBg} border={C.redBorder} selected={sepsis==="yes"} onClick={function(){setSepsis("yes")}}/>
+      <WizBtn label="No — Not septic" sub="Abnormal vitals but not meeting sepsis criteria" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={sepsis==="no"} onClick={function(){setSepsis("no")}}/>
+
+      {sepsis==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="→ Initiate Sepsis Pathway">Fluid resuscitation and stabilization per Sepsis Pathway take priority. Return to CLI pathway after stabilization.</Alert>}
+      <TeachBox id="sepsis" teaching={teaching}/>
+    </Card>)}
+
+    {/* STEP 3: Population */}
+    {excl==="no"&&sepsis==="no"&&(<Card title="Step 3 — Patient Population" color={C.primary}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>What is the indication for the central line?</strong></div>
+      <WizBtn label="Intestinal Failure / Home TPN" sub="Short gut syndrome, home parenteral nutrition" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={pop==="intestinal"} onClick={function(){setPop("intestinal");setHemeWell(null)}}/>
+      <WizBtn label="Heme (non-onc/non-BMT) — Immunosuppressed" sub="On mycophenolate, tacrolimus, sirolimus, etc." color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={pop==="heme_is"} onClick={function(){setPop("heme_is");setHemeWell(null)}}/>
+      <WizBtn label="Heme (non-onc/non-BMT) — No immunosuppression" sub="Hemophilia, thalassemia, other non-immunosuppressed" color={C.purple} bg={C.purpleBg} border={C.purpleBorder} selected={pop==="heme_no_is"} onClick={function(){setPop("heme_no_is")}}/>
+      <WizBtn label="Hemodialysis / Primary Renal" sub="CVC for dialysis access" color={C.teal} bg={C.tealBg} border={C.tealBorder} selected={pop==="renal"} onClick={function(){setPop("renal");setHemeWell(null)}}/>
+      <WizBtn label="Other / Non-oncology immunosuppressed" sub="Non-oncology patient on immunosuppressive therapy" color={C.primary} bg={C.pLight} border={C.pBorder} selected={pop==="other_is"} onClick={function(){setPop("other_is");setHemeWell(null)}}/>
+      <WizBtn label="Other / No immunocompromise" sub="CVC for non-oncology, non-heme, non-renal indication" color={C.muted} bg={C.white} border={C.rule} selected={pop==="other"} onClick={function(){setPop("other");setHemeWell(null)}}/>
+    </Card>)}
+
+    {/* ─── INTESTINAL FAILURE ─── */}
+    {excl==="no"&&sepsis==="no"&&pop==="intestinal"&&(<Card title="Step 4 — Intestinal Failure / TPN" color={C.amberMid}>
+      <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
+        <strong>Presentation?</strong>
+      </div>
+      <WizBtn label="Fever without clear source" sub="No obvious URI or other focal infection" color={C.red} bg={C.redBg} border={C.redBorder} selected={ifPresent==="fever_no_source"} onClick={function(){setIfPresent("fever_no_source")}}/>
+      <WizBtn label="Fever with possible source (e.g., URI)" sub="Has identifiable non-line infection source" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={ifPresent==="fever_source"} onClick={function(){setIfPresent("fever_source")}}/>
+      <WizBtn label="Vomiting or malaise without fever" sub="Systemically unwell but afebrile" color={C.blue} bg={C.blueBg} border={C.blueBorder} selected={ifPresent==="no_fever"} onClick={function(){setIfPresent("no_fever")}}/>
+
+      {ifPresent==="fever_no_source"&&(<div>
+        <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="💊" title="Empiric Antibiotics + Admit">
+          <strong>Ceftriaxone</strong> {doses?doses.ceftri+" mg":"50 mg/kg"} IV (max 2 g)<br/>
+          Review prior cultures within 6 months and cover appropriately<br/>
+          <strong>→ Admit to General Medicine</strong> (Hood, Kaiser, or Family Medicine)
+        </Alert>
+        <AddOnChecklist doses={doses} teaching={teaching}/>
+      </div>)}
+
+      {(ifPresent==="fever_source"||ifPresent==="no_fever")&&(<div>
+        <Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="🏥" title="Admit WITHOUT Empiric Antibiotics">
+          {ifPresent==="fever_source"?"Fever with identifiable source (e.g. URI) — ":"Vomiting/malaise without fever — "}admit to General Medicine for observation<br/>
+          Cultures drawn — await results<br/>
+          <strong>No empiric antibiotics unless clinical picture changes</strong>
+        </Alert>
+        <div style={{fontSize:13,marginBottom:10,marginTop:8}}><strong>GI consultation needed?</strong></div>
+        <WizBtn label="Urgent GI issue (e.g., bloody stool)" sub="GI consultation in ED" color={C.red} bg={C.redBg} border={C.redBorder} selected={giUrgent==="yes"} onClick={function(){setGiUrgent("yes")}}/>
+        <WizBtn label="Non-urgent or no GI issues" sub="TPN adjustments needed or no GI questions → admit directly" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={giUrgent==="no"} onClick={function(){setGiUrgent("no")}}/>
+        {giUrgent==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="📞" title="GI Consult in ED">Consult GI in ED prior to admission for urgent GI concern.</Alert>}
+        {giUrgent==="no"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="🏥" title="Admit Directly">Admit directly to General Pediatrics. GI consultation not required in ED.</Alert>}
+      </div>)}
+      <TeachBox id="intestinal" teaching={teaching}/>
+      <TeachBox id="ethanol" teaching={teaching}/>
+    </Card>)}
+
+    {/* ─── HEME IMMUNOSUPPRESSED ─── */}
+    {excl==="no"&&sepsis==="no"&&pop==="heme_is"&&(<Card title="Step 4 — Heme + Immunosuppressed" color={C.blue}>
+      <Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="💊" title="Empiric Antibiotics + Admit to Hem/Onc">
+        Review prior cultures within 6 months<br/>
+        <strong>ANC {'>'}500:</strong> <strong>Ceftriaxone</strong> {doses?doses.ceftri+" mg":"50 mg/kg"} IV (max 2 g)<br/>
+        <strong>ANC {'<'}500 (neutropenic):</strong> <strong>Cefepime</strong> {doses?doses.cefepime+" mg":"50 mg/kg"} IV (max 2 g)<br/>
+        <strong>→ Admit to Hem/Onc</strong>
+      </Alert>
+      <AddOnChecklist doses={doses} teaching={teaching}/>
+      <TeachBox id="immunosuppressed" teaching={teaching}/>
+    </Card>)}
+
+    {/* ─── HEME NO IMMUNOSUPPRESSION ─── */}
+    {excl==="no"&&sepsis==="no"&&pop==="heme_no_is"&&(<Card title="Step 4 — Heme (No Immunosuppression)" color={C.purple}>
+      <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
+        <strong>Is the patient well-appearing with isolated fever?</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>Well-appearing = vitals otherwise WNL, tolerating feeds, no obvious treatable infection source, no soft tissue infection at line site</span>
+      </div>
+      <WizBtn label="Yes — Isolated fever, well-appearing" sub="Normal vitals · Tolerating feeds · No focal source · No line site infection" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={hemeWell==="yes"} onClick={function(){setHemeWell("yes")}}/>
+      <WizBtn label="No — Ill appearance or concern for deterioration" sub="Abnormal vitals, not tolerating feeds, or other concerns" color={C.red} bg={C.redBg} border={C.redBorder} selected={hemeWell==="no"} onClick={function(){setHemeWell("no")}}/>
+
+      {hemeWell==="yes"&&(<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Ceftriaxone → Discharge">
+        <strong>Ceftriaxone</strong> {doses?doses.ceftri+" mg":"50 mg/kg"} IV (max 2 g) × 1 dose<br/>
+        <strong>Discharge home</strong><br/>
+        Notify PHO of discharge so family can be contacted for prompt hem/onc clinic follow-up<br/>
+        <strong>If cultures return positive after discharge</strong> (including coag-negative staph): contact hem/onc on call. During clinic hours → facilitate clinic follow-up for repeat cultures. After hours → patient returns to ED for repeat cultures ± admission.
+      </Alert>)}
+
+      {hemeWell==="no"&&(<div>
+        <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="Empiric Antibiotics + Admit to Hem/Onc">
+          <strong>Ceftriaxone</strong> {doses?doses.ceftri+" mg":"50 mg/kg"} IV (max 2 g)<br/>
+          Review prior cultures within 6 months<br/>
+          <strong>→ Admit to Hem/Onc</strong>
+        </Alert>
+        <AddOnChecklist doses={doses} teaching={teaching}/>
+      </div>)}
+      <TeachBox id="heme" teaching={teaching}/>
+    </Card>)}
+
+    {/* ─── RENAL ─── */}
+    {excl==="no"&&sepsis==="no"&&pop==="renal"&&(<Card title="Step 4 — Renal / Hemodialysis" color={C.teal}>
+      <Alert color={C.teal} border={C.tealBorder} bg={C.tealBg} icon="📞" title="Consult Nephrology">
+        <strong>Consult Nephrology</strong> for admission and antibiotic management<br/>
+        Nephrology will guide empiric antibiotic choice and line management<br/>
+        <strong>→ Admit</strong>
+      </Alert>
+      <TeachBox id="renal" teaching={teaching}/>
+    </Card>)}
+
+    {/* ─── OTHER IMMUNOSUPPRESSED ─── */}
+    {excl==="no"&&sepsis==="no"&&pop==="other_is"&&(<Card title="Step 4 — Non-Oncology Immunosuppressed" color={C.primary}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="💊" title="Empiric Antibiotics + Admit">
+        <strong>ANC {'>'}500:</strong> <strong>Ceftriaxone</strong> {doses?doses.ceftri+" mg":"50 mg/kg"} IV (max 2 g)<br/>
+        <strong>ANC {'<'}500:</strong> <strong>Cefepime</strong> {doses?doses.cefepime+" mg":"50 mg/kg"} IV (max 2 g)<br/>
+        Review prior cultures within 6 months<br/>
+        <strong>→ Admit to appropriate service</strong>
+      </Alert>
+      <AddOnChecklist doses={doses} teaching={teaching}/>
+      <TeachBox id="antibiotics" teaching={teaching}/>
+    </Card>)}
+
+    {/* ─── OTHER NO IMMUNOCOMPROMISE ─── */}
+    {excl==="no"&&sepsis==="no"&&pop==="other"&&(<Card title="Step 4 — Non-Oncology, No Immunocompromise" color={C.muted}>
+      <Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="💊" title="Empiric Ceftriaxone + Admit">
+        <strong>Ceftriaxone</strong> {doses?doses.ceftri+" mg":"50 mg/kg"} IV (max 2 g)<br/>
+        Review prior cultures within 6 months<br/>
+        <strong>→ Admit to General Medicine</strong>
+      </Alert>
+      <AddOnChecklist doses={doses} teaching={teaching}/>
+    </Card>)}
+
+    {/* Line dysfunction note */}
+    {excl==="no"&&sepsis==="no"&&pop&&(<Card title="Line Dysfunction?" color={C.muted} defaultOpen={false}>
+      <div style={{fontSize:13,lineHeight:1.6,marginTop:8}}>
+        If line dysfunction present → <strong>consult Vascular Access Team (VAT)</strong><br/>
+        Consider Pediatric Surgery consultation if continued dysfunction<br/>
+        <strong>If ethanol lock + line does not draw → Do NOT flush. Consult VAT.</strong>
+      </div>
+      <TeachBox id="ethanol" teaching={teaching}/>
+    </Card>)}
+
+    {/* RESET */}
+    {excl!==null&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
+
+    <PathwayFlowchart/>
+  </Pad>);
+}
+
+
+// ═══════════════════════════════
+// REFERENCE MODE TABS
+// ═══════════════════════════════
+function RefTriage({teaching}){return(<Pad>
+<Q text="Triage & Initial Assessment" sub="Indwelling CVC with fever/rigors/malaise/vomiting"/>
+<TeachBox id="overview" teaching={teaching}/>
+<Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Pediatric ED patients with indwelling central venous catheters with suspected CLI, suggested by fever (≥38.0°C), lethargy, malaise, vomiting, or other systemic symptoms.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">CVC without fever or CLI symptoms · Line dysfunction without systemic symptoms · Malignancy / anti-neoplastic chemo (→ Neutropenic Fever pathway) · Apparent tunnel infection at line site · BMT or solid organ transplant · Sickle cell disease (→ SCD Fever pathway) · Cystic fibrosis</Alert></div></Card>
+<Card title="Nurse Documentation" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>Vital signs · Evidence of shock/decompensation<br/>Neuro status with attention to alertness<br/>Onset of fever · Presence of central line<br/>Last access to port · History of line infections or problems with port<br/>Use of ethanol lock<br/>Medications, allergies, weight</div></Card>
+<Card title="Initiate on Arrival" color={C.red}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong><br/>Full vital signs + <strong>Sepsis/Shock Screen</strong><br/>If meeting Huddle criteria or severe shock → <strong>Sepsis Pathway</strong><br/>If not sepsis → notify MD of suspected CLI and abnormal vitals<br/><strong>Obtain cultures from ALL catheter lumens</strong><br/>{'<'}16y: Pediatric blood culture bottle (min 1 mL / rec 4 mL)<br/>≥16y: Aerobic + anaerobic bottles (min 3 mL / rec 20 mL equally distributed)</div><TeachBox id="cultures" teaching={teaching}/></Card>
+<Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Serum:</strong> CBC, CMP, Mg, Phos, Procalcitonin<br/><strong>Blood cultures:</strong> from central line, all lumens (peripheral cultures NOT needed)<br/>Fluid resuscitate with crystalloid as necessary</div></Card>
+</Pad>)}
+
+function RefDecisions({teaching,doses}){return(<Pad>
+<Q text="Decision Tree" sub="Population-based branching"/>
+<Card title="Intestinal Failure / Home TPN" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Fever without clear source:</strong> Ceftriaxone + admit to Gen Med ± Vanc/Fluc<br/><strong>Fever with possible source (e.g., URI):</strong> Admit to Gen Med <strong>WITHOUT</strong> empiric abx<br/><strong>Vomiting/malaise without fever:</strong> Admit WITHOUT empiric abx<br/>• Urgent GI issues (bloody stool) → GI consult in ED<br/>• Non-urgent or no GI questions → admit directly to Gen Peds<br/>Line dysfunction → consult VAT · Consider Peds Surgery if continued dysfunction</div><TeachBox id="intestinal" teaching={teaching}/></Card>
+<Card title="Heme (Non-Onc/Non-BMT) + Immunosuppression" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>ANC {'>'}500: <strong>Ceftriaxone</strong> {doses?doses.ceftri+" mg":"50 mg/kg"} IV<br/>ANC {'<'}500: <strong>Cefepime</strong> {doses?doses.cefepime+" mg":"50 mg/kg"} IV<br/>± Vanc / Fluc per indications<br/><strong>→ Admit to Hem/Onc</strong></div><TeachBox id="immunosuppressed" teaching={teaching}/></Card>
+<Card title="Heme (Non-Onc/Non-BMT) — No Immunosuppression" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Well-appearing + isolated fever:</strong><br/>Ceftriaxone {doses?doses.ceftri+" mg":"50 mg/kg"} IV × 1 → <strong>Discharge</strong><br/>Notify PHO for follow-up. If cultures positive post-discharge → contact hem/onc on call<br/><br/><strong>Ill appearance or concern for deterioration:</strong><br/>Ceftriaxone ± Vanc → <strong>Admit to Hem/Onc</strong></div><TeachBox id="heme" teaching={teaching}/></Card>
+<Card title="Renal / Hemodialysis" color={C.teal}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Consult Nephrology</strong> for admission and antibiotic management<br/>→ Admit</div><TeachBox id="renal" teaching={teaching}/></Card>
+<Card title="Non-Oncology Immunosuppressed (Other)" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>ANC {'>'}500: Ceftriaxone · ANC {'<'}500: Cefepime<br/>± Vanc / Fluc per indications<br/>→ Admit to appropriate service</div></Card>
+<Card title="Non-Oncology, No Immunocompromise (Other)" color={C.muted}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Ceftriaxone {doses?doses.ceftri+" mg":"50 mg/kg"} IV<br/>± Vanc / Fluc per indications<br/>→ Admit to General Medicine</div></Card>
+<PathwayFlowchart/>
+</Pad>)}
+
+function RefMeds({teaching,doses}){return(<Pad>
+<Q text="Medications & Dosing" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
+{!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
+<Card title="Empiric — First Line" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Ceftriaxone IV (50 mg/kg, max 2 g)" value={doses?doses.ceftri:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Default empiric for all populations. Review prior culture results within 6 months and cover appropriately.</div></div><TeachBox id="antibiotics" teaching={teaching}/></Card>
+<Card title="Neutropenic — Cefepime" color={C.blue}><div style={{marginTop:8}}><DoseRow label="Cefepime IV (50 mg/kg, max 2 g)" value={doses?doses.cefepime:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Use instead of ceftriaxone for immunosuppressed patients with ANC {'<'}500.</div></div></Card>
+<Card title="Add-On — Vancomycin" color={C.red}><div style={{marginTop:8}}><DoseRow label="Vancomycin IV (15 mg/kg, max 3 g)" value={doses?doses.vanco:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Indications: ill appearance, MRSA history, suspected MRSA infection (cellulitis, abscess), CNS concern, close MRSA contact.</div></div><TeachBox id="vancomycin" teaching={teaching}/></Card>
+<Card title="Add-On — Fluconazole" color={C.purple}><div style={{marginTop:8}}><DoseRow label="Fluconazole (12 mg/kg, max 800 mg)" value={doses?doses.fluc:"—"} unit={doses?"mg":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Consider if history of fungal infection or broad-spectrum antibiotics within last 2 months.</div></div><TeachBox id="fluconazole" teaching={teaching}/></Card>
+<Card title="Fluids" color={C.primary}><div style={{marginTop:8}}><DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Fluid resuscitate with crystalloid as necessary. If sepsis → Sepsis Pathway for resuscitation.</div></div></Card>
+</Pad>)}
+
+function RefDispo({teaching}){return(<Pad>
+<Q text="Disposition & References"/>
+<Card title="Disposition Summary" color={C.primary}><div style={{marginTop:8}}>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT — Almost All Patients</div><div style={{fontSize:12,marginTop:2}}>All patients with CVC and fever/malaise/vomiting should be admitted for observation regardless of whether empiric antibiotics are initiated. Contact appropriate service based on underlying condition.</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>EXCEPTION — May Discharge</div><div style={{fontSize:12,marginTop:2}}>Non-immunocompromised heme patients (hemophilia, thalassemia) who are well-appearing with isolated fever → ceftriaxone × 1 → discharge with hem/onc follow-up. Notify PHO of discharge.</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>Positive Cultures After Discharge</div><div style={{fontSize:12,marginTop:2}}>Including coag-negative staph: contact hem/onc on call. During clinic hours → clinic follow-up for repeat cultures. After hours → patient returns to ED for repeat cultures ± admission.</div></div>
+</div><TeachBox id="disposition" teaching={teaching}/></Card>
+<Card title="Admission Services" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
+<strong>Intestinal failure / TPN:</strong> General Medicine (Hood, Kaiser, or Family Medicine)<br/>
+<strong>Heme patients:</strong> Hem/Onc<br/>
+<strong>Renal / HD:</strong> Nephrology<br/>
+<strong>Other:</strong> General Medicine or appropriate subspecialty
+</div></Card>
+<Card title="Special Considerations" color={C.muted}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Ethanol lock protocol:</strong> If ethanol lock + line does not draw → consult VAT. Do NOT flush.<br/><strong>Port-a-cath access:</strong> Within 15–30 min or 2 attempts. After 2 failed attempts → IP consult to VAT + place PIV to continue pathway.<br/><strong>Line dysfunction:</strong> Consult VAT. Consider Peds Surgery if continued dysfunction.</div><TeachBox id="ethanol" teaching={teaching}/></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. DesJardin JA et al. Clinical utility of blood cultures drawn from indwelling CVCs in hospitalized cancer patients. <em>Ann Intern Med</em> 1999; 131(9):641-7.<br/>2. Chesshyre E et al. Prevention, diagnosis and management of central venous line infections in children. <em>J Infect</em> 2015; 71(1):S59-S75.<br/>3. Eisenberg M et al. CLABSI among children with intestinal failure presenting to the ED with fever.<br/>4. Jabbour M et al. Best strategies to implement clinical pathways in an ED setting. <em>Implement Sci</em> 2013; 8:55.</div></Card>
+</Pad>)}
+
+
+// ═══════════════════════════════
+// APP
+// ═══════════════════════════════
+function App(){
+  var s1=useState("wizard"),mode=s1[0],setMode=s1[1];
+  var s2=useState("triage"),tab=s2[0],setTab=s2[1];
+  var s3=useState(false),teaching=s3[0],setTeaching=s3[1];
+  var s4=useState(""),weightKg=s4[0],setWeightKg=s4[1];
+  var s5=useState(""),ageMo=s5[0],setAgeMo=s5[1];
+  var doses=useMemo(function(){return calcDoses(weightKg)},[weightKg]);
+  var rr=useResponsive(),maxW=rr.maxW;
+
+  var refTabs=[{key:"triage",label:"Triage"},{key:"decision",label:"Decisions"},{key:"meds",label:"Antibiotics"},{key:"dispo",label:"Dispo & Refs"}];
+
+  return(
+    <div style={{maxWidth:maxW,margin:"0 auto",fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:C.paper,minHeight:"100vh",transition:"max-width 0.2s"}}>
+      <Header teaching={teaching} onToggleTeach={function(){setTeaching(!teaching)}} mode={mode} onToggleMode={function(){setMode(mode==="wizard"?"reference":"wizard")}}/>
+
+      {mode==="reference"&&<TabBar current={tab} tabs={refTabs} onChange={setTab}/>}
+
+      <div style={{background:C.white,borderBottom:"1px solid "+C.rule,padding:"10px 20px",display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Age (years)</label><input type="number" inputMode="decimal" value={ageMo} onChange={function(e){setAgeMo(e.target.value)}} placeholder="5" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+        <div style={{flex:1}}><label style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Weight (kg)</label><input type="number" inputMode="decimal" value={weightKg} onChange={function(e){setWeightKg(e.target.value)}} placeholder="20" style={{display:"block",width:"100%",padding:"6px 8px",border:"1.5px solid "+C.rule,borderRadius:6,fontSize:15,fontWeight:500,fontFamily:"'IBM Plex Mono',monospace",outline:"none",marginTop:2}}/></div>
+      </div>
+
+      {mode==="wizard"&&<Wizard teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
+      {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
+      {mode==="reference"&&tab==="dispo"&&<RefDispo teaching={teaching}/>}
+
+      <div style={{padding:"12px 20px",fontSize:10,color:C.muted,lineHeight:1.5,borderTop:"1px solid "+C.rule}}>
+        <strong style={{color:C.red}}>DISCLAIMER:</strong> This tool supports but does not replace clinical judgment. Verify all orders against institutional protocols.
+        <br/>Doernbecher Children's Hospital · PED · Central Line with Fever Clinical Pathway · July 2021
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
