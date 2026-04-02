@@ -113,13 +113,13 @@ function ASTCalculator({onScore,teaching}){
 // ═══════════════════════════════
   
 function PathwayFlowchart() {
-  var rC="#b91c1c", rBg="#fef2f2", rBd="#fca5a5";
-  var aC="#d97706", aBg="#fffbeb", aBd="#fcd34d";
-  var gC="#16a34a", gBg="#f0fdf4", gBd="#86efac";
-  var blC="#1e40af", blBg="#eff6ff", blBd="#93c5fd";
-  var pC="#6b21a8", pBg="#faf5ff", pBd="#c4b5fd";
-  var mC="#6b7280";
-  var tC="#0f766e", tBg="#f0fdfa", tBd="#5eead4";
+  var rC="#b91c1c", rBg="#fef2f2", rBd="#fca5a5";   // Red (critical)
+  var aC="#d97706", aBg="#fffbeb", aBd="#fcd34d";   // Amber (caution)
+  var gC="#16a34a", gBg="#f0fdf4", gBd="#86efac";   // Green (safe/discharge)
+  var blC="#1e40af", blBg="#eff6ff", blBd="#93c5fd"; // Blue (info)
+  var mC="#6b7280";                                  // Muted gray
+  var oC="#c2410c", oBg="#ffedd5", oBd="#fdba74";   // Orange (severe)
+  var pRBg="#fca5a5", pRBd="#dc2626", pRC="#7f1d1d"; // Dark Red
 
   var Arrow = function(p) {
     var dx=p.x2-p.x1, dy=p.y2-p.y1, len=Math.sqrt(dx*dx+dy*dy);
@@ -154,129 +154,186 @@ function PathwayFlowchart() {
   return (
     <div style={{marginTop:20}}>
       <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
-      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Wheezing/Respiratory Distress · Asthma Severity Tool (AST)</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Asthma Clinical Pathway · Initial Assessment to Disposition</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 480 450" style={{width:"100%",display:"block"}}>
-          <rect width={480} height={450} fill="#fafaf8" rx={6}/>
+        <svg viewBox="0 0 480 480" style={{width:"100%",display:"block"}}>
+          <rect width={480} height={480} fill="#fafaf8" rx={6}/>
 
-          {/* Entry pill */}
-          <Box x={120} y={6} w={240} h={28} fill={tBg} stroke={tBd} sw={1.5} radius={14}>
-            <T x={240} y={18} size={9} weight={700} color={tC}>ASTHMA EXACERBATION</T>
-            <T x={240} y={28} size={6} color={mC}>Known asthma or first-time wheezing · ESI II–IV</T>
+          {/* Initial Assessment Box */}
+          <Box x={85} y={10} w={340} h={65} fill={oBg} stroke={oBd} sw={1.5}>
+            <T x={255} y={22} size={8} weight={700}>Initial Assessment &amp; Immediate Action</T>
+            <T x={255} y={34} size={6}>Vitals / pulse oximetry / monitor</T>
+            <T x={255} y={44} size={6}>Consider isolation</T>
+            <T x={255} y={54} size={6}>Oxygen to maintain SaO₂ &gt;90% (Notify MD immediately if hypoxia)</T>
+            <T x={255} y={64} size={6}>Initial Asthma Severity Tool room air score to determine severity</T>
           </Box>
-          <Arrow x1={240} y1={34} x2={240} y2={46}/>
 
-          {/* Exclusion diamond */}
-          <g transform="translate(240,60)">
-            <polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-            <T x={0} y={-2} size={7} weight={700}>Exclusions?</T>
+          {/* Main Distribution Line */}
+          <line x1={255} y1={75} x2={255} y2={85} stroke="#94a3b8" strokeWidth={1.5}/>
+          <line x1={87.5} y1={85} x2={422.5} y2={85} stroke="#94a3b8" strokeWidth={1.5}/>
+          <Arrow x1={87.5} y1={85} x2={87.5} y2={90}/>
+          <Arrow x1={197.5} y1={85} x2={197.5} y2={90}/>
+          <Arrow x1={312.5} y1={85} x2={312.5} y2={90}/>
+          <Arrow x1={422.5} y1={85} x2={422.5} y2={90}/>
+
+          {/* TIME AXIS (LEFT) */}
+          <Box x={12} y={90} w={16} h={80} fill="#ffffff" stroke={mC} sw={1}/>
+          <g transform="translate(20, 130) rotate(-90)">
+            <T x={0} y={0} size={5.5} weight={700} color={mC}>TRIAGE- Assess &amp; Score</T>
           </g>
-          <line x1={300} y1={60} x2={410} y2={60} stroke="#94a3b8" strokeWidth={1}/>
-          <T x={330} y={56} size={6} weight={700} color={mC}>Yes</T>
-          <Arrow x1={410} y1={60} x2={410} y2={66} color={mC}/>
-          <Box x={370} y={74} w={80} h={24} fill="#f1f5f9" stroke="#e2e8f0">
-            <T x={410} y={85} size={7} weight={600} color={mC}>OFF PATH</T>
-            <T x={410} y={95} size={5.5} color={mC}>CLD (e.g. CF) · Cardiac</T>
-          </Box>
-          <T x={248} y={80} size={6} weight={700} color={mC}>No</T>
-          <Arrow x1={240} y1={74} x2={240} y2={80}/>
+          <line x1={20} y1={170} x2={20} y2={195} stroke={mC} strokeWidth={1}/>
+          <polygon points="20,200 17,194 23,194" fill={mC}/>
 
-          {/* Assessment box */}
-          <Box x={130} y={88} w={220} h={26} fill={tBg} stroke={tBd} sw={1.5}>
-            <T x={240} y={99} size={8} weight={700} color={tC}>TRIAGE & ASSESS</T>
-            <T x={240} y={110} size={6} color={mC}>Vitals · Asthma Severity Score (AST) · O₂ if SpO₂ &lt;90%</T>
-          </Box>
-          <Arrow x1={240} y1={114} x2={240} y2={118}/>
-
-          {/* Scoring diamond */}
-          <g transform="translate(240,140)">
-            <polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/>
-            <T x={0} y={-2} size={7} weight={700}>AST Score?</T>
+          <Box x={12} y={205} w={16} h={80} fill="#ffffff" stroke={mC} sw={1}/>
+          <g transform="translate(20, 245) rotate(-90)">
+            <T x={0} y={0} size={5.5} weight={700} color={mC}>1ST HR RE-SCORE</T>
           </g>
-          <Arrow x1={180} y1={140} x2={75} y2={158} color={gC}/>
-          <Arrow x1={240} y1={154} x2={240} y2={158} color={aC}/>
-          <Arrow x1={300} y1={140} x2={405} y2={158} color={rC}/>
+          <line x1={20} y1={285} x2={20} y2={340} stroke={mC} strokeWidth={1}/>
+          <polygon points="20,345 17,339 23,339" fill={mC}/>
 
-          {/* MILD column */}
-          <Box x={15} y={166} w={120} h={28} fill={gBg} stroke={gBd} sw={1.5}>
-            <T x={75} y={178} size={8} weight={700} color={gC}>MILD (AST 1–3)</T>
-            <T x={75} y={189} size={6} color={mC}>Albuterol MDI/neb Q4H</T>
-          </Box>
-          <Arrow x1={75} y1={194} x2={75} y2={202} color={gC}/>
-          <Box x={15} y={210} w={120} h={44} fill={gBg} stroke={gBd}>
-            <T x={75} y={222} size={6} weight={600} color={gC}>Dexamethasone 0.6 mg/kg PO</T>
-            <T x={75} y={234} size={6}>Assess 1 hr post-treatment</T>
-            <T x={75} y={246} size={6}>Maintain SpO₂ ≥ 90%</T>
-          </Box>
-          <Arrow x1={75} y1={254} x2={75} y2={264} color={gC}/>
-          <Box x={15} y={272} w={120} h={38} fill={gBg} stroke={gBd}>
-            <T x={75} y={284} size={7} weight={700} color={gC}>Discharge Home</T>
-            <T x={75} y={295} size={6}>PO Steroids to complete course</T>
-            <T x={75} y={305} size={6}>Albuterol PRN</T>
-          </Box>
+          <Box x={12} y={350} w={16} h={105} fill="#ffffff" stroke={mC} sw={1}/>
+          <g transform="translate(20, 402.5) rotate(-90)">
+            <T x={0} y={0} size={5.5} weight={700} color={mC}>2ND HR RE-SCORE AND DETERMINE DISPO</T>
+          </g>
 
-          {/* MODERATE column */}
-          <Box x={160} y={166} w={160} h={28} fill={aBg} stroke={aBd} sw={1.5}>
-            <T x={240} y={178} size={8} weight={700} color={aC}>MODERATE (AST 4–7)</T>
-            <T x={240} y={189} size={6} color={mC}>Stacked DuoNebs (3 in 20 min)</T>
+          {/* ================= COLUMN 1: MILD ================= */}
+          <Box x={40} y={90} w={95} h={75} fill={gBg} stroke={gBd} sw={1.5}>
+            <T x={87.5} y={102} size={8} weight={700} color={gC}>Mild</T>
+            <T x={87.5} y={112} size={6.5} weight={700} color={gC}>AST &lt; 6 (ESI IV)</T>
+            <T x={87.5} y={124} size={5.5}>No distress (may have</T>
+            <T x={87.5} y={132} size={5.5}>end expiratory wheezing)</T>
+            <T x={87.5} y={142} size={5.5}>Mild accessory use</T>
+            <T x={87.5} y={152} size={5.5}>Room air SaO₂ ≥93%</T>
           </Box>
-          <Arrow x1={240} y1={194} x2={240} y2={202} color={aC}/>
-          <Box x={160} y={210} w={160} h={44} fill={aBg} stroke={aBd}>
-            <T x={240} y={222} size={6} weight={600} color={aC}>Dexamethasone 0.6 mg/kg PO</T>
-            <T x={240} y={234} size={6}>Assess post-nebs</T>
-            <T x={240} y={246} size={6}>Oral hydration if improving</T>
+          <Arrow x1={87.5} y1={165} x2={87.5} y2={180}/>
+          
+          <Box x={40} y={180} w={95} h={85} fill={gBg} stroke={gBd}>
+            <T x={87.5} y={192} size={5.5}>Albuterol MDI w/ spacer</T>
+            <T x={87.5} y={200} size={5.5}>4-8 puffs</T>
+            <T x={87.5} y={210} size={5.5}>Repeat x 1 within</T>
+            <T x={87.5} y={218} size={5.5}>30-60 mins if needed</T>
+            <T x={87.5} y={228} size={5.5}>Dexamethasone 0.6 mg/kg</T>
+            <T x={87.5} y={236} size={5.5}>up to 16 mg max; PO</T>
+            <T x={87.5} y={246} size={5.5}>Oral hydration</T>
           </Box>
-          <Arrow x1={240} y1={254} x2={240} y2={264} color={aC}/>
-          <Box x={160} y={272} w={160} h={48} fill={aBg} stroke={aBd}>
-            <T x={240} y={284} size={6} weight={700} color={aC}>If poor response (AST 4–7):</T>
-            <T x={240} y={295} size={6}>Consider MgSO₄ 25-50 mg/kg IV</T>
-            <T x={240} y={305} size={6}>Consider IV fluids & CXR</T>
-            <T x={240} y={315} size={6}>Continue Q2H Albuterol</T>
-          </Box>
-          <Arrow x1={240} y1={320} x2={240} y2={328} color={aC}/>
-          <Box x={160} y={336} w={160} h={26} fill={aBg} stroke={aBd} sw={1.5}>
-            <T x={240} y={350} size={7} weight={700} color={aC}>Admit to Floor</T>
+          <Arrow x1={87.5} y1={265} x2={87.5} y2={280}/>
+
+          <Box x={40} y={280} w={95} h={90} fill={gBg} stroke={gBd}>
+            <T x={87.5} y={292} size={5.5}>Review rescue inhaler</T>
+            <T x={87.5} y={300} size={5.5}>and spacer technique</T>
+            <T x={87.5} y={310} size={6} weight={700}>Discharge +/- second</T>
+            <T x={87.5} y={318} size={6} weight={700}>dose of oral steroid</T>
+            <T x={87.5} y={326} size={6} weight={700}>to take in 24 hours</T>
+            <T x={87.5} y={336} size={5.5}>Assure follow-up with</T>
+            <T x={87.5} y={344} size={5.5}>primary provider or</T>
+            <T x={87.5} y={352} size={5.5}>specialist within 1 week</T>
           </Box>
 
-          {/* SEVERE column */}
-          <Box x={345} y={166} w={120} h={28} fill={rBg} stroke={rBd} sw={1.5}>
-            <T x={405} y={178} size={8} weight={700} color={rC}>SEVERE (AST ≥8)</T>
-            <T x={405} y={189} size={6} color={mC}>Cont. Albuterol 10-20 mg/hr</T>
+          {/* ================= COLUMN 2: MODERATE ================= */}
+          <Box x={145} y={90} w={105} h={80} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={197.5} y={102} size={8} weight={700} color={aC}>Moderate</T>
+            <T x={197.5} y={112} size={6.5} weight={700} color={aC}>AST 6-11 (ESI III)</T>
+            <T x={197.5} y={124} size={5.5}>Moderate accessory</T>
+            <T x={197.5} y={132} size={5.5}>muscle use</T>
+            <T x={197.5} y={142} size={5.5}>Insp/exp wheezing</T>
+            <T x={197.5} y={150} size={5.5}>with good aeration</T>
+            <T x={197.5} y={160} size={5.5}>Tachypnea/tachycardia</T>
+            <T x={197.5} y={170} size={5.5}>Room air SaO₂ ≥ 90%</T>
           </Box>
-          <Arrow x1={405} y1={194} x2={405} y2={202} color={rC}/>
-          <Box x={345} y={210} w={120} h={44} fill={rBg} stroke={rBd}>
-            <T x={405} y={222} size={6} weight={600} color={rC}>Dexamethasone IV/IM/PO</T>
-            <T x={405} y={234} size={6}>MgSO₄ 25-50 mg/kg IV (max 2g)</T>
-            <T x={405} y={246} size={6}>IV Hydration</T>
+          <Arrow x1={197.5} y1={170} x2={197.5} y2={185}/>
+
+          <Box x={145} y={185} w={105} h={140} fill={aBg} stroke={aBd}>
+            <T x={197.5} y={197} size={5.5}>Stacked duo nebs</T>
+            <T x={197.5} y={205} size={5.5}>(3 within 20 minutes)</T>
+            <T x={197.5} y={215} size={5.5}>Dexamethasone 0.6 mg/kg</T>
+            <T x={197.5} y={223} size={5.5}>up to 16 mg max; PO x 1</T>
+            <T x={197.5} y={231} size={5.5}>(may give IM/IV if</T>
+            <T x={197.5} y={239} size={5.5}>unable to tolerate PO)</T>
+            <T x={197.5} y={249} size={5.5}>Consider MgSO₄ 25-50mg/kg</T>
+            <T x={197.5} y={257} size={5.5}>up to 2g max IV</T>
+            <T x={197.5} y={267} size={5.5}>Oral hydration if improved</T>
+            <T x={197.5} y={275} size={5.5}>after 3 stacked nebs,</T>
+            <T x={197.5} y={283} size={5.5}>else consider IV hydration</T>
+            <T x={197.5} y={293} size={5.5}>Continue Q2 hr albuterol</T>
+            <T x={197.5} y={301} size={5.5}>nebs with AST assessments</T>
+            <T x={197.5} y={309} size={5.5}>pre/post nebs</T>
+            <T x={197.5} y={319} size={5.5}>Consider chest x-ray</T>
           </Box>
-          <Arrow x1={405} y1={254} x2={405} y2={264} color={rC}/>
-          <Box x={345} y={272} w={120} h={48} fill={rBg} stroke={rBd}>
-            <T x={405} y={284} size={6} weight={700} color={rC}>If refractory/worsening:</T>
-            <T x={405} y={295} size={6}>Terbutaline load & infusion</T>
-            <T x={405} y={305} size={6}>Epinephrine IM (max x3)</T>
-            <T x={405} y={315} size={6}>Consider HFNC / BiPAP</T>
-          </Box>
-          <Arrow x1={405} y1={320} x2={405} y2={328} color={rC}/>
-          <Box x={345} y={336} w={120} h={26} fill={rBg} stroke={rBd} sw={1.5}>
-            <T x={405} y={350} size={7} weight={700} color={rC}>Admit PICU</T>
+          <Arrow x1={197.5} y1={325} x2={197.5} y2={340}/>
+
+          <Box x={145} y={340} w={105} h={115} fill={aBg} stroke={aBd} sw={1.5}>
+            <T x={197.5} y={352} size={6.5} weight={700} color={aC}>Admission vs. Discharge</T>
+            <T x={197.5} y={364} size={5.5}>Score &gt;8 after 1st hr</T>
+            <T x={197.5} y={372} size={5.5}>of neb therapy,</T>
+            <T x={197.5} y={380} size={5.5} weight={700}>consider admission</T>
+            <T x={197.5} y={390} size={5.5}>Score 6-8 following 2nd</T>
+            <T x={197.5} y={398} size={5.5}>hr or continued need for</T>
+            <T x={197.5} y={406} size={5.5}>Q2 hr nebs,</T>
+            <T x={197.5} y={414} size={5.5} weight={700}>consider inpatient vs</T>
+            <T x={197.5} y={422} size={5.5} weight={700}>observation admission</T>
+            <T x={197.5} y={432} size={5.5}>If able to space Q4 hr MDI</T>
+            <T x={197.5} y={440} size={5.5}>puffs, consider discharge</T>
           </Box>
 
-          {/* Horizontal Improvement Arrows */}
-          <Arrow x1={160} y1={232} x2={143} y2={232} color={gC}/>
-          <T x={151.5} y={228} size={5.5} color={gC} weight={600}>Improves</T>
-
-          <Arrow x1={345} y1={232} x2={328} y2={232} color={aC}/>
-          <T x={336.5} y={228} size={5.5} color={aC} weight={600}>Improves</T>
-
-          {/* Summary bars at bottom */}
-          <Box x={20} y={380} w={440} h={24} fill={blBg} stroke={blBd} radius={6}>
-            <T x={240} y={391} size={7} weight={700} color={blC}>WEANING CONTINUOUS ALBUTEROL</T>
-            <T x={240} y={400} size={5.5} color={mC}>Decrease dose by half for 1 hour. If tolerated, stop continuous and resume Q2H nebs.</T>
+          {/* ================= COLUMN 3: SEVERE ================= */}
+          <Box x={260} y={90} w={105} h={80} fill={oBg} stroke={oBd} sw={1.5}>
+            <T x={312.5} y={102} size={8} weight={700} color={oC}>Severe</T>
+            <T x={312.5} y={112} size={6.5} weight={700} color={oC}>AST 12-18 (ESI II)</T>
+            <T x={312.5} y={124} size={5.5}>Severe accessory</T>
+            <T x={312.5} y={132} size={5.5}>muscle use</T>
+            <T x={312.5} y={142} size={5.5}>Insp/exp wheezing</T>
+            <T x={312.5} y={150} size={5.5}>with poor aeration</T>
+            <T x={312.5} y={160} size={5.5}>Abnormal HR and RR</T>
+            <T x={312.5} y={170} size={5.5}>Room air SaO₂ ≤90%</T>
           </Box>
-          <Box x={20} y={412} w={440} h={20} fill="#f1f5f9" stroke="#e2e8f0" radius={6}>
-            <T x={85} y={424} size={6.5} weight={700} color={rC}>ADMIT PICU: Cont. Nebs / Adjuncts</T>
-            <T x={240} y={424} size={6.5} weight={700} color={aC}>ADMIT FLOOR: Q2H Nebs</T>
-            <T x={395} y={424} size={6.5} weight={700} color={gC}>D/C: AST ≤3 / Room Air</T>
+          <Arrow x1={312.5} y1={170} x2={312.5} y2={180}/>
+
+          <Box x={260} y={180} w={105} h={55} fill={oBg} stroke="#dc2626" sw={1.5}>
+            <T x={312.5} y={192} size={6} weight={700} color="#dc2626">Call EARLY to setup</T>
+            <T x={312.5} y={200} size={6} weight={700} color="#dc2626">PICU Admit</T>
+            <T x={312.5} y={210} size={5.5}>Worsening condition,</T>
+            <T x={312.5} y={218} size={5.5}>fatigue with breathing;</T>
+            <T x={312.5} y={226} size={5.5}>give magnesium/terbutaline</T>
+          </Box>
+          <Arrow x1={312.5} y1={235} x2={312.5} y2={245}/>
+
+          <Box x={260} y={245} w={105} h={115} fill={oBg} stroke={oBd}>
+            <T x={312.5} y={257} size={5.5}>Continuous albuterol</T>
+            <T x={312.5} y={265} size={5.5}>10-20 mg/hr.</T>
+            <T x={312.5} y={275} size={5.5}>Dexamethasone 0.6 mg/kg</T>
+            <T x={312.5} y={283} size={5.5}>up to 16 mg max; PO x 1</T>
+            <T x={312.5} y={291} size={5.5}>(may give IM/IV if unable</T>
+            <T x={312.5} y={299} size={5.5}>to tolerate PO)</T>
+            <T x={312.5} y={309} size={5.5}>IV hydration</T>
+            <T x={312.5} y={319} size={5.5}>Consider adjunct meds</T>
+            <T x={312.5} y={327} size={5.5}>(magnesium, terbutaline,</T>
+            <T x={312.5} y={335} size={5.5}>epinephrine, ketamine)</T>
+            <T x={312.5} y={345} size={5.5}>Consider Heliox</T>
+            <T x={312.5} y={355} size={5.5}>VBG · Chest x-ray</T>
+          </Box>
+
+          {/* ================= COLUMN 4: ARREST ================= */}
+          <Box x={375} y={90} w={95} h={65} fill={rBg} stroke={rBd} sw={1.5}>
+            <T x={422.5} y={102} size={6.5} weight={700} color={rC}>Impending</T>
+            <T x={422.5} y={110} size={6.5} weight={700} color={rC}>Respiratory Arrest</T>
+            <T x={422.5} y={118} size={6} weight={700} color={rC}>(ESI I)</T>
+            <T x={422.5} y={128} size={5.5}>Profound distress</T>
+            <T x={422.5} y={138} size={5.5}>Fatigue</T>
+            <T x={422.5} y={148} size={5.5}>Poor/no air movement</T>
+          </Box>
+          <Arrow x1={422.5} y1={155} x2={422.5} y2={170}/>
+
+          <Box x={375} y={170} w={95} h={65} fill={rBg} stroke={rBd}>
+            <T x={422.5} y={182} size={5.5}>Intubate (ketamine for RSI)</T>
+            <T x={422.5} y={192} size={5.5}>Dexamethasone 0.6 mg/kg</T>
+            <T x={422.5} y={200} size={5.5}>(Max 16mg) IV</T>
+            <T x={422.5} y={210} size={5.5}>Albuterol per ETT by RT</T>
+            <T x={422.5} y={220} size={5.5}>Consult PICU MD &amp; RRT</T>
+          </Box>
+          <Arrow x1={422.5} y1={235} x2={422.5} y2={250}/>
+
+          <Box x={375} y={250} w={95} h={30} fill={pRBg} stroke={pRBd} sw={1.5}>
+            <T x={422.5} y={268} size={7} weight={700} color={pRC}>Tier 1 PICU ADMIT</T>
           </Box>
 
         </svg>
