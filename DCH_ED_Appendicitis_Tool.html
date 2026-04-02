@@ -216,15 +216,6 @@ function WizBtn({ label, sub, color, bg, border, onClick, selected }) {
 
 // ── Shared Flowchart ──
 
-// PathwayFlowchart for Appendicitis — streamlined from PDF
-//
-// Consolidated logic:
-//   PHASE 1 — SCORE: PIV + Labs → Clinical Score → Risk tier
-//   PHASE 2 — IMAGE: Low → D/C | Intermediate/High → US → if inconclusive → MRI/CT
-//   PHASE 3 — RESULT: 3 endpoints (Confirmed, Likely Not, Uncertain)
-//
-// All clinical content preserved, just fewer redundant boxes
-
 function PathwayFlowchart() {
   const gC = "#16a34a", gBg = "#f0fdf4", gBd = "#86efac";
   const aC = "#d97706", aBg = "#fffbeb", aBd = "#fcd34d";
@@ -244,8 +235,8 @@ function PathwayFlowchart() {
       <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 4 }}>Full Algorithm</div>
       <div style={{ fontSize: 11, color: C.muted, marginBottom: 6 }}>Suspected appendicitis · Ages 3–18 · Score-driven imaging</div>
       <div style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, padding: 6, overflow: "hidden" }}>
-        <svg viewBox="0 0 480 480" style={{ width: "100%", display: "block" }}>
-          <rect width={480} height={480} fill="#fafaf8" rx={6}/>
+        <svg viewBox="0 0 480 430" style={{ width: "100%", display: "block" }}>
+          <rect width={480} height={430} fill="#fafaf8" rx={6}/>
 
           {/* ═══ ENTRY + LABS ═══ */}
           <Box x={120} y={6} w={240} h={26} fill={bBg} stroke={bBd} sw={1.5} radius={14}>
@@ -295,7 +286,6 @@ function PathwayFlowchart() {
           </Box>
 
           {/* ═══ US RESULTS ═══ */}
-          {/* Both intermediate + high converge to US diamond */}
           <Arrow x1={198} y1={156} x2={240} y2={180} color={aC}/>
           <Arrow x1={413} y1={156} x2={350} y2={180} color={rC}/>
 
@@ -304,28 +294,28 @@ function PathwayFlowchart() {
             <T x={0} y={2} size={7} weight={700}>US Result?</T>
           </g>
 
-          {/* US POSITIVE → Appendicitis (right) */}
+          {/* US POSITIVE → Appendicitis */}
           <line x1={355} y1={192} x2={430} y2={192} stroke={rC} strokeWidth={1}/>
           <T x={392} y={186} size={5.5} weight={600} color={rC}>Positive</T>
           <Arrow x1={430} y1={192} x2={430} y2={210} color={rC}/>
 
-          {/* US NEGATIVE → Likely not (left) */}
+          {/* US NEGATIVE → Likely not */}
           <line x1={235} y1={192} x2={80} y2={192} stroke={gC} strokeWidth={1}/>
           <T x={155} y={186} size={5.5} weight={600} color={gC}>Negative</T>
           <Arrow x1={80} y1={192} x2={80} y2={210} color={gC}/>
 
-          {/* US NOT SEEN → Inconclusive (down) */}
+          {/* US NOT SEEN → Inconclusive */}
           <Arrow x1={295} y1={204} x2={295} y2={224} color={aC}/>
           <T x={320} y={218} size={5.5} weight={600} color={aC}>Not seen</T>
 
-          {/* ─── ENDPOINT: LIKELY NOT ─── */}
+          {/* ─── LIKELY NOT APPY ─── */}
           <Box x={14} y={210} w={130} h={34} fill={gBg} stroke={gBd}>
             <T x={79} y={221} size={6.5} weight={700} color={gC}>LIKELY NOT APPY</T>
             <T x={79} y={232} size={5}>Repeat PE · Alt dx</T>
             <T x={79} y={241} size={5} color={gC}>PO challenge · D/C vs obs</T>
           </Box>
 
-          {/* ─── ENDPOINT: APPENDICITIS ─── */}
+          {/* ─── APPENDICITIS ─── */}
           <Box x={374} y={210} w={102} h={34} fill={rBg} stroke={rBd} sw={2}>
             <T x={425} y={221} size={7} weight={700} color={rC}>APPENDICITIS</T>
             <T x={425} y={232} size={5.5}>Consult Peds Surgery</T>
@@ -347,51 +337,38 @@ function PathwayFlowchart() {
             <T x={0} y={2} size={6.5} weight={700}>MRI Result?</T>
           </g>
 
-          {/* MR POSITIVE → Appendicitis (arrow right+up to existing box) */}
+          {/* MR POSITIVE → Appendicitis */}
           <line x1={350} y1={296} x2={430} y2={296} stroke={rC} strokeWidth={1}/>
           <T x={390} y={290} size={5.5} weight={600} color={rC}>Positive</T>
           <Arrow x1={430} y1={296} x2={430} y2={244} color={rC}/>
 
-          {/* MR NEGATIVE → Likely not (arrow left+up) */}
+          {/* MR NEGATIVE → Likely not */}
           <line x1={240} y1={296} x2={80} y2={296} stroke={gC} strokeWidth={1}/>
           <T x={158} y={290} size={5.5} weight={600} color={gC}>Negative</T>
           <Arrow x1={80} y1={296} x2={80} y2={244} color={gC}/>
 
-          {/* MR EQUIVOCAL → Diagnosis uncertain (down) */}
+          {/* MR EQUIVOCAL → Diagnosis uncertain */}
           <Arrow x1={295} y1={308} x2={295} y2={326} color={aC}/>
           <T x={325} y={320} size={5.5} weight={600} color={aC}>Equivocal</T>
 
-          {/* ─── ENDPOINT: DIAGNOSIS UNCERTAIN ─── */}
+          {/* ─── DIAGNOSIS UNCERTAIN ─── */}
           <Box x={210} y={326} w={170} h={28} fill={aBg} stroke={aBd}>
             <T x={295} y={336} size={6.5} weight={700} color={aC}>DIAGNOSIS UNCERTAIN</T>
             <T x={295} y={347} size={5}>Consult Peds Surgery</T>
             <T x={295} y={354} size={5} color={aC}>Avoid empiric abx unless perf suspected</T>
           </Box>
 
-          {/* ═══ REFERENCE BARS ═══ */}
-
-          {/* Imaging note */}
-          <Box x={15} y={370} w={450} h={16} fill={bBg} stroke={bBd} radius={4}>
-            <T x={240} y={381} size={5.5} weight={600} color={bC}>US first · MRI preferred over CT · *Consider CT first-line in obese patients</T>
+          {/* ═══ ANTIBIOTICS REFERENCE ═══ */}
+          <Box x={15} y={370} w={450} h={34} fill={rBg} stroke={rBd} radius={4}>
+            <T x={240} y={380} size={6} weight={700} color={rC}>ANTIBIOTICS (confirmed appendicitis)</T>
+            <T x={240} y={391} size={5.5} color={mC}>Ceftriaxone 50 mg/kg IV q24 (max 2g) + Flagyl 30 mg/kg/day IV q24 (max 1.5g)</T>
+            <T x={240} y={401} size={5.5} color={aC}>Cephalosporin allergy: Cipro 25 mg/kg/day IV q12 (max 400 mg) + Flagyl</T>
           </Box>
 
-          {/* Antibiotics */}
-          <Box x={15} y={392} w={450} h={34} fill={rBg} stroke={rBd} radius={4}>
-            <T x={240} y={402} size={6} weight={700} color={rC}>ANTIBIOTICS (confirmed appendicitis)</T>
-            <T x={240} y={413} size={5.5} color={mC}>Ceftriaxone 50 mg/kg IV q24 (max 2g) + Flagyl 30 mg/kg/day IV q24 (max 1.5g)</T>
-            <T x={240} y={423} size={5.5} color={aC}>Cephalosporin allergy: Cipro 25 mg/kg/day IV q12 (max 400 mg) + Flagyl</T>
-          </Box>
-
-          {/* Disposition summary */}
-          <Box x={15} y={434} w={220} h={38} fill={gBg} stroke={gBd} radius={4}>
-            <T x={125} y={444} size={6} weight={700} color={gC}>LOW RISK / NOT APPY</T>
-            <T x={125} y={455} size={5}>D/C with PCP f/u {'<'}24h</T>
-            <T x={125} y={464} size={5} color={mC}>Return: worsening pain, fever, vomiting</T>
-          </Box>
-          <Box x={245} y={434} w={220} h={38} fill={rBg} stroke={rBd} radius={4}>
-            <T x={355} y={444} size={6} weight={700} color={rC}>CONFIRMED APPENDICITIS</T>
-            <T x={355} y={455} size={5}>Consult Peds Surgery</T>
-            <T x={355} y={464} size={5} color={mC}>Maintenance IVF · Abx if perforation</T>
+          {/* ═══ SLIM SUMMARY ═══ */}
+          <Box x={15} y={410} w={450} h={16} fill="#f1f5f9" stroke="#e2e8f0" radius={4}>
+            <T x={145} y={421} size={6} weight={700} color={gC}>Low risk → D/C · PCP {'<'}24h</T>
+            <T x={350} y={421} size={6} weight={700} color={rC}>Confirmed → Peds Surgery · IVF · ±Abx</T>
           </Box>
 
         </svg>
