@@ -82,12 +82,8 @@ function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==f
 function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
 
 // ── PBST Scoring Component (shared) ──
+function getRROptions(ageMo){var age=parseFloat(ageMo);if(!isNaN(age)&&age<3)return[{label:"RR 30–60 (normal)",pts:0},{label:"RR 61–69 (mildly elevated)",pts:1},{label:"RR ≥70 or below normal for age",pts:2}];if(!isNaN(age)&&age>=3&&age<=12)return[{label:"RR 25–50 (normal)",pts:0},{label:"RR 51–59 (mildly elevated)",pts:1},{label:"RR ≥60 or below normal for age",pts:2}];if(!isNaN(age)&&age>12)return[{label:"RR 20–40 (normal)",pts:0},{label:"RR 41–44 (mildly elevated)",pts:1},{label:"RR ≥45 or below normal for age",pts:2}];return[{label:"Normal for age",sub:"<3mo: 30–60 · 3–12mo: 25–50 · 12–24mo: 20–40",pts:0},{label:"Mildly elevated",sub:"<3mo: 61–69 · 3–12mo: 51–59 · 12–24mo: 41–44",pts:1},{label:"Significantly elevated or below normal",sub:"<3mo: ≥70 · 3–12mo: ≥60 · 12–24mo: ≥45",pts:2}];}
 var PBST_ITEMS=[
-{category:"Respiratory Rate",options:[
-{label:"Normal for age",sub:"<3mo: 30–60 · 3–12mo: 25–50 · 12–24mo: 20–40",pts:0},
-{label:"Mildly elevated",sub:"<3mo: 61–69 · 3–12mo: 51–59 · 12–24mo: 41–44",pts:1},
-{label:"Significantly elevated or below normal",sub:"<3mo: ≥70 · 3–12mo: ≥60 · 12–24mo: ≥45",pts:2}
-]},
 {category:"Accessory Muscle Use",options:[
 {label:"None",sub:"No flaring, retractions, or head bobbing",pts:0},
 {label:"Flaring",sub:"+1 point",pts:1},
@@ -115,7 +111,7 @@ var PBST_ITEMS=[
 ]}
 ];
 
-function PBSTCalculator({onScore,teaching}){
+function PBSTCalculator({onScore,teaching,ageMo}){
   var s1=useState(null),rr=s1[0],setRR=s1[1];
   var s2=useState([]),acc=s2[0],setAcc=s2[1];
   var s3=useState(null),bs=s3[0],setBS=s3[1];
@@ -131,24 +127,24 @@ function PBSTCalculator({onScore,teaching}){
   function toggleAcc(pts){setAcc(function(p){return p.includes(pts)?p.filter(function(x){return x!==pts}):[].concat(p,[pts])});}
 
   return(<div>
-    <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:8}}>Respiratory Rate</div>
-    {PBST_ITEMS[0].options.map(function(o,i){return <WizBtn key={i} label={o.label} sub={o.sub} color={C.primary} bg={C.pLight} border={C.pBorder} selected={rr===o.pts} onClick={function(){setRR(o.pts)}}/>})}
+    <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:8}}>Respiratory Rate {ageMo?<span style={{fontSize:11,fontWeight:400,color:C.muted}}>(age {ageMo} mo)</span>:<span style={{fontSize:11,fontWeight:400,color:C.amberMid}}> — enter age above for age-specific ranges</span>}</div>
+    {getRROptions(ageMo).map(function(o,i){return <WizBtn key={i} label={o.label} sub={o.sub} color={C.primary} bg={C.pLight} border={C.pBorder} selected={rr===o.pts} onClick={function(){setRR(o.pts)}}/>})}
 
     <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:8,marginTop:12}}>Accessory Muscle Use <span style={{fontSize:11,fontWeight:400,color:C.muted}}>(select all that apply — 1 pt each)</span></div>
-    {PBST_ITEMS[1].options.slice(1).map(function(o,i){
+    {PBST_ITEMS[0].options.slice(1).map(function(o,i){
       var sel=acc.includes(i+1);
       return <button key={i} onClick={function(){toggleAcc(i+1)}} style={{display:"block",width:"100%",textAlign:"left",background:sel?C.pLight:C.white,border:"2px solid "+(sel?C.primary:C.rule),borderRadius:10,padding:"10px 14px",marginBottom:6,cursor:"pointer"}}><div style={{fontSize:13,fontWeight:sel?700:400,color:sel?C.primary:C.ink}}>{o.label}</div></button>
     })}
     {acc.length===0&&<div style={{fontSize:12,color:C.muted,marginBottom:6,fontStyle:"italic"}}>None selected = 0 points</div>}
 
     <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:8,marginTop:12}}>Breath Sounds</div>
-    {PBST_ITEMS[2].options.map(function(o,i){return <WizBtn key={i} label={o.label} color={C.primary} bg={C.pLight} border={C.pBorder} selected={bs===o.pts} onClick={function(){setBS(o.pts)}}/>})}
+    {PBST_ITEMS[1].options.map(function(o,i){return <WizBtn key={i} label={o.label} color={C.primary} bg={C.pLight} border={C.pBorder} selected={bs===o.pts} onClick={function(){setBS(o.pts)}}/>})}
 
     <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:8,marginTop:12}}>Alertness</div>
-    {PBST_ITEMS[3].options.map(function(o,i){return <WizBtn key={i} label={o.label} color={C.primary} bg={C.pLight} border={C.pBorder} selected={alert===o.pts} onClick={function(){setAlert(o.pts)}}/>})}
+    {PBST_ITEMS[2].options.map(function(o,i){return <WizBtn key={i} label={o.label} color={C.primary} bg={C.pLight} border={C.pBorder} selected={alert===o.pts} onClick={function(){setAlert(o.pts)}}/>})}
 
     <div style={{fontSize:13,fontWeight:700,color:C.ink,marginBottom:8,marginTop:12}}>Dyspnea</div>
-    {PBST_ITEMS[4].options.map(function(o,i){return <WizBtn key={i} label={o.label} color={C.primary} bg={C.pLight} border={C.pBorder} selected={dysp===o.pts} onClick={function(){setDysp(o.pts)}}/>})}
+    {PBST_ITEMS[3].options.map(function(o,i){return <WizBtn key={i} label={o.label} color={C.primary} bg={C.pLight} border={C.pBorder} selected={dysp===o.pts} onClick={function(){setDysp(o.pts)}}/>})}
 
     <div style={{background:sevBg,border:"2px solid "+sevColor,borderRadius:10,padding:"14px",marginTop:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <div>
@@ -217,28 +213,39 @@ function Wizard({teaching,weightKg,ageMo,doses}){
     {/* STEP 2: PBST Score */}
     {excl==="no"&&(<Card title="Step 2 — PBST Score" color={C.primary}>
       <div style={{fontSize:13,marginBottom:10}}><strong>Suction and reposition patient, then score using the PBST.</strong></div>
-      <PBSTCalculator onScore={handleScore} teaching={teaching}/>
+      <PBSTCalculator onScore={handleScore} teaching={teaching} ageMo={ageMo}/>
     </Card>)}
 
-    {/* STEP 3: SpO₂ check */}
-    {excl==="no"&&scored&&(<Card title="Step 3 — Oxygen Saturation" color={severity==="severe"?C.red:C.primary}>
+    {/* STEP 3: SpO₂ — anticipatory note (not a gating decision) */}
+    {excl==="no"&&scored&&(<Card title="Step 3 — Oxygen Saturation Assessment" color={C.primary}>
+      <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
+        <strong>Document room-air SpO₂ for disposition planning.</strong><br/>
+        <span style={{fontSize:12,color:C.muted}}>SpO₂ informs monitoring level and disposition but does not change the PBST-driven management pathway.</span>
+      </div>
       <div style={{fontSize:13,marginBottom:10}}><strong>Current room-air SpO₂?</strong></div>
-      <WizBtn label="SpO₂ >94%" sub="Supportive care — no continuous monitoring needed" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={spo2==="high"} onClick={function(){setSpo2("high")}}/>
-      <WizBtn label="SpO₂ 90–94%" sub="Supportive care · Ongoing assessment · May require observation" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={spo2==="mid"} onClick={function(){setSpo2("mid")}}/>
-      <WizBtn label="SpO₂ <90%" sub="Supplemental O₂ required · Usually requires hospitalization" color={C.red} bg={C.redBg} border={C.redBorder} selected={spo2==="low"} onClick={function(){setSpo2("low")}}/>
-      <TeachBox id="oxygen" teaching={teaching}/>
+      <WizBtn label="SpO₂ >94%" sub="Supportive care · No continuous monitoring needed (unless concern for apnea or on O₂)" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={spo2==="high"} onClick={function(){setSpo2("high")}}/>
+      <WizBtn label="SpO₂ 90–94%" sub="Supportive care · Ongoing assessments · May require observation period · Must maintain SpO₂ and tolerate PO prior to discharge" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={spo2==="mid"} onClick={function(){setSpo2("mid")}}/>
+      <WizBtn label="SpO₂ <90%" sub="Supplemental O₂ indicated · Usually requires hospitalization · Start low-flow O₂ to maintain SpO₂ ≥92%" color={C.red} bg={C.redBg} border={C.redBorder} selected={spo2==="low"} onClick={function(){setSpo2("low")}}/>
 
       {spo2==="low"&&(<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Hypoxemia — Supplemental O₂">
         Start low-flow O₂ to maintain SpO₂ ≥92%<br/>
         Continuous pulse oximetry<br/>
         IV access — NS bolus {doses?doses.bolus+" mL":"20 mL/kg"} if indicated<br/>
-        {severity==="severe"&&<><strong>HFNC</strong> at {doses?doses.hfncStart+" L/min":"1 L/kg/min"} (max {doses?doses.hfncMax+" L/min":"2 L/kg/min"} for ward; above → PICU)<br/></>}
-        <strong>→ Plan admission</strong> · Consider PICU consult if worsening
+        <strong>Not appropriate for ED observation if O₂ required</strong>
       </Alert>)}
+
+      {spo2==="mid"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Borderline SpO₂ — Assess Phase of Illness">
+        Ongoing assessments including hydration/nutrition status, phase of illness, suctioning requirements<br/>
+        Consider social and geographical factors for disposition<br/>
+        Must be able to maintain SpO₂ and tolerate PO intake prior to discharge<br/>
+        {parseInt(ageMo||"99")<3&&<><strong style={{color:C.red}}>⚠ Neonates {'<'}3 months need longer observation — not appropriate for ED obs.</strong><br/></>}
+      </Alert>)}
+
+      <TeachBox id="oxygen" teaching={teaching}/>
     </Card>)}
 
-    {/* MILD pathway */}
-    {excl==="no"&&scored&&severity==="mild"&&spo2&&spo2!=="low"&&(<Card title="Step 4 — Mild Bronchiolitis Management" color={C.greenMid}>
+    {/* MILD pathway — proceeds from PBST score, not gated by SpO₂ */}
+    {excl==="no"&&scored&&severity==="mild"&&(<Card title="Step 4 — Mild Bronchiolitis Management" color={C.greenMid}>
       <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
         <strong>PBST ≤3 — Mild disease</strong><br/>
         Q4H assessments PRN · Nasal suction (bulb syringe first) · No continuous monitoring unless concern for apnea or on O₂
@@ -248,7 +255,9 @@ function Wizard({teaching,weightKg,ageMo,doses}){
       <WizBtn label="No — unable to tolerate PO" sub="Consider observation, NG feeds, or IV fluids" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={poTrial==="no"} onClick={function(){setPoTrial("no")}}/>
 
       {poTrial==="yes"&&(<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Consider Discharge">
-        SpO₂ adequate · PO tolerated · Mild PBST<br/>
+        PO tolerated · Mild PBST · Confirm SpO₂ {'>'}92% on room air<br/>
+        {spo2==="mid"&&<><strong style={{color:C.amberMid}}>SpO₂ 90–94% — observe until stable and tolerating PO.</strong><br/></>}
+        {spo2==="low"&&<><strong style={{color:C.red}}>SpO₂ {'<'}90% — supplemental O₂ required. Plan admission, not discharge.</strong><br/></>}
         {parseInt(ageMo||"99")<3&&<><strong style={{color:C.red}}>⚠ Age {'<'}3 months — high apnea risk.</strong> Consider admission or prolonged observation.<br/></>}
         <strong>Discharge teaching:</strong> bulb suction, hydration, pacing feeds, hand hygiene<br/>
         Attempt suctioning with manual device before discharge<br/>
@@ -266,12 +275,12 @@ function Wizard({teaching,weightKg,ageMo,doses}){
     </Card>)}
 
     {/* MODERATE pathway */}
-    {excl==="no"&&scored&&severity==="moderate"&&spo2&&(<Card title="Step 4 — Moderate Bronchiolitis Management" color={C.amberMid}>
+    {excl==="no"&&scored&&severity==="moderate"&&(<Card title="Step 4 — Moderate Bronchiolitis Management" color={C.amberMid}>
       <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
         <strong>PBST 4–7 — Moderate disease</strong><br/>
         At least Q2H assessments · Nasal suction (wall suction if clinically indicated)<br/>
         Consider PO vs NG feeds per feeding algorithm<br/>
-        {spo2==="low"&&<strong style={{color:C.red}}>SpO₂ {'<'}90% — supplemental O₂ in progress</strong>}
+        {spo2==="low"&&<strong style={{color:C.red}}>SpO₂ {'<'}90% — supplemental O₂ in progress · Plan admission</strong>}
       </div>
 
       <div style={{fontSize:13,fontWeight:700,marginBottom:8}}>Consider HFNC? → Perform HIP first (PBST 1–7)</div>
@@ -309,7 +318,7 @@ function Wizard({teaching,weightKg,ageMo,doses}){
     </Card>)}
 
     {/* SEVERE pathway */}
-    {excl==="no"&&scored&&severity==="severe"&&spo2&&(<Card title="Step 4 — Severe Bronchiolitis Management" color={C.red}>
+    {excl==="no"&&scored&&severity==="severe"&&(<Card title="Step 4 — Severe Bronchiolitis Management" color={C.red}>
       <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
         <strong>PBST 8–14 — Severe disease</strong><br/>
         Q1–2H assessments · Continuous pulse oximetry<br/>
@@ -348,7 +357,7 @@ function Wizard({teaching,weightKg,ageMo,doses}){
     </Card>)}
 
     {/* Albuterol trial section — available for moderate and severe */}
-    {excl==="no"&&scored&&(severity==="moderate"||severity==="severe")&&spo2&&(<Card title="Optional — Albuterol Trial" color={C.purple} defaultOpen={false}>
+    {excl==="no"&&scored&&(severity==="moderate"||severity==="severe")&&(<Card title="Optional — Albuterol Trial" color={C.purple} defaultOpen={false}>
       <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
         A <strong>one-time trial</strong> of albuterol within 12 hours of presentation is an option.<br/>
         RN and MD must be at bedside before and after with agreed PBST scoring to determine clinical response.<br/>
@@ -424,11 +433,11 @@ function RefDispo({teaching}){return(<Pad>
 // ═══════════════════════════════
 // PBST Reference Table (for Scoring tab)
 // ═══════════════════════════════
-function RefScoring({teaching}){return(<Pad>
+function RefScoring({teaching,ageMo}){return(<Pad>
 <Q text="PBST Scoring Tool" sub="Pediatric Bronchiolitis Scoring Tool — suction and reposition before scoring"/>
 <TeachBox id="pbst" teaching={teaching}/>
 <Card title="Interactive PBST Calculator" color={C.primary}>
-  <PBSTCalculator teaching={teaching}/>
+  <PBSTCalculator teaching={teaching} ageMo={ageMo}/>
 </Card>
 <Card title="PBST Reference Table" color={C.blue} defaultOpen={false}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
 <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",gap:4,marginBottom:6}}>
@@ -488,7 +497,7 @@ function App(){
 
       {mode==="wizard"&&<Wizard teaching={teaching} weightKg={weightKg} ageMo={ageMo} doses={doses}/>}
       {mode==="reference"&&tab==="triage"&&<RefTriage teaching={teaching}/>}
-      {mode==="reference"&&tab==="scoring"&&<RefScoring teaching={teaching}/>}
+      {mode==="reference"&&tab==="scoring"&&<RefScoring teaching={teaching} ageMo={ageMo}/>}
       {mode==="reference"&&tab==="decision"&&<RefDecisions teaching={teaching} doses={doses}/>}
       {mode==="reference"&&tab==="meds"&&<RefMeds teaching={teaching} doses={doses}/>}
       {mode==="reference"&&tab==="special"&&<RefDispo teaching={teaching}/>}
