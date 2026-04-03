@@ -32,51 +32,75 @@ const C = {
 const TEACH = {
   epidemiology: {
     title: "Epidemiology & Diagnostic Challenge",
-    content: "Appendicitis is the most common surgical emergency in children. Symptoms overlap with many childhood illnesses, making diagnosis challenging. Initial misdiagnosis rates range from 28–57% in children ≤12 years and are much higher in children <2. Delayed diagnosis and perforation are associated with increased morbidity, mortality, and prolonged hospital stays."
+    patho: "Appendicitis is the most common surgical emergency in children, caused by obstruction of the appendiceal lumen — typically by a fecalith, lymphoid hyperplasia, or rarely a foreign body. Obstruction leads to increased intraluminal pressure, venous congestion, bacterial overgrowth, and transmural inflammation. If unrelieved, ischemia and perforation follow.\n\nSymptoms overlap with gastroenteritis, constipation, mesenteric adenitis, and urinary tract infections, making early appendicitis one of the most diagnostically challenging pediatric abdominal conditions.",
+    pearls: "Initial misdiagnosis rates range from 28–57% in children ≤12 years and are significantly higher in children under 2. Maintain a high index of suspicion in any child with acute abdominal pain — especially when symptoms are evolving or atypical.\n\nDelayed diagnosis leads to perforation, which is associated with increased morbidity, prolonged hospital stays, and higher complication rates (abscess, wound infection, adhesive bowel obstruction).",
+    evidence: "Appendicitis accounts for 1–8% of pediatric ED visits for abdominal pain. Perforation rates at presentation range from 20–35% overall and exceed 80% in children under 5. Delayed diagnosis is the strongest modifiable risk factor for perforation. (Nance 2000, PMID: 10861542; Rothrock 2000, PMID: 10891054)"
   },
   scoring: {
     title: "Why Clinical Scoring?",
-    content: "Experienced clinician judgment has been found to be comparable to the Alvarado and PAS scores. Of available tools, the pARC appears to have the best test characteristics for ruling in and ruling out appendicitis. Scoring tools help standardize pretest probability and guide appropriate imaging decisions — avoiding both unnecessary radiation and missed diagnoses."
+    patho: "Clinical scoring tools convert subjective signs and symptoms into a standardized pretest probability, creating reproducible risk categories that map to evidence-based imaging and disposition thresholds.\n\nThis standardization reduces cognitive bias and anchoring errors — particularly important in appendicitis where the classic migration-to-RLQ presentation occurs in fewer than 60% of pediatric cases.",
+    pearls: "Experienced clinician judgment has been found to be comparable to the Alvarado and PAS scores. Of the available tools, the pARC appears to have the best test characteristics for both ruling in and ruling out appendicitis.\n\nScoring tools help guide appropriate imaging decisions — avoiding both unnecessary radiation exposure and missed diagnoses. Use scores to supplement, not replace, clinical judgment.",
+    evidence: "The Alvarado score and PAS have similar discriminative ability (AUC 0.72–0.82). The pARC demonstrates superior discrimination (AUC 0.85) with better calibration across the full probability spectrum. Structured scoring reduces negative appendectomy rates and unnecessary advanced imaging. (Kharbanda 2018, PMID: 29574359; Goldman 2008, PMID: 18310197)"
   },
   parc: {
     title: "About pARC",
-    content: "The Pediatric Appendicitis Risk Calculator (pARC) uses a multivariable logistic model incorporating sex, age, duration of pain, pain with walking, migration to RLQ, maximal RLQ tenderness, abdominal guarding, and ANC. It provides a continuous probability estimate rather than discrete risk categories, which improves discrimination compared to PAS and Alvarado — particularly in the intermediate range where imaging decisions are most impactful."
+    patho: "The Pediatric Appendicitis Risk Calculator (pARC) uses a multivariable logistic regression model incorporating eight clinical and laboratory variables: sex, age, duration of pain, pain with walking, migration of pain to RLQ, maximal tenderness in RLQ, abdominal guarding, and absolute neutrophil count (ANC).\n\nUnlike the PAS and Alvarado, which assign integer points to create discrete risk tiers, the pARC produces a continuous probability estimate (0–100%), providing more granular risk stratification.",
+    pearls: "The pARC's continuous output is most valuable in the intermediate-risk range (15–50%) where imaging decisions are most impactful and where PAS/Alvarado discrete categories lose resolution.\n\nAll eight variables must be available to calculate pARC — if ANC is pending, use PAS or Alvarado for initial stratification and recalculate pARC when labs return.",
+    evidence: "In external validation, the pARC outperformed PAS and Alvarado in discrimination (AUC 0.85 vs 0.74–0.78) and calibration across all risk strata. It correctly reclassified 17% of patients compared to PAS, predominantly in the intermediate range. (Kharbanda 2018, PMID: 29574359)"
   },
   ultrasound: {
     title: "Why Ultrasound First?",
-    content: "Both ACEP and ACR recommend ultrasound as the initial imaging study in pediatric appendicitis to minimize radiation exposure. Multicenter data (Mittal et al.) show US sensitivity of 73% and specificity of 97%. However, utility depends on pretest probability — in high-risk PAS patients, 19% of US were falsely negative and 45% with equivocal results had appendicitis. In intermediate-risk patients, 6% with negative US still had appendicitis."
+    patho: "Ultrasound identifies appendicitis by visualizing a non-compressible, blind-ending tubular structure in the RLQ measuring >6 mm in diameter. Secondary signs include an appendicolith, periappendiceal fluid, echogenic mesenteric fat (fat stranding), and loss of the normal gut signature.\n\nGraded compression technique displaces overlying bowel and reduces the distance between transducer and appendix, improving visualization. However, a retrocecal appendix, obesity, or significant bowel gas can limit the acoustic window.",
+    pearls: "Both ACEP and ACR recommend ultrasound as the initial imaging study in pediatric appendicitis to minimize radiation exposure. However, utility depends critically on pretest probability:\n\n• In high-risk PAS patients, 19% of US were falsely negative and 45% with equivocal results had appendicitis.\n• In intermediate-risk patients, 6% with negative US still had appendicitis.\n\nA negative or equivocal US in a high-risk patient should prompt second-line imaging — not reassurance.",
+    evidence: "Multicenter data demonstrate US sensitivity of 73% and specificity of 97% for pediatric appendicitis. Sensitivity is highly operator-dependent, ranging from 44–100% across institutions. Specificity is consistently high (>94%). (Mittal 2013, PMID: 24314201; ACR Appropriateness Criteria — RLQ Pain, 2018)"
   },
   mri: {
     title: "MRI as Second-Line",
-    content: "Limited abdominal MRI has sensitivity of 96–98% and specificity of 95–97% for appendicitis in children (Moore 2012, Mushtaq 2019). At OHSU, deferring CT to obtain a quick abdomen MRI is generally preferred to avoid excess radiation. MRI can be performed in 10–15 minutes. CT may be preferred when the patient cannot remain still (age <5, autism), when there is suspected rupture, or when the patient is obese (poor US windows)."
+    patho: "MRI detects appendicitis using T2-weighted sequences that highlight fluid and edema within the appendiceal wall and periappendiceal tissues, and diffusion-weighted imaging (DWI) that shows restricted diffusion in inflamed tissue.\n\nA limited abdominal MRI protocol can be completed in 10–15 minutes without IV contrast, making it a practical second-line study that avoids ionizing radiation entirely.",
+    pearls: "At OHSU, deferring CT to obtain a quick abdomen MRI is generally preferred to avoid excess radiation in children. MRI is the preferred second-line study after equivocal or non-diagnostic ultrasound.\n\nCT may be preferred over MRI when:\n• The patient cannot remain still (age <5, autism, severe distress)\n• There is suspected rupture with concern for complex abscess\n• The patient is obese (poor US windows and MRI field limitations)",
+    evidence: "Limited abdominal MRI has sensitivity of 96–98% and specificity of 95–97% for appendicitis in children. MRI performs comparably to CT and avoids ionizing radiation. It is increasingly adopted as the second-line imaging modality of choice in pediatric centers. (Moore 2012, PMID: 23084930; Mushtaq 2019, PMID: 30778646)"
   },
   ct: {
     title: "CT Scan — Selective Use",
-    content: "CT is superior to US and in most studies to MRI for appendicitis diagnosis. At OHSU, CT sensitivity is ~100% with specificity of 99%. IV contrast is useful; oral contrast does not improve diagnostic accuracy. CT with contrast is preferred for suspected rupture. Consider CT as first-line in obese patients where US is unlikely to be diagnostic."
+    patho: "CT provides cross-sectional imaging with excellent soft tissue contrast when IV contrast is used. It identifies appendicitis by demonstrating an enlarged, wall-enhancing appendix with periappendiceal inflammatory fat stranding. CT can also identify complications including perforation, abscess, and phlegmon.\n\nIV contrast improves diagnostic accuracy by highlighting mucosal enhancement and vascular changes in inflamed tissue. Oral contrast does not improve diagnostic accuracy for appendicitis and may delay time to diagnosis.",
+    pearls: "CT is the most accurate single imaging study for appendicitis, but radiation exposure limits its role as first-line in children. At OHSU, CT sensitivity is approximately 100% with specificity of 99%.\n\nPrefer CT as first-line imaging in:\n• Obese patients where US is unlikely to be diagnostic and MRI field limitations apply\n• Suspected rupture where delineating abscess anatomy is critical for surgical planning\n\nCT with IV contrast is preferred for suspected rupture.",
+    evidence: "CT sensitivity for pediatric appendicitis is 94–100% with specificity of 95–99%, superior to both US and MRI in most comparative studies. However, a single abdominal CT delivers approximately 3–5 mSv of radiation. The ALARA principle mandates using the lowest-radiation modality that answers the clinical question. (Doria 2006, PMID: 16569634; Defined ACR Appropriateness Criteria)"
   },
   antibiotics: {
     title: "Antibiotic Selection Rationale",
-    content: "Ceftriaxone + metronidazole provides broad-spectrum coverage targeting enteric gram-negatives (ceftriaxone) and anaerobes (metronidazole) — the primary organisms in appendiceal perforation and peritonitis. Antibiotics are started when surgery requests them or when perforation is detected on imaging. For severe cephalosporin allergy, ciprofloxacin replaces ceftriaxone for gram-negative coverage while metronidazole is continued for anaerobes."
+    patho: "Appendiceal perforation produces a polymicrobial intra-abdominal infection dominated by enteric gram-negative organisms (Escherichia coli, Klebsiella, Pseudomonas) and anaerobes (Bacteroides fragilis, Peptostreptococcus). The transition from simple to complicated appendicitis involves bacterial translocation through the ischemic appendiceal wall into the peritoneal cavity.\n\nCeftriaxone provides broad gram-negative coverage, while metronidazole specifically targets anaerobes — together they cover the most common organisms in appendiceal perforation and peritonitis.",
+    pearls: "Antibiotics are started when surgery requests them or when perforation is detected on imaging. Do not delay antibiotics once perforation is suspected.\n\nFor severe cephalosporin allergy (anaphylaxis, angioedema), ciprofloxacin replaces ceftriaxone for gram-negative coverage while metronidazole is continued for anaerobes.\n\nSimple (non-perforated) appendicitis receives a single pre-operative prophylactic dose. Complicated appendicitis typically requires a multi-day IV course.",
+    evidence: "Broad-spectrum coverage targeting gram-negatives and anaerobes is the standard of care for complicated appendicitis. Ceftriaxone + metronidazole is non-inferior to piperacillin-tazobactam for post-operative infectious complications while offering a narrower spectrum. (Solomkin 2010, PMID: 20034345; SIS/IDSA Intra-Abdominal Infection Guidelines)"
   },
   ondansetron: {
     title: "Ondansetron at Triage",
-    content: "Ondansetron ODT is administered at triage (0.1–0.2 mg/kg, max 8 mg) to reduce vomiting and facilitate examination. Early antiemetic therapy improves patient comfort, reduces aspiration risk if the patient progresses to OR, and allows better oral contrast administration if CT is ultimately needed. The ODT formulation avoids the need for IV access at triage."
+    patho: "Ondansetron is a selective serotonin 5-HT₃ receptor antagonist that blocks serotonin signaling at vagal afferent nerve terminals in the GI tract and at the chemoreceptor trigger zone in the area postrema. This dual action suppresses both peripheral and central emetic pathways.\n\nThe orally disintegrating tablet (ODT) formulation is absorbed via the buccal mucosa and GI tract, bypassing the need for IV access at triage and providing rapid onset of antiemetic effect within 15–30 minutes.",
+    pearls: "Administer ondansetron ODT at triage (0.1–0.2 mg/kg, max 8 mg) for any child with suspected appendicitis and vomiting. Benefits include:\n\n• Reduced vomiting improves the quality of abdominal examination\n• Decreased aspiration risk if the patient progresses to the OR\n• Facilitates oral contrast administration if CT is ultimately needed\n• Improves patient comfort during what may be a prolonged ED workup",
+    evidence: "Early antiemetic administration in pediatric acute abdomen does not mask clinical findings and improves diagnostic accuracy by enabling better physical examination. Ondansetron has an excellent safety profile with minimal side effects in the pediatric population. (Freedman 2006, PMID: 16614166; DeCamp 2008, PMID: 18762604)"
   },
   painMeds: {
     title: "Analgesia Does NOT Mask Appendicitis",
-    content: "There is strong evidence that appropriate analgesia does not mask the signs of appendicitis or delay diagnosis. Withholding pain medication is not recommended. Acetaminophen is first-line for mild pain. IV fentanyl or morphine is appropriate for moderate-severe pain. Fentanyl is often preferred due to its rapid onset and shorter duration, allowing serial abdominal exams."
+    patho: "Appendicitis pain involves two distinct pathways. Early visceral pain is transmitted via splanchnic sympathetic afferents — it is poorly localized and perceived as periumbilical or diffuse abdominal discomfort. As inflammation extends to the parietal peritoneum, somatic afferents via intercostal nerves produce well-localized RLQ pain with peritoneal signs (guarding, rebound).\n\nOpioid analgesics modulate central pain perception at the level of the spinal cord and brainstem but do not eliminate the somatic peritoneal irritation that produces guarding and rebound tenderness — the key physical findings in appendicitis.",
+    pearls: "Withholding pain medication is not recommended and is considered poor practice. Appropriate analgesia actually improves diagnostic accuracy by enabling cooperative examination.\n\n• Acetaminophen is first-line for mild pain\n• IV fentanyl or morphine is appropriate for moderate-severe pain\n• Fentanyl is often preferred due to its rapid onset (2–3 minutes IV) and shorter duration (30–60 minutes), allowing meaningful serial abdominal exams between doses",
+    evidence: "Multiple randomized controlled trials and meta-analyses demonstrate that opioid analgesia does not mask the signs of appendicitis, does not delay diagnosis, and does not increase perforation rates. Adequate analgesia may actually improve diagnostic accuracy. (Green 2005, PMID: 15635308; Poonai 2014, PMID: 25080085; Manterola 2011, PMID: 21328269)"
   },
   youngChildren: {
     title: "Atypical Presentations in Young Children",
-    content: "Children <3 years are excluded from this pathway because appendicitis presents atypically in this age group. Infants present predominantly with vomiting (85–90%), with pain being less prominent (35–77%). Perforation rates are extremely high in young children due to delayed diagnosis. Preschool-age children (3–5 years) present more classically but still have high rates of vomiting (66–100%) and fever (80–87%) compared to older children."
+    patho: "Children under 3 years have anatomical and immunological features that alter appendicitis presentation and prognosis. The pediatric appendix is shorter and funnel-shaped with a thinner wall that is more susceptible to early perforation. The omentum is underdeveloped and unable to wall off perforation, leading to diffuse peritonitis rather than localized abscess.\n\nThe immature immune system produces an atypical inflammatory response, and young children cannot reliably localize or communicate pain, further delaying diagnosis.",
+    pearls: "Children <3 years are excluded from this pathway because appendicitis presents atypically in this age group:\n\n• Infants present predominantly with vomiting (85–90%), with pain being less prominent (35–77%)\n• Perforation rates are extremely high (80–100% in children <3) due to delayed diagnosis\n• Preschool-age children (3–5 years) present more classically but still have high rates of vomiting (66–100%) and fever (80–87%) compared to older children\n\nMaintain very high suspicion in any young child with vomiting, irritability, and abdominal distension.",
+    evidence: "Perforation rates in children under 3 years range from 80–100%, compared to 20–35% in older children. The median time from symptom onset to diagnosis is significantly longer in younger children. A high index of suspicion and liberal use of imaging are recommended for this age group. (Nance 2000, PMID: 10861542; Sakellaris 2008, PMID: 18690419)"
   },
   lowRisk: {
     title: "Low-Risk Disposition",
-    content: "Patients with PAS/Alvarado ≤3 or very low pARC (<5%) have an appendicitis rate well under 5%. These patients can generally be safely discharged with PCP follow-up within 24 hours and clear return precautions. Low-risk pARC (5–14%) patients may benefit from a 6-hour ED observation with serial exams — the evolving exam is often more informative than early imaging in this group."
+    patho: "The natural history of appendicitis involves progressive inflammation over hours to days. In the early stages, symptoms may be subtle and examination findings equivocal. Serial examination exploits this time course — a truly inflamed appendix will declare itself with evolving tenderness, guarding, and peritoneal signs on repeat exam.\n\nIn genuinely low-risk patients (pretest probability <5%), the negative predictive value of a reassuring serial examination over 6–12 hours is very high, often exceeding that of early imaging.",
+    pearls: "Patients with PAS/Alvarado ≤3 or very low pARC (<5%) have an appendicitis rate well under 5%. These patients can generally be safely discharged with:\n• PCP follow-up within 24 hours\n• Clear return precautions (worsening pain, fever, vomiting)\n\nLow-risk pARC (5–14%) patients may benefit from a 6-hour ED observation with serial exams — the evolving exam is often more informative than early imaging in this group. Reassess scoring after the observation period.",
+    evidence: "Validated low-risk cutoffs (PAS ≤3, pARC <5%) identify patients with appendicitis rates of 1–3%, supporting safe discharge with structured follow-up. Serial observation strategies reduce advanced imaging by 20–40% without increasing perforation rates or missed diagnoses. (Kharbanda 2018, PMID: 29574359; Goldman 2008, PMID: 18310197)"
   },
   mrResults: {
     title: "Interpreting MRI Results",
-    content: "MR positive: wall thickening, appendix >6mm, appendicolith, or fat stranding confirms appendicitis. MR negative: normal appendix OR appendix not seen but no RLQ fat stranding and no free fluid in boys (or expected physiologic volume in girls) — effectively rules out appendicitis. MR equivocal: appendix not visualized AND RLQ fat stranding or unexpected free fluid — diagnosis remains uncertain and surgical consultation is warranted."
+    patho: "MRI findings in appendicitis correlate directly with the underlying pathology. Appendiceal wall thickening and enhancement reflect transmural inflammation. An appendix >6 mm in diameter indicates distension from luminal obstruction. Appendicoliths are the obstructing body, visible as signal voids. Periappendiceal fat stranding on T2-weighted images reflects inflammatory exudate spreading into the surrounding mesentery.\n\nFree fluid in the pelvis must be interpreted in clinical context — small volumes of free fluid are physiologic in post-menarchal girls.",
+    pearls: "MR positive: wall thickening, appendix >6 mm, appendicolith, or periappendiceal fat stranding — confirms appendicitis, consult surgery.\n\nMR negative: normal appendix visualized OR appendix not seen but no RLQ fat stranding and no free fluid in boys (or only expected physiologic volume in girls) — effectively rules out appendicitis.\n\nMR equivocal: appendix not visualized AND RLQ fat stranding or unexpected free fluid present — diagnosis remains uncertain, surgical consultation is warranted for shared decision-making regarding observation vs. further imaging.",
+    evidence: "MRI interpretation criteria using the combination of appendiceal diameter, wall thickening, and periappendiceal inflammation achieve sensitivity of 96–98% and specificity of 95–97%. The 'appendix not visualized with no secondary signs' criterion has a negative predictive value exceeding 98%. (Moore 2012, PMID: 23084930; Mushtaq 2019, PMID: 30778646)"
   },
 };
 
@@ -183,12 +207,43 @@ function Sec({ title, color, children }) { return (<div style={{ marginBottom: 1
 function DoseRow({ label, value, unit = "" }) { return (<div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "4px 0", borderBottom: `1px dashed ${C.rule}` }}><span style={{ fontSize: 13, fontWeight: 500 }}>{label}</span><span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, fontWeight: 600, color: C.primary }}>{value} {unit}</span></div>); }
 
 function TeachBox({ id, teaching }) {
+  const [tab, setTab] = useState("pearls");
   if (!teaching || !TEACH[id]) return null;
   const t = TEACH[id];
+  if (t.content && !t.patho && !t.pearls && !t.evidence) {
+    return (
+      <div style={{ background: C.tealBg, border: `1.5px solid ${C.tealBorder}`, borderRadius: 10, padding: "12px 14px", marginBottom: 12, borderLeft: `4px solid ${C.teal}` }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.teal, display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>📖 {t.title}</div>
+        <div style={{ fontSize: 12, lineHeight: 1.6, color: C.ink, whiteSpace: "pre-wrap" }}>{t.content}</div>
+      </div>
+    );
+  }
+  const tabs = [];
+  if (t.patho) tabs.push({ key: "patho", label: "🧠 Pathophysiology" });
+  if (t.pearls) tabs.push({ key: "pearls", label: "🩺 Clinical Pearls" });
+  if (t.evidence) tabs.push({ key: "evidence", label: "📊 Evidence" });
+  if (tabs.length === 0) return null;
+  const activeTab = t[tab] ? tab : tabs[0].key;
   return (
-    <div style={{ background: C.tealBg, border: `1.5px solid ${C.tealBorder}`, borderRadius: 10, padding: "12px 14px", marginBottom: 12, borderLeft: `4px solid ${C.teal}` }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: C.teal, display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>📖 {t.title}</div>
-      <div style={{ fontSize: 12, lineHeight: 1.6, color: C.ink }}>{t.content}</div>
+    <div style={{ background: C.tealBg, border: `1.5px solid ${C.tealBorder}`, borderRadius: 10, marginBottom: 12, overflow: "hidden" }}>
+      <div style={{ background: "#ccfbf1", padding: "8px 12px", borderBottom: `1px solid ${C.tealBorder}`, display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: C.teal }}>📖 {t.title}</span>
+      </div>
+      {tabs.length > 1 && (
+        <div style={{ display: "flex", background: C.white, borderBottom: `1px solid ${C.rule}` }}>
+          {tabs.map(tb => {
+            const act = activeTab === tb.key;
+            return (
+              <button key={tb.key} onClick={() => setTab(tb.key)} style={{
+                flex: 1, padding: "8px 0", background: act ? C.tealBg : "#f8fafc",
+                border: "none", borderBottom: act ? `2.5px solid ${C.teal}` : "2.5px solid transparent",
+                cursor: "pointer", fontSize: 11, fontWeight: act ? 700 : 500, color: act ? C.teal : C.muted,
+              }}>{tb.label}</button>
+            );
+          })}
+        </div>
+      )}
+      <div style={{ padding: "12px 14px", fontSize: 12, lineHeight: 1.65, color: C.ink, whiteSpace: "pre-wrap" }}>{t[activeTab]}</div>
     </div>
   );
 }
