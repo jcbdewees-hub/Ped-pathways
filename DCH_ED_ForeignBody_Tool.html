@@ -65,69 +65,18 @@ function Card({title,color,children,defaultOpen}){var s=useState(defaultOpen!==f
 function WizBtn({label,sub,color,bg,border,onClick,selected}){return(<button onClick={onClick} style={{display:"block",width:"100%",textAlign:"left",background:selected?bg:C.white,border:"2px solid "+(selected?color:C.rule),borderRadius:10,padding:"14px 16px",marginBottom:8,cursor:"pointer",transition:"all 0.15s"}}><div style={{fontSize:14,fontWeight:700,color:selected?color:C.ink}}>{label}</div>{sub&&<div style={{fontSize:12,color:selected?color:C.muted,marginTop:2,opacity:0.85}}>{sub}</div>}</button>)}
 
 // ═══════════════════════════════
-// FLOWCHART
+// FLOWCHART (PDF images)
 // ═══════════════════════════════
 function PathwayFlowchart(){
-  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#166534",pBg="#f0fdf4",pBd="#86efac",puC="#6b21a8",puBg="#faf5ff",puBd="#c4b5fd",mC="#6b7280";
-  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
-  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
-  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
   return(
     <div style={{marginTop:20}}>
       <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
-      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Age {'<'}18 · Suspected/known alimentary FB ingestion</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Age {'<'}18 · Suspected/known alimentary FB ingestion · From institutional PDF pathway</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 480 400" style={{width:"100%",display:"block"}}>
-          <rect width={480} height={400} fill="#fafaf8" rx={6}/>
-          <Box x={110} y={6} w={260} h={28} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={pC}>FOREIGN BODY INGESTION</T><T x={240} y={28} size={6} color={mC}>ESI II · NPO · HOB 30° · Monitor · Imaging</T></Box>
-          <Arrow x1={240} y1={34} x2={240} y2={50}/>
-
-          <g transform="translate(240,64)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>Button</T><T x={0} y={7} size={6} weight={700}>Battery?</T></g>
-
-          <Arrow x1={180} y1={64} x2={80} y2={88} color={rC}/>
-          <Arrow x1={300} y1={64} x2={380} y2={88}/>
-
-          {/* BUTTON BATTERY */}
-          <Box x={10} y={88} w={140} h={24} fill={rBg} stroke={rBd} sw={2}><T x={80} y={98} size={8} weight={700} color={rC}>BUTTON BATTERY</T><T x={80} y={108} size={5} color={mC}>Burns begin in 2 hours</T></Box>
-          <Arrow x1={80} y1={112} x2={80} y2={126}/>
-          <g transform="translate(80,140)"><polygon points="0,-14 45,0 0,14 -45,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={5} weight={700}>Location?</T></g>
-          <Arrow x1={35} y1={140} x2={10} y2={160} color={rC}/>
-          <Arrow x1={125} y1={140} x2={150} y2={160} color={aC}/>
-
-          <Box x={-15} y={160} w={90} h={36} fill={rBg} stroke={rBd} sw={2}><T x={30} y={170} size={6} weight={700} color={rC}>ESOPHAGEAL</T><T x={30} y={180} size={5} color={mC}>Sucralfate/honey</T><T x={30} y={190} size={5} weight={700} color={rC}>→ OR ASAP</T></Box>
-
-          <Box x={110} y={160} w={90} h={28} fill={aBg} stroke={aBd}><T x={155} y={170} size={6} weight={700} color={aC}>GASTRIC/BOWEL</T><T x={155} y={182} size={5} color={mC}>GI consult · No honey</T></Box>
-
-          {/* OTHER FB */}
-          <Box x={310} y={88} w={150} h={24} fill={blBg} stroke={blBd} sw={1.5}><T x={385} y={98} size={8} weight={700} color={blC}>OTHER FOREIGN BODY</T><T x={385} y={108} size={5} color={mC}>AP nose-to-rectum XR</T></Box>
-          <Arrow x1={385} y1={112} x2={385} y2={130}/>
-          <g transform="translate(385,144)"><polygon points="0,-14 50,0 0,14 -50,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={5} weight={700}>Location?</T></g>
-
-          <Arrow x1={335} y1={144} x2={260} y2={168}/>
-          <Arrow x1={385} y1={158} x2={385} y2={172}/>
-          <Arrow x1={435} y1={144} x2={460} y2={168}/>
-
-          {/* Esophageal other */}
-          <Box x={210} y={168} w={100} h={34} fill={aBg} stroke={aBd}><T x={260} y={178} size={6} weight={700} color={aC}>ESOPHAGEAL</T><T x={260} y={188} size={5} color={mC}>Symptoms / {'>'}24 hr?</T><T x={260} y={198} size={5} weight={700} color={aC}>ENT or Surgery</T></Box>
-
-          {/* Gastric */}
-          <Box x={335} y={172} w={100} h={28} fill={gBg} stroke={gBd}><T x={385} y={182} size={6} weight={700} color={gC}>GASTRIC</T><T x={385} y={194} size={5} color={mC}>Object type?</T></Box>
-          <Arrow x1={385} y1={200} x2={385} y2={218}/>
-
-          <Box x={250} y={218} w={70} h={22} fill={gBg} stroke={gBd}><T x={285} y={227} size={5} weight={700} color={gC}>BLUNT</T><T x={285} y={237} size={5} color={mC}>Expectant</T></Box>
-          <Box x={330} y={218} w={70} h={22} fill={aBg} stroke={aBd}><T x={365} y={227} size={5} weight={700} color={aC}>SHARP</T><T x={365} y={237} size={5} color={mC}>Surgery</T></Box>
-          <Box x={410} y={218} w={70} h={22} fill={rBg} stroke={rBd}><T x={445} y={227} size={5} weight={700} color={rC}>MAGNETS</T><T x={445} y={237} size={5} color={mC}>GI → OR</T></Box>
-
-          {/* Beyond stomach */}
-          <Box x={430} y={168} w={50} h={28} fill={gBg} stroke={gBd}><T x={455} y={178} size={5} weight={700} color={gC}>BEYOND</T><T x={455} y={190} size={5} color={mC}>Sx?</T></Box>
-
-          {/* Summary */}
-          <Box x={20} y={260} w={440} h={28} fill={rBg} stroke={rBd} radius={8}><T x={240} y={271} size={7} weight={700} color={rC}>BUTTON BATTERY IN ESOPHAGUS = OR ASAP · DO NOT DELAY FOR REPEAT IMAGING</T><T x={240} y={283} size={6} color={mC}>Sucralfate 10 mL Q10 min × 3 OR Honey 10 mL Q10 min × 6 (if {'>'}1 yr)</T></Box>
-
-          <Box x={20} y={294} w={440} h={20} fill={blBg} stroke={blBd} radius={6}><T x={240} y={305} size={6} weight={600} color={blC}>CONSULTS: ENT (above thoracic inlet) · Surgery (esophageal/symptomatic) · GI (gastric/intestinal/battery past esophagus)</T></Box>
-
-          <Box x={20} y={320} w={440} h={16} fill="#f1f5f9" stroke="#e2e8f0" radius={4}><T x={240} y={330} size={5.5} weight={600} color={mC}>Exclude aspirated FB · NPO all patients · Long = {'>'}2.5 cm ({'<'}5 yr) or {'>'}5 cm (school age) · Glucagon/enzymes NOT recommended</T></Box>
-        </svg>
+        <img src="foreign-body-flowchart-page2.png" alt="Foreign Body Ingestion Flowchart — Button Battery Branch" style={{width:"100%",display:"block",borderRadius:6}}/>
+      </div>
+      <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden",marginTop:8}}>
+        <img src="foreign-body-flowchart-page3.png" alt="Foreign Body Ingestion Flowchart — Non-Battery FB Branch" style={{width:"100%",display:"block",borderRadius:6}}/>
       </div>
     </div>
   );
@@ -146,8 +95,10 @@ function Wizard({teaching,doses}){
   var s6=useState(null),esoSx=s6[0],setEsoSx=s6[1];
   var s7=useState(null),gastType=s7[0],setGastType=s7[1];
   var s8=useState(null),gastSx=s8[0],setGastSx=s8[1];
+  var s9=useState(null),stomachSx=s9[0],setStomachSx=s9[1];
+  var s10=useState(null),beyondType=s10[0],setBeyondType=s10[1];
 
-  function reset(){setAirway(null);setBattery(null);setBattLoc(null);setFbSeen(null);setFbLoc(null);setEsoSx(null);setGastType(null);setGastSx(null);}
+  function reset(){setAirway(null);setBattery(null);setBattLoc(null);setFbSeen(null);setFbLoc(null);setEsoSx(null);setGastType(null);setGastSx(null);setStomachSx(null);setBeyondType(null);}
 
   return(<Pad>
     <Q text="Walk-Through" sub="Object type → location → urgency → consult routing"/>
@@ -221,35 +172,41 @@ function Wizard({teaching,doses}){
         <strong>NPO · PIV · Admit to OR</strong> (emergently if symptomatic)
       </Alert>)}
       {esoSx==="no"&&(<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⏰" title="May Observe">
-        PO challenge and repeat imaging after period of observation.<br/>
-        If still in esophagus → Consult Peds Surgery or ENT for removal.<br/>
-        Coins typically pass spontaneously if no symptoms.
+        May PO challenge and repeat imaging after period of observation.<br/><br/>
+        <strong>If still in esophagus after repeat imaging:</strong><br/>
+        Respiratory symptoms or above thoracic inlet → Consult <strong>Peds ENT</strong> · NPO · pIV · Admit to OR (emergently if symptoms)<br/>
+        Below thoracic inlet, no respiratory symptoms → Consult <strong>Peds Surgery</strong> · NPO · pIV · Admit to OR (emergently if symptoms)
       </Alert>)}
       <TeachBox id="esophageal" teaching={teaching}/>
     </Card>)}
 
     {/* STOMACH */}
-    {fbLoc==="stomach"&&(<Card title="Gastric FB — Object Type" color={C.primary}>
-      <div style={{fontSize:13,marginBottom:10}}><strong>What type of object?</strong></div>
-      <WizBtn label="Coin or blunt object" sub="Low risk — expectant management" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={gastType==="blunt"} onClick={function(){setGastType("blunt")}}/>
-      <WizBtn label="Sharp or long object" sub=">2.5 cm (<5 yr) or >5 cm (school age)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={gastType==="sharp"} onClick={function(){setGastType("sharp")}}/>
-      <WizBtn label="Multiple magnets" sub="Or magnet + metallic object — URGENT" color={C.red} bg={C.redBg} border={C.redBorder} selected={gastType==="magnets"} onClick={function(){setGastType("magnets")}}/>
+    {fbLoc==="stomach"&&(<Card title="Gastric FB" color={C.primary}>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Symptoms attributable to FB OR object is long*, sharp, or multiple magnets?</strong><br/><span style={{fontSize:12,color:C.muted}}>*Long = {'>'} 2.5 cm in children {'<'} 5, {'>'} 5 cm in school age</span></div>
+      <WizBtn label="Sharp or long object" sub=">2.5 cm (<5 yr) or >5 cm (school age)" color={C.red} bg={C.redBg} border={C.redBorder} selected={gastType==="sharp"} onClick={function(){setGastType("sharp");setStomachSx(null)}}/>
+      <WizBtn label="Multiple magnets" sub="Or magnet + metallic object — URGENT" color={C.red} bg={C.redBg} border={C.redBorder} selected={gastType==="magnets"} onClick={function(){setGastType("magnets");setStomachSx(null)}}/>
+      <WizBtn label="Coin or blunt object" sub="Need to assess for symptoms" color={C.primary} bg={C.pLight} border={C.pBorder} selected={gastType==="blunt"} onClick={function(){setGastType("blunt")}}/>
 
-      {gastType==="blunt"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Expectant Management">Coins/blunt objects in stomach typically pass spontaneously. Repeat radiograph in 1 week if no passage in stool. Consider GI consult for close follow-up.</Alert>}
-      {gastType==="sharp"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Sharp/Long Object — Surgery Consult">Consult <strong>Peds Surgery</strong> · NPO · PIV · Admit for endoscopic or surgical removal</Alert>}
-      {gastType==="magnets"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Multiple Magnets — URGENT">Consult <strong>Peds GI</strong> · NPO · PIV · <strong>Admit to OR urgently</strong> for endoscopy</Alert>}
+      {gastType==="sharp"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Sharp/Long Object — GI Consult + OR">Consult <strong>Peds GI</strong> · NPO · Place pIV · <strong>Admit to OR urgently for endoscopy</strong></Alert>}
+      {gastType==="magnets"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Multiple Magnets — GI Consult + OR">Consult <strong>Peds GI</strong> · NPO · Place pIV · <strong>Admit to OR urgently for endoscopy</strong></Alert>}
+      {gastType==="blunt"&&(<div style={{marginTop:8}}><div style={{fontSize:13,marginBottom:10}}><strong>Symptoms attributable to the foreign body?</strong></div><WizBtn label="Yes — Symptomatic" sub="Pain, vomiting, or other symptoms attributable to FB" color={C.red} bg={C.redBg} border={C.redBorder} selected={stomachSx==="yes"} onClick={function(){setStomachSx("yes")}}/><WizBtn label="No — Asymptomatic" sub="No symptoms attributable to FB" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={stomachSx==="no"} onClick={function(){setStomachSx("no")}}/></div>)}
+      {gastType==="blunt"&&stomachSx==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Symptomatic Gastric FB — GI Consult + OR">Consult <strong>Peds GI</strong> · NPO · Place pIV · <strong>Admit to OR urgently for endoscopy</strong></Alert>}
+      {gastType==="blunt"&&stomachSx==="no"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Expectant Management">Coins/blunt objects in stomach typically pass spontaneously.<br/>Repeat radiograph in 1 week if no passage in stool.<br/>Consider GI consult for close follow-up.</Alert>}
       <TeachBox id="gastricIntestinal" teaching={teaching}/>
       <TeachBox id="magnets" teaching={teaching}/>
     </Card>)}
 
     {/* BEYOND STOMACH */}
     {fbLoc==="beyond"&&(<Card title="Beyond Stomach" color={C.primary}>
-      <div style={{fontSize:13,marginBottom:10}}><strong>Symptoms attributable to FB? Or object is sharp, long, or multiple magnets?</strong></div>
-      <WizBtn label="Yes — Symptomatic or dangerous object" sub="Abdominal tenderness, vomiting, obstruction, or perforation" color={C.red} bg={C.redBg} border={C.redBorder} selected={gastSx==="yes"} onClick={function(){setGastSx("yes")}}/>
-      <WizBtn label="No — Asymptomatic blunt object" sub="Most will pass spontaneously" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={gastSx==="no"} onClick={function(){setGastSx("no")}}/>
+      <div style={{fontSize:13,marginBottom:10}}><strong>Abdominal tenderness, vomiting, or evidence of bowel obstruction or perforation on radiograph?</strong></div>
+      <WizBtn label="Yes — Surgical symptoms present" sub="Tenderness, vomiting, obstruction, or perforation" color={C.red} bg={C.redBg} border={C.redBorder} selected={gastSx==="yes"} onClick={function(){setGastSx("yes");setBeyondType(null)}}/>
+      <WizBtn label="No — No acute surgical symptoms" sub="Assess by object type" color={C.primary} bg={C.pLight} border={C.pBorder} selected={gastSx==="no"} onClick={function(){setGastSx("no")}}/>
 
-      {gastSx==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Symptomatic / Dangerous Object Past Stomach">Consult <strong>Peds Surgery</strong> · NPO · PIV · Admit</Alert>}
-      {gastSx==="no"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Expectant Management">Consult <strong>Peds GI</strong> · Admit vs discharge with follow-up per GI discretion. Repeat radiograph in 1 week if no passage.</Alert>}
+      {gastSx==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Surgical Symptoms — Peds Surgery">Consult <strong>Peds Surgery</strong> · NPO · Place pIV · <strong>Admit to Peds Surgery</strong></Alert>}
+      {gastSx==="no"&&(<div style={{marginTop:8}}><div style={{fontSize:13,marginBottom:10}}><strong>What type of object?</strong></div><WizBtn label="Sharp or long object" sub=">2.5 cm (<5 yr) or >5 cm (school age)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={beyondType==="sharp"} onClick={function(){setBeyondType("sharp")}}/><WizBtn label="Multiple magnets" sub="Or magnet + metallic object" color={C.red} bg={C.redBg} border={C.redBorder} selected={beyondType==="magnets"} onClick={function(){setBeyondType("magnets")}}/><WizBtn label="Coin or blunt object" sub="Most will pass spontaneously" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={beyondType==="blunt"} onClick={function(){setBeyondType("blunt")}}/></div>)}
+      {gastSx==="no"&&beyondType==="sharp"&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title="Sharp/Long Object — GI Consult">Consult <strong>GI</strong> · Admit vs discharge with follow-up per their discretion</Alert>}
+      {gastSx==="no"&&beyondType==="magnets"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🚨" title="Multiple Magnets — GI Consult">Consult <strong>Peds GI</strong> · NPO · Place pIV · <strong>Admit to Peds GI</strong></Alert>}
+      {gastSx==="no"&&beyondType==="blunt"&&<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Expectant Management">Consider <strong>GI consult</strong> for close follow-up.<br/>Repeat radiograph in 1 week if no passage in stool.</Alert>}
     </Card>)}
 
     {airway!==null&&(<div style={{textAlign:"center",marginTop:8}}><button onClick={reset} style={{padding:"10px 24px",background:C.white,border:"1.5px solid "+C.rule,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,color:C.muted}}>↻ Reset Walk-Through</button></div>)}
@@ -274,17 +231,16 @@ function RefDecisions({teaching,doses}){return(<Pad>
 <TeachBox id="imaging" teaching={teaching}/>
 <Card title="Button Battery — Esophageal" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Page Button Battery Group · 2 large-bore PIVs · Type & cross<br/>Sucralfate or honey (if {'>'}1 yr) · <strong>OR ASAP</strong><br/>Do NOT repeat imaging if referring facility already confirmed location</div></Card>
 <Card title="Button Battery — Stomach/Bowel" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Consult Peds GI · Place IV · No sucralfate/honey<br/>GI determines retrieval vs observation</div></Card>
-<Card title="Esophageal FB (Non-Battery)" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Symptomatic / drooling / {'>'}24 hr → emergent removal<br/>Above thoracic inlet → <strong>Peds ENT</strong><br/>Below thoracic inlet → <strong>Peds Surgery</strong><br/>Asymptomatic {'<'}24 hr → may observe, PO challenge, repeat imaging</div><TeachBox id="esophageal" teaching={teaching}/></Card>
-<Card title="Gastric FB" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Blunt/coin → expectant management, XR in 1 week<br/>Sharp or long → Peds Surgery, NPO, admit<br/>Multiple magnets → Peds GI, NPO, OR urgently</div><TeachBox id="gastricIntestinal" teaching={teaching}/></Card>
-<Card title="Beyond Stomach" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Symptomatic or dangerous object → Peds Surgery, admit<br/>Asymptomatic blunt → Peds GI, admit vs D/C per discretion</div></Card>
-<Card title="Consult Routing Summary" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Button Battery Paging Group:</strong> esophageal battery<br/><strong>Peds ENT:</strong> above thoracic inlet, respiratory symptoms<br/><strong>Peds Surgery:</strong> esophageal (below inlet), sharp/long objects, symptomatic bowel<br/><strong>Peds GI:</strong> gastric battery, magnets, intestinal FB, radiolucent FB evaluation</div><TeachBox id="consults" teaching={teaching}/></Card>
+<Card title="Esophageal FB (Non-Battery)" color={C.amberMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Symptomatic / drooling / {'>'}24 hr → emergent removal<br/>Above thoracic inlet or respiratory symptoms → <strong>Peds ENT</strong> · NPO · pIV · Admit to OR (emergently if symptoms)<br/>Below thoracic inlet → <strong>Peds Surgery</strong> · NPO · pIV · Admit to OR (emergently if symptoms)<br/><br/>Asymptomatic {'<'}24 hr → may PO challenge and repeat imaging after observation<br/>If still in esophagus: above thoracic inlet/respiratory → <strong>ENT</strong>, below → <strong>Surgery</strong></div><TeachBox id="esophageal" teaching={teaching}/></Card>
+<Card title="Gastric FB" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Symptomatic OR sharp/long/multiple magnets → <strong>Peds GI</strong>, NPO, pIV, admit to OR urgently for endoscopy<br/>Asymptomatic blunt/coin → expectant management, XR in 1 week, consider GI consult<br/><span style={{fontSize:12,color:C.muted}}>Long = {'>'} 2.5 cm ({'<'} 5 yr) or {'>'} 5 cm (school age)</span></div><TeachBox id="gastricIntestinal" teaching={teaching}/></Card>
+<Card title="Beyond Stomach" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Abdominal tenderness, vomiting, obstruction, or perforation → <strong>Peds Surgery</strong>, NPO, pIV, admit to Peds Surgery<br/>No surgical symptoms — by object type:<br/>Sharp/long → <strong>GI</strong> consult, admit vs D/C per their discretion<br/>Multiple magnets → <strong>Peds GI</strong>, NPO, pIV, admit to Peds GI<br/>Coins/blunt → consider <strong>GI consult</strong> for follow-up, XR in 1 week</div></Card>
+<Card title="Consult Routing Summary" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Button Battery Paging Group:</strong> esophageal battery (GI + Surgery + CT Surgery + Interventional Cardiology)<br/><strong>Peds ENT:</strong> above thoracic inlet and/or respiratory symptoms<br/><strong>Peds Surgery:</strong> esophageal FB below thoracic inlet, beyond stomach with surgical symptoms (tenderness/vomiting/obstruction/perforation), radiolucent FB + hx esophageal surgery<br/><strong>Peds GI:</strong> gastric battery, gastric symptomatic/sharp/long/magnets (OR urgently), beyond stomach sharp/long/magnets without surgical symptoms, radiolucent FB evaluation (no surgical hx)</div><TeachBox id="consults" teaching={teaching}/></Card>
 <PathwayFlowchart/>
 </Pad>)}
 
 function RefMeds({teaching,doses}){return(<Pad>
 <Q text="Medications" sub={doses?"Calculated for "+doses.w+" kg":"Enter weight for calculations"}/>
 <Card title="pH-Neutralizing Agents (Esophageal Battery Only)" color={C.red}><div style={{marginTop:8,fontSize:13,lineHeight:1.7}}><strong>Sucralfate suspension</strong> 10 mL Q10 min × 3 doses<br/><strong>OR Honey</strong> 10 mL Q10 min × 6 doses (if age {'>'}1 year)<br/><span style={{fontSize:12,color:C.muted}}>Administer while awaiting OR. Do NOT give once battery is past esophagus.</span></div></Card>
-<Card title="Confirmation Imaging" color={C.primary}><div style={{marginTop:8,fontSize:13,lineHeight:1.7}}><strong>Omnipaque</strong> 10 mL via G-tube up to 15 min prior to confirmation x-ray<br/><span style={{fontSize:12,color:C.muted}}>Order: Abd Tube Cath Eval with Contrast (not Fluoro) for GT Placement Confirmation. Must be administered by physician.</span></div></Card>
 <Card title="Fluids" color={C.primary}><div style={{marginTop:8}}><DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus:"—"} unit={doses?"mL":""}/></div></Card>
 <Card title="NOT Recommended" color={C.red}><div style={{marginTop:8,fontSize:13,lineHeight:1.7,color:C.red}}><strong>Proteolytic enzymes:</strong> Associated with hypernatremia, erosion, esophageal perforation, aspiration pneumonitis<br/><strong>Glucagon:</strong> Not efficacious, causes nausea/vomiting</div></Card>
 </Pad>)}
@@ -292,10 +248,10 @@ function RefMeds({teaching,doses}){return(<Pad>
 function RefDispo({teaching}){return(<Pad>
 <Q text="Disposition & References"/>
 <Card title="Disposition by Location & Service" color={C.primary}><div style={{marginTop:8}}>
-<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>OR — EMERGENT</div><div style={{fontSize:12,marginTop:2}}>Esophageal button battery · Esophageal FB with symptoms</div></div>
-<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT — PEDS SURGERY</div><div style={{fontSize:12,marginTop:2}}>Sharp/long objects · Symptomatic gastric/intestinal FB · Esophageal FB requiring removal</div></div>
-<div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.blue}}>ADMIT — PEDS GI</div><div style={{fontSize:12,marginTop:2}}>Multiple magnets · Gastric battery · Asymptomatic intestinal FB requiring monitoring</div></div>
-<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Blunt objects past esophagus, asymptomatic · Repeat XR in 1 week if no passage</div></div>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>OR — EMERGENT</div><div style={{fontSize:12,marginTop:2}}>Esophageal button battery (OR ASAP) · Esophageal FB with symptoms (emergent)</div></div>
+<div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT — PEDS ENT or SURGERY</div><div style={{fontSize:12,marginTop:2}}>Esophageal FB requiring removal (ENT if above thoracic inlet/respiratory, Surgery if below) · Beyond stomach with surgical symptoms (tenderness/vomiting/obstruction/perforation) → Peds Surgery</div></div>
+<div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.blue}}>ADMIT — PEDS GI</div><div style={{fontSize:12,marginTop:2}}>Gastric symptomatic/sharp/long/magnets (OR urgently for endoscopy) · Gastric button battery · Beyond stomach magnets · Beyond stomach sharp/long (admit vs D/C per GI)</div></div>
+<div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Asymptomatic blunt objects past esophagus · Repeat XR in 1 week if no passage · Consider GI consult for follow-up</div></div>
 </div></Card>
 <Card title="Coin vs Battery — Radiographic Clues" color={C.blue} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>
 <strong>Button battery:</strong> 'Double ring' / 'halo' sign on AP · 'Step-off' sign on lateral (bilevel contour)<br/>
