@@ -55,7 +55,7 @@ pearls:"Q1H: vitals, neuro checks (for cerebral edema), glucose. Q2–4H: Chem8 
 evidence:"Q1H neuro checks have been shown to detect early cerebral edema in time for effective intervention. The sensitivity of clinical monitoring exceeds that of routine imaging. (Glaser 2001; Muir 2004)"},
 picu:{title:"PICU Admission Criteria",
 patho:"DKA requiring insulin infusion is inherently a PICU-level illness because of the continuous monitoring requirements, the risk of cerebral edema, and the potential for rapid electrolyte shifts causing cardiac arrhythmias.",
-pearls:"PICU for any ONE of: hemodynamically unstable, altered mental status, insulin drip required, K⁺ <3.5. Also consider PICU for: new-onset DKA (highest cerebral edema risk — unfamiliar with disease, often more severely dehydrated), HCO₃ <12 (severe acidosis), or any signs of cerebral edema.\n\nWard admission is appropriate ONLY for stable patients transitioning to SQ insulin with resolved acidosis.",
+pearls:"PICU for any ONE of: hemodynamically unstable, altered mental status, insulin drip required, K⁺ <3.5, new-onset DKA, HCO₃ <12, or any signs of cerebral edema. New-onset DKA carries the highest cerebral edema risk — these patients are unfamiliar with the disease and often more severely dehydrated.\n\nWard admission is appropriate ONLY for stable patients transitioning to SQ insulin with resolved acidosis.",
 evidence:"New-onset DKA has the highest rate of cerebral edema (0.5–1% vs 0.3% overall), likely because these patients present later with more severe metabolic derangement and have not yet developed the adaptive idiogenic osmoles that protect against osmolar shifts. (Glaser 2001; Edge 2006)"},
 newOnset:{title:"New-Onset Diabetes Workup",
 patho:"Type 1 diabetes is an autoimmune disease with strong associations with other autoimmune conditions. Celiac disease occurs in 5–10% of T1D patients (vs 1% general population) due to shared HLA-DQ2/DQ8 susceptibility alleles. Undiagnosed celiac can cause malabsorption, poor glycemic control, and growth failure.",
@@ -100,8 +100,8 @@ function TwoBagCalc({doses}){
   var r=doses.maint15;
   var rows=[
     {glucose:"≥300",bagA:r.toFixed(1),bagB:"0",dex:"D0"},
-    {glucose:"200–300",bagA:(r/2).toFixed(1),bagB:(r/2).toFixed(1),dex:"D5"},
-    {glucose:"150–200",bagA:"0",bagB:r.toFixed(1),dex:"D10"},
+    {glucose:">200 to ≤300",bagA:(r/2).toFixed(1),bagB:(r/2).toFixed(1),dex:"D5"},
+    {glucose:"≤200 to >150",bagA:"0",bagB:r.toFixed(1),dex:"D10"},
     {glucose:"<150",bagA:"—",bagB:"—",dex:"CONTACT MD"},
   ];
   return(<div>
@@ -128,80 +128,12 @@ function TwoBagCalc({doses}){
 // FLOWCHART
 // ═══════════════════════════════
 function PathwayFlowchart(){
-  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#c2410c",pBg="#fff7ed",pBd="#fdba74",puC="#6b21a8",puBg="#faf5ff",puBd="#c4b5fd",mC="#6b7280";
-  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
-  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
-  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
   return(
     <div style={{marginTop:20}}>
-      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
-      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>BG {'>'}250 · pH {'<'}7.3 or HCO₃ {'<'}15 · Ketonuria · Ages 1–18</div>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Clinical Pathway Decision Making Process</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Pediatric DKA · August 2021</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 480 560" style={{width:"100%",display:"block"}}>
-          <rect width={480} height={560} fill="#fafaf8" rx={6}/>
-          <Box x={120} y={6} w={240} h={28} fill={pBg} stroke={pBd} sw={1.5} radius={14}><T x={240} y={18} size={9} weight={700} color={pC}>DIABETIC KETOACIDOSIS</T><T x={240} y={28} size={6} color={mC}>BG {'>'}250 · pH {'<'}7.3 / HCO₃ {'<'}15 · Ketones</T></Box>
-          <Arrow x1={240} y1={34} x2={240} y2={48}/>
-          <Box x={100} y={48} w={280} h={30} fill={rBg} stroke={rBd} sw={1.5}><T x={240} y={58} size={8} weight={700} color={rC}>IMMEDIATE ACTION</T><T x={240} y={68} size={6} color={mC}>CBG · CMP · VBG · IV access · Cardiac monitor</T><T x={240} y={76} size={6} color={mC}>UA for ketones · NPO · Strict I&O · Q1H vitals + neuro</T></Box>
-          <Arrow x1={240} y1={78} x2={240} y2={92}/>
-
-          {/* Early PICU screen — per PDF this is the first decision */}
-          <g transform="translate(240,106)"><polygon points="0,-14 75,0 0,14 -75,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-3} size={6} weight={700}>Shock · New onset ·</T><T x={0} y={6} size={6} weight={700}>HCO₃ {'<'}12 · K {'<'}3.5?</T></g>
-          <line x1={315} y1={106} x2={420} y2={106} stroke={rC} strokeWidth={1}/>
-          <T x={366} y={100} size={5.5} weight={600} color={rC}>Yes</T>
-          <Arrow x1={420} y1={106} x2={420} y2={122} color={rC}/>
-          <Box x={375} y={122} w={90} h={20} fill={rBg} stroke={rBd} sw={1.5}><T x={420} y={132} size={6.5} weight={700} color={rC}>PLAN PICU</T><T x={420} y={140} size={5} color={mC}>+ Endocrine consult</T></Box>
-          <T x={218} y={126} size={5.5} weight={600} color={gC}>No</T>
-          <Arrow x1={240} y1={120} x2={240} y2={140}/>
-
-          {/* Cerebral edema check — per PDF this precedes management */}
-          <T x={240} y={148} size={5.5} weight={600} color={rC}>Evaluate for cerebral edema signs throughout</T>
-
-          {/* Dehydrated diamond */}
-          <Arrow x1={240} y1={152} x2={240} y2={164}/>
-          <g transform="translate(240,178)"><polygon points="0,-14 60,0 0,14 -60,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Dehydrated?</T></g>
-          <Arrow x1={180} y1={178} x2={100} y2={200} color={aC}/>
-          <Arrow x1={300} y1={178} x2={380} y2={200} color={gC}/>
-          <Box x={40} y={200} w={120} h={28} fill={aBg} stroke={aBd}><T x={100} y={210} size={7} weight={700} color={aC}>YES</T><T x={100} y={220} size={6} color={mC}>NS 20 mL/kg / 30 min</T><T x={100} y={226} size={5} color={mC}>ID precipitating causes</T></Box>
-          <Box x={320} y={200} w={120} h={24} fill={gBg} stroke={gBd}><T x={380} y={210} size={7} weight={700} color={gC}>NO</T><T x={380} y={220} size={6} color={mC}>NS 10 mL/kg / 60 min</T></Box>
-          <Arrow x1={100} y1={228} x2={240} y2={244}/>
-          <Arrow x1={380} y1={224} x2={240} y2={244}/>
-
-          {/* Three parallel pillars */}
-          <Box x={20} y={244} w={140} h={24} fill={blBg} stroke={blBd} sw={1.5}><T x={90} y={254} size={8} weight={700} color={blC}>IV FLUIDS</T><T x={90} y={264} size={6} color={mC}>Two-bag system</T></Box>
-          <Box x={170} y={244} w={140} h={24} fill={pBg} stroke={pBd} sw={1.5}><T x={240} y={254} size={8} weight={700} color={pC}>INSULIN</T><T x={240} y={264} size={6} color={mC}>0.05 U/kg/hr</T></Box>
-          <Box x={320} y={244} w={140} h={24} fill={puBg} stroke={puBd} sw={1.5}><T x={390} y={254} size={8} weight={700} color={puC}>POTASSIUM</T><T x={390} y={264} size={6} color={mC}>If K {'<'}5 + UO</T></Box>
-
-          {/* Fluid details */}
-          <Arrow x1={90} y1={268} x2={90} y2={282} color={blC}/>
-          <Box x={20} y={282} w={140} h={52} fill={blBg} stroke={blBd}><T x={90} y={292} size={6}>BG ≥300 → Bag A only</T><T x={90} y={302} size={6}>BG 200–300 → A+B (D5)</T><T x={90} y={312} size={6}>BG 150–200 → Bag B (D10)</T><T x={90} y={322} size={6} weight={700} color={rC}>{'<'}150 → Contact MD</T><T x={90} y={330} size={5} color={mC}>Alert if drop {'>'}100/hr</T></Box>
-
-          {/* Insulin details */}
-          <Arrow x1={240} y1={268} x2={240} y2={282} color={pC}/>
-          <Box x={170} y={282} w={140} h={52} fill={pBg} stroke={pBd}><T x={240} y={292} size={6}>After endocrine consult</T><T x={240} y={302} size={6} weight={700} color={rC}>Do NOT bolus</T><T x={240} y={312} size={6}>Prime tubing first</T><T x={240} y={322} size={6}>Keep BG 200–300</T><T x={240} y={330} size={5} color={mC}>No personal pump</T></Box>
-
-          {/* K details — now includes UO caveat */}
-          <Arrow x1={390} y1={268} x2={390} y2={282} color={puC}/>
-          <Box x={320} y={282} w={140} h={52} fill={puBg} stroke={puBd}><T x={390} y={292} size={6}>20 mEq KAcetate</T><T x={390} y={302} size={6}>+ 20 mEq KPhos</T><T x={390} y={312} size={6}>1.5× maintenance</T><T x={390} y={322} size={6}>Monitor Q2H w/ Chem8</T><T x={390} y={330} size={5} weight={600} color={rC}>No UO → consult before K+</T></Box>
-
-          {/* Resolution */}
-          <Arrow x1={240} y1={334} x2={240} y2={348}/>
-          <g transform="translate(240,362)"><polygon points="0,-14 70,0 0,14 -70,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>pH {'>'}7.3 + HCO₃ {'>'}15?</T></g>
-          <Arrow x1={170} y1={362} x2={90} y2={384} color={gC}/>
-          <Arrow x1={310} y1={362} x2={390} y2={384} color={aC}/>
-          <Box x={30} y={384} w={120} h={24} fill={gBg} stroke={gBd} radius={8}><T x={90} y={394} size={7} weight={700} color={gC}>RESOLVED</T><T x={90} y={404} size={6} color={mC}>→ SQ insulin · Endocrine</T></Box>
-          <Box x={330} y={384} w={120} h={24} fill={aBg} stroke={aBd}><T x={390} y={394} size={7} weight={700} color={aC}>ONGOING</T><T x={390} y={404} size={6} color={mC}>Continue gtt · Q2H labs</T></Box>
-
-          {/* Cerebral edema box */}
-          <Box x={20} y={420} w={440} h={36} fill={rBg} stroke={rBd} sw={2} radius={8}><T x={240} y={430} size={8} weight={700} color={rC}>⚠ CEREBRAL EDEMA — MONITOR THROUGHOUT</T><T x={240} y={442} size={6} color={mC}>Headache · Bradycardia · AMS · Incontinence · Neuro deficits</T><T x={240} y={452} size={6} weight={700} color={rC}>→ Elevate HOB · 3% NaCl 5 mL/kg · Mannitol 0.5–1 g/kg · Head CT</T></Box>
-
-          {/* PICU criteria — single box per PDF */}
-          <Box x={20} y={464} w={440} h={28} fill={rBg} stroke={rBd} radius={6}><T x={240} y={474} size={7} weight={700} color={rC}>PICU ADMISSION (any one)</T><T x={240} y={488} size={6} color={mC}>Unstable · AMS · Insulin gtt · K {'<'}3.5 · New onset + HCO₃ {'<'}12 · Cerebral edema</T></Box>
-
-          {/* HHS */}
-          <Box x={20} y={500} w={440} h={22} fill={puBg} stroke={puBd} radius={6}><T x={240} y={509} size={7} weight={700} color={puC}>HHS: BG {'>'}600 · Osm {'>'}320 · May have HCO₃ {'>'}15 → Contact Endocrine</T><T x={240} y={519} size={6} color={mC}>May develop hypotension if osm falls rapidly</T></Box>
-
-          <Box x={20} y={530} w={440} h={22} fill="#f1f5f9" stroke="#e2e8f0" radius={6}><T x={240} y={539} size={7} weight={700} color={pC}>KEY RULES</T><T x={120} y={549} size={6} color={mC}>No insulin bolus</T><T x={240} y={549} size={6} color={mC}>No personal pump</T><T x={370} y={549} size={6} color={mC}>No routine bicarb</T></Box>
-        </svg>
+        <img src="dka-flowchart.png" alt="DKA Clinical Pathway Decision Making Process Flowchart — Pediatric DKA August 2021" style={{width:"100%",display:"block",borderRadius:6}}/>
       </div>
     </div>
   );
@@ -267,9 +199,9 @@ function Wizard({teaching,doses}){
     {excl==="no"&&dehydrated!==null&&(<Card title="Step 3 — PICU Screen" color={C.red}>
       <div style={{fontSize:13,lineHeight:1.6,marginBottom:10}}>
         <strong>Does the patient meet any PICU criteria?</strong><br/>
-        <span style={{fontSize:12,color:C.muted}}>Any one: hemodynamically unstable, AMS, insulin drip needed, K {'<'}3.5, new onset + HCO₃ {'<'}12, cerebral edema</span>
+        <span style={{fontSize:12,color:C.muted}}>Any one: hemodynamically unstable, AMS, insulin drip needed, K {'<'}3.5, new onset DKA, HCO₃ {'<'}12, cerebral edema</span>
       </div>
-      <WizBtn label="Yes — PICU admission" sub="Unstable · AMS · Insulin drip · K <3.5 · New onset + HCO₃ <12 · Cerebral edema" color={C.red} bg={C.redBg} border={C.redBorder} selected={picuCrit==="yes"} onClick={function(){setPicuCrit("yes")}}/>
+      <WizBtn label="Yes — PICU admission" sub="Unstable · AMS · Insulin drip · K <3.5 · New onset · HCO₃ <12 · Cerebral edema" color={C.red} bg={C.redBg} border={C.redBorder} selected={picuCrit==="yes"} onClick={function(){setPicuCrit("yes")}}/>
       <WizBtn label="No — Ward admission likely" sub="Stable, none of the above criteria" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={picuCrit==="no"} onClick={function(){setPicuCrit("no")}}/>
 
       {picuCrit==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🏥" title="Plan PICU Admission">Consult PICU + Endocrinology. Proceed with management below while arranging PICU bed.</Alert>}
@@ -296,10 +228,10 @@ function Wizard({teaching,doses}){
     {excl==="no"&&dehydrated!==null&&(<Card title="Step 4 — Insulin" color={C.primary}>
       <Alert color={C.primary} border={C.pBorder} bg={C.pLight} icon="💉" title="Insulin IV Infusion">
         <strong>Consult Endocrine FIRST</strong><br/>
-        <strong>Regular insulin</strong> {doses?doses.insulin+" units/hr":"0.05 units/kg/hr"} IV<br/>
+        <strong>Regular insulin</strong> {doses?doses.insulin+" units/hr":"0.05 units/kg/hr"} IV (Requires RN double check)<br/>
         <strong>Do NOT bolus insulin.</strong><br/>
         <strong>Do NOT use patient's personal pump</strong> if they meet DKA criteria.<br/>
-        Prime tubing: flush Microbore syringe tubing with 10–20 mL insulin solution (or flush 1–2 mL and dwell 20 min). Alaris 25 mL tubing: flush with 50 mL.<br/>
+        Prime tubing: flush 0.55 mL Microbore syringe tubing with 10–20 mL insulin solution (or flush 1–2 mL and dwell 20 min). Alaris 25 mL tubing: flush with 50 mL.<br/>
         Continue until <strong>pH {'>'}7.3 AND HCO₃ {'>'}15</strong>, then transition to SQ insulin per endocrine.
       </Alert>
       <TeachBox id="insulin" teaching={teaching}/>
@@ -368,7 +300,7 @@ function RefDecisions({teaching,doses}){return(<Pad>
 <Q text="Decision Tree" sub="Parallel management: fluids + insulin + potassium"/>
 <Card title="Fluids" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Dehydrated: NS {doses?doses.bolus20+" mL":"20 mL/kg"} over 30 min (faster if shock)<br/>Not dehydrated: NS {doses?doses.bolus10+" mL":"10 mL/kg"} over 60 min<br/>Avoid excessive fluid administration<br/><strong>Add dextrose</strong> when BG {'<'}300 or glucose drops {'>'}100 mg/dL/hr<br/>Keep BG 200–300 until acidosis corrects</div><TeachBox id="fluids" teaching={teaching}/></Card>
 <Card title="Two-Bag System" color={C.blue}><div style={{marginTop:8}}><TwoBagCalc doses={doses}/></div><TeachBox id="twoBag" teaching={teaching}/></Card>
-<Card title="Insulin" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Regular insulin <strong>{doses?doses.insulin+" units/hr":"0.05 units/kg/hr"}</strong> IV — start AFTER endocrine consult<br/><strong>Do NOT bolus insulin · Do NOT use patient's personal pump</strong><br/>Prime tubing before starting · Continue until pH {'>'}7.3 + HCO₃ {'>'}15 → transition to SQ insulin per endocrine</div><TeachBox id="insulin" teaching={teaching}/></Card>
+<Card title="Insulin" color={C.primary}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Regular insulin <strong>{doses?doses.insulin+" units/hr":"0.05 units/kg/hr"}</strong> IV (Requires RN double check) — start AFTER endocrine consult<br/><strong>Do NOT bolus insulin · Do NOT use patient's personal pump</strong><br/>Prime 0.55 mL Microbore tubing before starting · Continue until pH {'>'}7.3 + HCO₃ {'>'}15 → transition to SQ insulin per endocrine</div><TeachBox id="insulin" teaching={teaching}/></Card>
 <Card title="Potassium" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>After initial hydration, if K {'<'}5 mmol and UO established:<br/>NS with <strong>20 mEq KAcetate + 20 mEq KPhos</strong>/L at <strong>{doses?doses.maint15+" mL/hr":"1.5× maintenance"}</strong><br/>No UO → consult endocrine/PICU before adding K+<br/>Monitor Q2H with Chem8</div><TeachBox id="potassium" teaching={teaching}/></Card>
 <Card title="Bicarbonate" color={C.muted}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Bicarbonate is <strong>NOT recommended</strong> routinely.<br/>If pH {'<'}7.0 → repeat VBG after initial fluid bolus. Only give HCO₃ if PICU/endocrine specifically recommend.</div><TeachBox id="bicarb" teaching={teaching}/></Card>
 <Card title="Cerebral Edema" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Warning signs:</strong> headache, bradycardia, irritability, AMS, incontinence, neuro deficits<br/><strong>Interventions:</strong><br/>1. Elevate HOB<br/>2. 3% NaCl {doses?doses.hyper3+" mL":"5 mL/kg"} IV over 30 min<br/>3. Consider decreasing IV fluids by 1/3<br/>4. Mannitol {doses?doses.mannitolLo+"–"+doses.mannitolHi+" g":"0.5–1 g/kg"} over 10–15 min<br/>5. Consider intracranial imaging</div><TeachBox id="cerebralEdema" teaching={teaching}/></Card>
@@ -381,7 +313,7 @@ function RefMeds({teaching,doses}){return(<Pad>
 {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
 <Card title="Fluids — Initial" color={C.blue}><div style={{marginTop:8}}><DoseRow label="NS bolus — dehydrated (20 mL/kg)" value={doses?doses.bolus20:"—"} unit={doses?"mL":""}/><DoseRow label="NS bolus — not dehydrated (10 mL/kg)" value={doses?doses.bolus10:"—"} unit={doses?"mL":""}/></div></Card>
 <Card title="Fluids — Maintenance (Two-Bag)" color={C.blue}><div style={{marginTop:8}}><DoseRow label="Maintenance rate" value={doses?doses.maintHr:"—"} unit={doses?"mL/hr":""}/><DoseRow label="1.5× maintenance rate" value={doses?doses.maint15:"—"} unit={doses?"mL/hr":""}/><div style={{marginTop:8}}><TwoBagCalc doses={doses}/></div></div></Card>
-<Card title="Insulin" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Regular insulin IV (0.05 U/kg/hr)" value={doses?doses.insulin:"—"} unit={doses?"U/hr":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Start after endocrine consult. Do NOT bolus. Prime tubing first. Continue until pH {'>'}7.3 + HCO₃ {'>'}15.</div></div></Card>
+<Card title="Insulin" color={C.primary}><div style={{marginTop:8}}><DoseRow label="Regular insulin IV (0.05 U/kg/hr)" value={doses?doses.insulin:"—"} unit={doses?"U/hr":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Start after endocrine consult. Requires RN double check. Do NOT bolus. Prime 0.55 mL Microbore tubing first. Continue until pH {'>'}7.3 + HCO₃ {'>'}15.</div></div></Card>
 <Card title="Potassium" color={C.purple}><div style={{marginTop:8}}><DoseRow label="KAcetate (per liter)" value="20" unit="mEq/L"/><DoseRow label="KPhos (per liter)" value="20" unit="mEq/L"/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Added to NS at 1.5× maintenance rate. Only if K {'<'}5 mmol and UO established.</div></div></Card>
 <Card title="Cerebral Edema — Emergency" color={C.red}><div style={{marginTop:8}}><DoseRow label="3% NaCl IV (5 mL/kg over 30 min)" value={doses?doses.hyper3:"—"} unit={doses?"mL":""}/><DoseRow label="Mannitol (0.5–1 g/kg over 10–15 min)" value={doses?doses.mannitolLo+"–"+doses.mannitolHi:"—"} unit={doses?"g":""}/></div></Card>
 </Pad>)}
@@ -389,7 +321,7 @@ function RefMeds({teaching,doses}){return(<Pad>
 function RefDispo({teaching}){return(<Pad>
 <Q text="Disposition & References"/>
 <Card title="PICU Admission Criteria" color={C.red}><div style={{marginTop:8}}>
-<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU — Any One:</div><div style={{fontSize:12,marginTop:2}}>Hemodynamically unstable · Altered mental status · Insulin drip required · Hypokalemia (K {'<'}3.5) · New-onset DKA with HCO₃ {'<'}12 · Cerebral edema</div></div>
+<div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>PICU — Any One:</div><div style={{fontSize:12,marginTop:2}}>Hemodynamically unstable · Altered mental status · Insulin drip required · Hypokalemia (K {'<'}3.5) · New-onset DKA · HCO₃ {'<'}12 · Cerebral edema</div></div>
 <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>Ward Admission:</div><div style={{fontSize:12,marginTop:2}}>Stable, acidosis resolving, transitioning to SQ insulin. Consult hospitalist + endocrinology.</div></div>
 </div><TeachBox id="picu" teaching={teaching}/></Card>
 <Card title="Resolution Criteria" color={C.greenMid}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>pH {'>'}7.3 AND HCO₃ {'>'}15 → <strong>transition to SQ insulin</strong><br/>Consult endocrinology for SQ dosing<br/>Continue glucose monitoring · Resume PO intake when stable</div></Card>
