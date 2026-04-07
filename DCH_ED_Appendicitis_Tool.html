@@ -104,6 +104,145 @@ const TEACH = {
   },
 };
 
+// ── pARC Calculator (Kharbanda et al. Pediatrics 2018;141(4):e20172699, Table 3) ──
+function calcPARC({ sex, age, duration, walking, migration, tenderness, guarding, anc }) {
+  if (sex === null || age === null || duration === null || walking === null || migration === null || tenderness === null || guarding === null || anc === null) return null;
+  const ancCapped = Math.min(parseFloat(anc) || 0, 14);
+  const isMale = sex === "male" ? 1 : 0;
+  const ageYrs = parseFloat(age) || 0;
+  const logit = -4.3232
+    + 0.8103 * isMale
+    + (isMale ? 0.0050 : -0.0585) * ageYrs
+    + (duration === "24-47" ? 0.2867 : duration === "48-96" ? -0.2450 : 0)
+    + 0.5765 * (walking ? 1 : 0)
+    + 0.4578 * (migration ? 1 : 0)
+    + 0.4378 * (tenderness ? 1 : 0)
+    + 0.4605 * (guarding ? 1 : 0)
+    + 0.1594 * ancCapped;
+  const prob = Math.round(1 / (1 + Math.exp(-logit)) * 1000) / 10;
+  const stratum = prob < 5 ? "very_low" : prob < 15 ? "low" : prob < 25 ? "int_low" : prob < 50 ? "int_mid" : prob < 75 ? "int_high" : prob < 85 ? "high" : "very_high";
+  const riskGroup = prob < 15 ? "low" : prob < 75 ? "intermediate" : "high";
+  return { prob, stratum, riskGroup };
+}
+
+const PARC_DURATION_OPTS = [
+  { value: "<24", label: "< 24 hours" },
+  { value: "24-47", label: "24 – 47 hours" },
+  { value: "48-96", label: "48 – 96 hours" },
+];
+
+function PARCCalculator({ age, onResult, teaching }) {
+  const [sex, setSex] = useState(null);
+  const [duration, setDuration] = useState(null);
+  const [walking, setWalking] = useState(null);
+  const [migration, setMigration] = useState(null);
+  const [tenderness, setTenderness] = useState(null);
+  const [guarding, setGuarding] = useState(null);
+  const [anc, setAnc] = useState("");
+
+  const ancVal = anc === "" ? null : parseFloat(anc);
+  const allAnswered = sex !== null && duration !== null && walking !== null && migration !== null && tenderness !== null && guarding !== null && anc !== "";
+  const result = allAnswered ? calcPARC({ sex, age, duration, walking, migration, tenderness, guarding, anc: ancVal }) : null;
+
+  useEffect(() => { if (onResult) onResult(result); }, [result?.prob]);
+
+  const rBtn = (val, cur, setter, label) => (
+    <button onClick={() => setter(val)} style={{
+      flex: 1, padding: "7px 6px", borderRadius: 6, fontSize: 12, fontWeight: cur === val ? 700 : 500,
+      border: `1.5px solid ${cur === val ? C.primary : C.rule}`,
+      background: cur === val ? C.pLight : C.white, color: cur === val ? C.primary : C.ink, cursor: "pointer",
+    }}>{label}</button>
+  );
+  const yesNo = (val, setter) => (
+    <div style={{ display: "flex", gap: 4 }}>
+      {rBtn(true, val, setter, "Yes")}
+      {rBtn(false, val, setter, "No")}
+    </div>
+  );
+
+  const rColor = !result ? C.muted : result.riskGroup === "low" ? C.greenMid : result.riskGroup === "intermediate" ? C.amberMid : C.red;
+  const rBg = !result ? "#f8f8f8" : result.riskGroup === "low" ? C.greenBg : result.riskGroup === "intermediate" ? C.amberBg : C.redBg;
+  const rBorder = !result ? C.rule : result.riskGroup === "low" ? C.greenBorder : result.riskGroup === "intermediate" ? C.amberBorder : C.redBorder;
+
+  return (
+    <div>
+      <TeachBox id="parc" teaching={teaching} />
+      <div style={{ display: "grid", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Sex</div>
+            <div style={{ display: "flex", gap: 4 }}>
+              {rBtn("male", sex, setSex, "Male")}
+              {rBtn("female", sex, setSex, "Female")}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Age (years)</div>
+            <div style={{ background: "#f0fdf4", border: `1.5px solid ${C.pBorder}`, borderRadius: 6, padding: "7px 10px", fontSize: 13, fontWeight: 600, color: C.primary, fontFamily: "'IBM Plex Mono', monospace" }}>
+              {age || "—"}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Duration of Pain</div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {PARC_DURATION_OPTS.map(o => rBtn(o.value, duration, setDuration, o.label))}
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Pain with Walking</div>
+            {yesNo(walking, setWalking)}
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Migration to RLQ</div>
+            {yesNo(migration, setMigration)}
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Maximal RLQ Tenderness</div>
+            {yesNo(tenderness, setTenderness)}
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Abdominal Guarding</div>
+            {yesNo(guarding, setGuarding)}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>ANC (×10³/μL)</div>
+          <input type="number" step="0.1" min="0" max="40" value={anc} onChange={e => setAnc(e.target.value)} placeholder="e.g. 8.5" style={{
+            width: "100%", padding: "8px 10px", borderRadius: 6, border: `1.5px solid ${C.rule}`, fontSize: 13,
+            fontFamily: "'IBM Plex Mono', monospace", background: C.white, outline: "none",
+          }} />
+          <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Linear contribution capped at 14 × 10³/μL per model</div>
+        </div>
+      </div>
+      {result && (
+        <div style={{ background: rBg, border: `2px solid ${rColor}`, borderRadius: 10, padding: "14px", marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>pARC Probability</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: rColor, fontFamily: "'IBM Plex Mono', monospace" }}>{result.prob}%</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ background: rColor, color: C.white, padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700 }}>
+              {result.riskGroup === "low" ? "Low Risk" : result.riskGroup === "intermediate" ? "Intermediate" : "High Risk"}
+            </div>
+            <div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>
+              {result.prob < 5 ? "Very Low (<5%)" : result.prob < 15 ? "Low (5–14%)" : result.prob < 25 ? "15–24%" : result.prob < 50 ? "25–49%" : result.prob < 75 ? "50–74%" : result.prob < 85 ? "75–84%" : "Very High (≥85%)"}
+            </div>
+          </div>
+        </div>
+      )}
+      {!allAnswered && (
+        <div style={{ fontSize: 12, color: C.muted, textAlign: "center", marginTop: 10, fontStyle: "italic" }}>
+          Complete all fields above to calculate pARC risk
+        </div>
+      )}
+    </div>
+  );
+}
+
 function calcDoses(w, a) {
   const wt = parseFloat(w) || 0;
   const age = parseFloat(a) || 0;
@@ -287,6 +426,7 @@ function AppyWizard({ teaching, doses, ageYears }) {
   const [pasChecked, setPasChecked] = useState([]);
   const [alvChecked, setAlvChecked] = useState([]);
   const [scored, setScored] = useState(false);
+  const [parcResult, setParcResult] = useState(null);
   const [usResult, setUsResult] = useState(null);
   const [mrResult, setMrResult] = useState(null);
   const [reassess, setReassess] = useState(null);
@@ -297,17 +437,16 @@ function AppyWizard({ teaching, doses, ageYears }) {
   const toggleAlv = useCallback(i => setAlvChecked(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]), []);
 
   const activeTotal = scoreTool === "pas" ? pasTotal : scoreTool === "alv" ? alvTotal : 0;
-  const risk = !scored ? null 
-    : scoreTool === "parc" ? "low"
-    : scoreTool === "parc_int" ? "intermediate"
-    : scoreTool === "parc_high" ? "high"
+  const parcScored = scoreTool === "parc" && parcResult !== null;
+  const risk = !scored && !parcScored ? null
+    : scoreTool === "parc" ? (parcResult ? parcResult.riskGroup : null)
     : activeTotal <= 3 ? "low" : activeTotal <= 6 ? "intermediate" : "high";
-  const riskInfo = risk === "low" ? { text: "Low Risk (0–3)", color: C.greenMid, bg: C.greenBg, border: C.greenBorder }
-    : risk === "intermediate" ? { text: "Intermediate (4–6)", color: C.amberMid, bg: C.amberBg, border: C.amberBorder }
-    : risk === "high" ? { text: "High Risk (≥7)", color: C.red, bg: C.redBg, border: C.redBorder }
+  const riskInfo = risk === "low" ? { text: scoreTool === "parc" ? "Low Risk (pARC <15%)" : "Low Risk (0–3)", color: C.greenMid, bg: C.greenBg, border: C.greenBorder }
+    : risk === "intermediate" ? { text: scoreTool === "parc" ? "Intermediate (pARC 15–74%)" : "Intermediate (4–6)", color: C.amberMid, bg: C.amberBg, border: C.amberBorder }
+    : risk === "high" ? { text: scoreTool === "parc" ? "High Risk (pARC ≥75%)" : "High Risk (≥7)", color: C.red, bg: C.redBg, border: C.redBorder }
     : null;
 
-  function reset() { setPasChecked([]); setAlvChecked([]); setScored(false); setUsResult(null); setMrResult(null); setReassess(null); }
+  function reset() { setPasChecked([]); setAlvChecked([]); setScored(false); setParcResult(null); setUsResult(null); setMrResult(null); setReassess(null); }
 
   return (<Pad>
     <Q text="Walk-Through" sub="Score the patient, then follow the pathway step by step" />
@@ -319,14 +458,8 @@ function AppyWizard({ teaching, doses, ageYears }) {
       <TeachBox id="scoring" teaching={teaching} />
 
       <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-        {[{ id: "pas", label: "PAS" }, { id: "alv", label: "Alvarado" }, { id: "parc", label: "pARC ↗" }].map(t => (
-          t.id === "parc" ?
-            <a key={t.id} href="https://www.mdcalc.com/calc/10085/pediatric-appendicitis-risk-calculator-parc" target="_blank" rel="noopener" style={{
-              flex: 1, padding: "10px", borderRadius: 8, border: `1.5px solid ${C.blueBorder}`, background: C.blueBg,
-              color: C.blue, fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "center", textDecoration: "none", display: "block",
-            }}>{t.label}</a>
-          :
-            <button key={t.id} onClick={() => { setScoreTool(t.id); setScored(false); }} style={{
+        {[{ id: "pas", label: "PAS" }, { id: "alv", label: "Alvarado" }, { id: "parc", label: "pARC" }].map(t => (
+            <button key={t.id} onClick={() => { setScoreTool(t.id); setScored(false); setParcResult(null); }} style={{
               flex: 1, padding: "10px", borderRadius: 8,
               border: `1.5px solid ${scoreTool === t.id ? C.primary : C.rule}`,
               background: scoreTool === t.id ? C.primary : C.white,
@@ -367,37 +500,28 @@ function AppyWizard({ teaching, doses, ageYears }) {
       </>)}
 
       {scoreTool === "parc" && (
-        <div style={{ fontSize: 13, lineHeight: 1.7 }}>
-          <Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🔗" title="Use pARC Calculator">
-            The pARC requires a dedicated calculator. Open MDCalc (linked above), calculate the risk, then select the result below.
-          </Alert>
-          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-            <WizBtn label="Very Low / Low (<15%)" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={scored && risk === "low"} onClick={() => { setScoreTool("parc"); setPasChecked([]); setAlvChecked([]); setScored(true); setUsResult(null); setMrResult(null); setReassess(null); }} />
-            <WizBtn label="Intermediate (15–74%)" color={C.amberMid} bg={C.amberBg} border={C.amberBorder} selected={scored && risk === "intermediate"} onClick={() => { setScoreTool("parc_int"); setScored(true); setUsResult(null); setMrResult(null); setReassess(null); }} />
-            <WizBtn label="High (≥75%)" color={C.red} bg={C.redBg} border={C.redBorder} selected={scored && risk === "high"} onClick={() => { setScoreTool("parc_high"); setScored(true); setUsResult(null); setMrResult(null); setReassess(null); }} />
-          </div>
-        </div>
+        <PARCCalculator age={ageYears} teaching={teaching} onResult={(r) => { setParcResult(r); }} />
       )}
     </Card>
 
     {/* ── RISK RESULT BANNER ── */}
-    {scored && riskInfo && scoreTool !== "parc" && (
+    {(scored || parcScored) && riskInfo && (
       <div style={{ background: riskInfo.bg, border: `2px solid ${riskInfo.color}`, borderRadius: 10, padding: "14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>Risk Stratification</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: riskInfo.color, marginTop: 2 }}>{riskInfo.text}</div>
         </div>
-        <div style={{ background: riskInfo.color, color: C.white, padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700 }}>{scoreTool.toUpperCase()} {activeTotal}</div>
+        <div style={{ background: riskInfo.color, color: C.white, padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700 }}>{scoreTool === "parc" ? `pARC ${parcResult.prob}%` : `${scoreTool.toUpperCase()} ${activeTotal}`}</div>
       </div>
     )}
 
     {/* ── LOW RISK DISPOSITION ── */}
-    {scored && risk === "low" && (<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Low Risk — Discharge">
+    {(scored || parcScored) && risk === "low" && (<Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✅" title="Low Risk — Discharge">
       <strong>Discharge home</strong> with PCP follow-up within 24 hours.<br />Return precautions: worsening pain, persistent vomiting, fever, inability to tolerate PO.
     </Alert>)}
 
     {/* ── STEP 2: ULTRASOUND (intermediate + high) ── */}
-    {scored && (risk === "intermediate" || risk === "high") && (<Card title={"Step 2 — Ultrasound Result"} color={C.blue}>
+    {(scored || parcScored) && (risk === "intermediate" || risk === "high") && (<Card title={"Step 2 — Ultrasound Result"} color={C.blue}>
       <div style={{ fontSize: 13, marginBottom: 10 }}>
         <strong>NPO · IV access · {risk === "high" ? "IV pain meds + fluid bolus · " : "Consider IV pain meds · "}Obtain US abdomen</strong>
         {risk === "high" && <><br /><span style={{ fontSize: 12, color: C.red }}>⚠ High-risk caveat: 19% false-neg, 45% equivocal → appy</span></>}
@@ -456,7 +580,7 @@ function AppyWizard({ teaching, doses, ageYears }) {
     </Alert>)}
 
     {/* RESET */}
-    {scored && (<div style={{ textAlign: "center", marginTop: 8 }}><button onClick={reset} style={{ padding: "10px 24px", background: C.white, border: "1.5px solid " + C.rule, borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, color: C.muted }}>↻ Reset Walk-Through</button></div>)}
+    {(scored || parcScored) && (<div style={{ textAlign: "center", marginTop: 8 }}><button onClick={reset} style={{ padding: "10px 24px", background: C.white, border: "1.5px solid " + C.rule, borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, color: C.muted }}>↻ Reset Walk-Through</button></div>)}
 
     <PathwayFlowchart />
   </Pad>);
@@ -621,28 +745,7 @@ function App() {
           })()}
 
           {scoreTab === "parc" && (
-            <>
-              <TeachBox id="parc" teaching={teaching} />
-              <Alert color={C.blue} border={C.blueBorder} bg={C.blueBg} icon="🔗" title="pARC Calculator">
-                The pARC uses a multivariable logistic model requiring a dedicated calculator.
-                <div style={{ marginTop: 8 }}>
-                  <a href="https://www.mdcalc.com/calc/10085/pediatric-appendicitis-risk-calculator-parc" target="_blank" rel="noopener" style={{ color: C.blue, fontWeight: 700, textDecoration: "underline" }}>
-                    Open pARC on MDCalc ↗
-                  </a>
-                </div>
-              </Alert>
-              <div style={{ background: C.white, border: `1.5px solid ${C.rule}`, borderRadius: 10, overflow: "hidden", marginTop: 8 }}>
-                {[["Very Low", "<5%", C.greenMid],["Low", "5–14%", C.greenMid],["Intermediate","15–74%", C.amberMid],["High","75–84%", C.red],["Very High","≥85%", C.red]].map(([l,v,c], i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 14px", borderBottom: i < 4 ? `1px solid ${C.rule}` : "none", background: i%2===0 ? C.white : "#fafaf7" }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: c }}>{l}</span>
-                    <span style={{ fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", color: C.ink }}>{v}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize: 12, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
-                <strong>Variables:</strong> sex, age, duration of pain, pain with walking, migration to RLQ, maximal TTP in RLQ, abdominal guarding, ANC
-              </div>
-            </>
+            <PARCCalculator age={ageYears} teaching={teaching} onResult={() => {}} />
           )}
         </Pad>
       )}
