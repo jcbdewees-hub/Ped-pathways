@@ -81,62 +81,12 @@ function TeachBox({id,teaching}){
 }
 
 function PathwayFlowchart(){
-  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#6b21a8",pBg="#faf5ff",pBd="#c4b5fd",mC="#6b7280",tC="#0f766e",tBg="#f0fdfa",tBd="#5eead4";
-  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len,px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
-  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
-  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
   return(
     <div style={{marginTop:20}}>
-      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
-      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Infant 29–60 days · Temp ≥38.0°C · ANC + PCT driven decision tree</div>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Clinical Pathway Decision Making Process</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Fever/Suspected Sepsis · Temp {'>'}38 R in infants 29–60 days · March 2022</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 480 560" style={{width:"100%",display:"block"}}>
-          <rect width={480} height={560} fill="#fafaf8" rx={6}/>
-          <Box x={100} y={8} w={280} h={30} fill={aBg} stroke={aBd} sw={1.5} radius={14}><T x={240} y={20} size={9} weight={700} color={aC}>FEBRILE INFANT 29–60 DAYS</T><T x={240} y={31} size={6} color={mC}>Temp ≥38°C rectal/axillary · ESI II</T></Box>
-          <Arrow x1={240} y1={38} x2={240} y2={54}/>
-          <g transform="translate(240,68)"><polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Exclusions?</T></g>
-          <line x1={305} y1={68} x2={415} y2={68} stroke="#94a3b8" strokeWidth={1}/><Arrow x1={415} y1={68} x2={415} y2={84} color={mC}/>
-          <Box x={370} y={84} w={90} h={24} fill="#f1f5f9" stroke="#e2e8f0"><T x={415} y={93} size={7} weight={600} color={mC}>OFF PATH</T><T x={415} y={103} size={5} color={mC}>Preterm · Devices · Bronch</T></Box>
-          <Arrow x1={240} y1={82} x2={240} y2={100}/>
-          <g transform="translate(240,114)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Toxic/Ill?</T></g>
-          <Arrow x1={295} y1={114} x2={410} y2={136} color={rC}/><T x={362} y={124} size={6} weight={600} color={rC}>Yes</T>
-          <Box x={350} y={136} w={120} h={40} fill={rBg} stroke={rBd} sw={2}><T x={410} y={148} size={7} weight={700} color={rC}>RESUSCITATE</T><T x={410} y={159} size={6} color={mC}>Ceftriaxone + Vanco</T><T x={410} y={169} size={6} weight={600} color={rC}>→ Admit, consider PICU</T></Box>
-          <Arrow x1={240} y1={128} x2={240} y2={148}/><T x={250} y={144} size={6} weight={600} color={gC} anchor="start">Well</T>
-          <Box x={130} y={148} w={220} h={22} fill={tBg} stroke={tBd} sw={1.5}><T x={240} y={158} size={7} weight={700} color={tC}>LABS: CBG, UA, CBC, PCT, BMP, Coags, Blood Cx</T><T x={240} y={168} size={5.5} color={mC}>LMX to LP site · Cath UA with mandatory culture</T></Box>
-          <Arrow x1={240} y1={170} x2={240} y2={188}/>
-          <g transform="translate(240,202)"><polygon points="0,-14 80,0 0,14 -80,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>ANC {">"} 4000 or PCT {">"} 0.5?</T></g>
-
-          {/* Positive markers branch */}
-          <Arrow x1={320} y1={202} x2={400} y2={228} color={rC}/><T x={370} y={214} size={6} weight={600} color={rC}>Yes</T>
-          <Box x={330} y={228} w={140} h={22} fill={rBg} stroke={rBd} sw={1.5}><T x={400} y={237} size={7} weight={700} color={rC}>POSITIVE MARKERS</T><T x={400} y={248} size={6} color={mC}>Consider LP · Give ceftriaxone</T></Box>
-          <Arrow x1={400} y1={250} x2={400} y2={268}/>
-          <g transform="translate(400,282)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>CSF result?</T></g>
-          {/* CSF pleocytosis */}
-          <Arrow x1={455} y1={282} x2={460} y2={310} color={rC}/>
-          <Box x={420} y={310} w={55} h={36} fill={rBg} stroke={rBd}><T x={448} y={322} size={5.5} weight={700} color={rC}>≥10 WBC</T><T x={448} y={332} size={5} color={mC}>Ceftri+Vanc</T><T x={448} y={342} size={5} weight={600} color={rC}>ADMIT</T></Box>
-          {/* CSF neg or not obtained */}
-          <Arrow x1={345} y1={282} x2={340} y2={310} color={aC}/>
-          <Box x={280} y={310} w={100} h={42} fill={aBg} stroke={aBd}><T x={330} y={320} size={5.5} weight={700} color={aC}>Neg/Not done</T><T x={330} y={330} size={5} color={mC}>Ceftriaxone</T><T x={330} y={340} size={5} color={aC}>Admit vs D/C</T><T x={330} y={349} size={4.5} color={mC}>If D/C + pos UA: cefdinir 10–14d</T></Box>
-
-          {/* Negative markers branch */}
-          <Arrow x1={160} y1={202} x2={80} y2={228} color={gC}/><T x={108} y={214} size={6} weight={600} color={gC}>No</T>
-          <Box x={10} y={228} w={140} h={22} fill={gBg} stroke={gBd} sw={1.5}><T x={80} y={237} size={7} weight={700} color={gC}>NEGATIVE MARKERS</T><T x={80} y={248} size={6} color={mC}>LP not required · Low risk</T></Box>
-          <Arrow x1={80} y1={250} x2={80} y2={270}/>
-          <g transform="translate(80,284)"><polygon points="0,-14 55,0 0,14 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={6} weight={700}>UA positive?</T></g>
-          {/* UA positive */}
-          <Arrow x1={135} y1={284} x2={190} y2={310} color={aC}/>
-          <Box x={150} y={310} w={100} h={36} fill={aBg} stroke={aBd}><T x={200} y={322} size={6} weight={700} color={aC}>UTI</T><T x={200} y={332} size={5.5} color={mC}>Oral antibiotics</T><T x={200} y={342} size={5.5} weight={600} color={gC}>DISCHARGE</T></Box>
-          {/* UA negative */}
-          <Arrow x1={25} y1={284} x2={40} y2={310} color={gC}/>
-          <Box x={5} y={310} w={90} h={36} fill={gBg} stroke={gBd}><T x={50} y={322} size={6} weight={700} color={gC}>NO ABX</T><T x={50} y={332} size={5.5} color={mC}>Observe at home</T><T x={50} y={342} size={5.5} weight={600} color={gC}>F/U 24–36h</T></Box>
-
-          {/* Dispo summary */}
-          <Box x={10} y={370} w={460} h={24} fill={blBg} stroke={blBd} radius={6}><T x={240} y={385} size={7} weight={700} color={blC}>KEY: ANC {"<"} 4000 AND PCT {"<"} 0.5 → Sens 97.7% · NPV 99.6% for invasive bacterial infection</T></Box>
-
-          <Box x={10} y={404} w={150} h={40} fill={gBg} stroke={gBd} radius={8}><T x={85} y={418} size={7} weight={700} color={gC}>DISCHARGE</T><T x={85} y={430} size={6} color={mC}>Neg markers + neg UA: no abx</T><T x={85} y={440} size={6} color={mC}>Neg markers + pos UA: oral abx</T></Box>
-          <Box x={170} y={404} w={150} h={40} fill={aBg} stroke={aBd} radius={8}><T x={245} y={418} size={7} weight={700} color={aC}>ADMIT vs D/C</T><T x={245} y={430} size={6} color={mC}>Pos markers + neg CSF</T><T x={245} y={440} size={6} color={mC}>Ceftriaxone · Close F/U</T></Box>
-          <Box x={330} y={404} w={140} h={40} fill={rBg} stroke={rBd} radius={8}><T x={400} y={418} size={7} weight={700} color={rC}>ADMIT</T><T x={400} y={430} size={6} color={mC}>CSF pleocytosis → Ceftri+Vanc</T><T x={400} y={440} size={6} color={mC}>Toxic/ill → PICU</T></Box>
-        </svg>
+        <img src="fever-29-60-flowchart.png" alt="Clinical Pathway Decision Making Process — Fever/Suspected Sepsis in Infants 29–60 Days Flowchart" style={{width:"100%",display:"block",borderRadius:6}}/>
       </div>
     </div>
   );
@@ -167,7 +117,7 @@ function Wizard({teaching,doses}){
       <WizBtn label="No — Well-appearing" sub="Proceed to labs and inflammatory markers" color={C.greenMid} bg={C.greenBg} border={C.greenBorder} selected={toxic==="no"} onClick={function(){setToxic("no")}}/>
       {toxic==="yes"&&<Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="🔴" title="Toxic / Ill — Resuscitate">
         Aggressive fluid resuscitation: NS bolus {doses?doses.bolus+" mL":"20 mL/kg"}<br/>
-        Full labs: CBC, CMP, coags, VBG/lactate, blood culture, UA + culture<br/>
+        Full labs: CBC, CMP, coags, VBG/lactate, blood culture, UA, urine micro, urine culture<br/>
         Lumbar puncture<br/>
         <strong>Antibiotics within 60 minutes:</strong><br/>
         {doses?<span>Ceftriaxone {doses.ceftri100} mg IV (100 mg/kg/day) + Vancomycin {doses.vanco20} mg IV (20 mg/kg)</span>:<span>Ceftriaxone 100 mg/kg/day + Vancomycin 20 mg/kg</span>}<br/>
@@ -183,6 +133,7 @@ function Wizard({teaching,doses}){
         CBC with differential, Procalcitonin, Coags, Blood culture, BMP/CMP<br/>
         LMX to LP site and/or J-tip · LP tray to bedside<br/>
         CXR if tachypnea, hypoxia, respiratory symptoms · Stool sample if diarrhea<br/>
+        <strong>Consider LP</strong>
       </div>
       <TeachBox id="urine" teaching={teaching}/>
     </Card>}
@@ -206,7 +157,7 @@ function Wizard({teaching,doses}){
       {(csf==="neg"||csf==="notdone")&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚠️" title={csf==="neg"?"Positive Markers, Negative CSF":"Positive Markers, CSF Not Obtained"}>
         {doses?<DoseRow label="Ceftriaxone IV (50 mg/kg)" value={doses.ceftri50} unit="mg"/>:<span>Ceftriaxone 50 mg/kg IV</span>}<br/>
         <strong>Admit vs discharge with close follow-up (12–24 hours)</strong><br/>
-        {csf==="neg"&&<span>If UA positive: complete additional 9–13 days cefdinir {doses?doses.cefdinir+" mg/day":"14 mg/kg/day"}</span>}
+        {(csf==="neg"||csf==="notdone")&&<span>If UA positive: complete additional 9–13 days cefdinir {doses?doses.cefdinir+" mg/day":"14 mg/kg/day"}</span>}
       </Alert>}
       <TeachBox id="lp" teaching={teaching}/>
     </Card>}
@@ -239,6 +190,7 @@ function RefTriage({teaching}){return(<Pad>
   <Q text="Triage & Initial Assessment" sub="Infant 29–60 days with rectal/axillary temp ≥38.0°C"/>
   <TeachBox id="overview" teaching={teaching}/>
   <Card title="Inclusion / Exclusion" color={C.primary}><div style={{marginTop:8}}><Alert color={C.greenMid} border={C.greenBorder} bg={C.greenBg} icon="✓" title="Inclusion">Aged 29–60 days with rectal or axillary temperature ≥38.0°C at home, other healthcare facility, or in ED.</Alert><Alert color={C.red} border={C.redBorder} bg={C.redBg} icon="✘" title="Exclusion">Prematurity {"<"}37 weeks · Pre-existing medical conditions · Indwelling devices (foley, vascular catheter) · Focal bacterial infections (except AOM) · Clinical bronchiolitis · Immunizations in last 48 hours</Alert></div></Card>
+  <Card title="Nurse Documentation" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}>Chief complaint · Onset of fever · Documented route of measuring temperature · Associated symptoms<br/>Birth and medical history · Immunizations · Medications · Allergies · Vital signs · Weight</div></Card>
   <Card title="Initiate on Arrival" color={C.primary}><div style={{fontSize:13,lineHeight:1.8,marginTop:8}}><strong>ESI Triage Level II</strong><br/>Full set of vitals including <strong>rectal temperature</strong> and weight<br/>Oxygen to maintain SpO₂ {'>'} 93%<br/>LMX to LP site and/or J-tip<br/>LP tray to bedside<br/>IV placement for all ill/toxic presentations · Consider IO per policy<br/><strong>Immediate labs:</strong> CBG, catheter UA + micro + culture, CBC with differential, procalcitonin, coags, blood culture, BMP/CMP<br/>CXR if tachypnea, hypoxia, respiratory symptoms · Stool if diarrhea<br/>VBG/lactate if ill/toxic appearing</div><TeachBox id="temperature" teaching={teaching}/></Card>
   <Card title="Diagnostics" color={C.blue}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}><strong>Core:</strong> CBC with differential, Procalcitonin, Coags, Blood culture, BMP/CMP<br/><strong>Urine:</strong> Catheter specimen — Pedi UTI Panel (UA, microscopy, mandatory culture)<br/><strong>CSF:</strong> Per MD — gram stain, cell count, protein, glucose, culture, hold extra fluid<br/><strong>Consider:</strong> CXR (resp symptoms), stool (diarrhea), VBG/lactate (toxic), CBG<br/><span style={{fontSize:12,color:C.muted}}>UA positive: LE trace+, nitrites+, or {'>'}5 WBC or bacteria on micro. Traumatic tap = ≥10,000 RBC/mm³.</span></div><TeachBox id="urine" teaching={teaching}/></Card>
 </Pad>)}
@@ -267,7 +219,7 @@ function RefDispo({teaching}){return(<Pad>
     <div style={{background:C.amberBg,border:"1.5px solid "+C.amberBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.amberMid}}>ADMIT vs DISCHARGE with close F/U</div><div style={{fontSize:12,marginTop:2}}>Positive markers + traumatic tap or CSF not obtained<br/>Positive markers + negative CSF ± positive/negative UA</div></div>
     <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Negative markers + positive UA → oral antibiotics, F/U 12–24h<br/>Negative markers + negative UA → no antibiotics, F/U 24–36h</div></div>
   </div><TeachBox id="disposition" teaching={teaching}/></Card>
-  <Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Fever/Suspected Sepsis 29–60 Days Clinical Pathway, March 2022<br/>Pantell RH et al. Clinical Practice Guideline: Evaluation and Management of Well-Appearing Febrile Infants 8–60 Days Old. Pediatrics 2021;148(2):e2021052228<br/>Kuppermann N et al. A Clinical Prediction Rule to Identify Febrile Infants 60 Days and Younger at Low Risk for SBI. JAMA Pediatr 2019;173(4):342-351<br/>Wang ME et al. Testing for Meningitis in Febrile Well-Appearing Young Infants With a Positive Urinalysis. Pediatrics 2019;144(3):e20183979<br/>Tzimenatos L et al. Accuracy of the Urinalysis for UTI in Febrile Infants 60 Days and Younger. Pediatrics 2018;141(2):e20173068<br/>Mintegi S et al. Invasive bacterial infections in young afebrile infants with history of fever. Arch Dis Child 2018;103(7):665-669<br/>Tosif S et al. Contamination rates of different urine collection methods. J Paediatr Child Health 2012;48(8):659-664</div></Card>
+  <Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.6,marginTop:8,color:C.muted}}>OHSU DCH ED Fever/Suspected Sepsis 29–60 Days Clinical Pathway, March 2022<br/>Pantell RH et al. Clinical Practice Guideline: Evaluation and Management of Well-Appearing Febrile Infants 8–60 Days Old. Pediatrics 2021;148(2):e2021052228<br/>Kuppermann N et al. A Clinical Prediction Rule to Identify Febrile Infants 60 Days and Younger at Low Risk for SBI. JAMA Pediatr 2019;173(4):342-351<br/>Wang ME et al. Testing for Meningitis in Febrile Well-Appearing Young Infants With a Positive Urinalysis. Pediatrics 2019;144(3):e20183979<br/>Tzimenatos L et al. Accuracy of the Urinalysis for UTI in Febrile Infants 60 Days and Younger. Pediatrics 2018;141(2):e20173068<br/>Mintegi S et al. Invasive bacterial infections in young afebrile infants with history of fever. Arch Dis Child 2018;103(7):665-669<br/>Tosif S et al. Contamination rates of different urine collection methods. J Paediatr Child Health 2012;48(8):659-664<br/>Teran CG et al. Clinical accuracy of a non-contact infrared skin thermometer in paediatric practice. Child Care Health Dev 2012;38(4):471-476</div></Card>
 </Pad>)}
 
 function App(){
