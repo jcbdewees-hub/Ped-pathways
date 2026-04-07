@@ -39,7 +39,7 @@ pearls:"NS bolus 20 mL/kg — may repeat × 2 with reassessment between boluses.
 evidence:"There is no evidence that IV rehydration is superior to ORT for moderate dehydration. IV should be reserved for ORT failure or severe dehydration. The Cochrane review (Bellemare 2003) found no significant differences in outcomes between ORT and IVT for non-severe dehydration. (Bellemare 2003; Freedman 2013)"},
 hypoglycemia:{title:"Hypoglycemia in Dehydration",
 patho:"Hypoglycemia in dehydrated children results from depleted hepatic glycogen stores combined with the metabolic stress of illness. Young children have limited glycogen reserves (proportionally smaller liver relative to metabolic demand) and higher glucose utilization rates. Prolonged fasting from vomiting and poor intake rapidly exhausts glycogen, and gluconeogenesis may be insufficient to maintain euglycemia.\n\nHypoglycemia in the context of dehydration can cause seizures, brain injury, and death if not promptly corrected.",
-pearls:"Check bedside glucose (CBG) for all patients with moderate-to-severe dehydration, altered mental status, or lethargy. Hypoglycemia is defined as glucose <70 mg/dL in children and infants >6 months.\n\nTreatment: D10W 4–5 mL/kg IV bolus → recheck in 30 min. If persistent, start glucose-containing maintenance fluids (D5 0.45–0.9% NaCl + 20 KCl). Do not use D50 in children — it is hyperosmolar and causes tissue necrosis if extravasated.",
+pearls:"Check bedside glucose (CBG) for all patients with moderate-to-severe dehydration, altered mental status, or lethargy. Hypoglycemia is defined as glucose <70 mg/dL in children and infants >6 months.\n\nTreatment: D10W 2–5 mL/kg IV bolus → recheck in 30 min. If persistent, start glucose-containing maintenance fluids (D5 0.45–0.9% NaCl + 20 KCl). Do not use D50 in children — it is hyperosmolar and causes tissue necrosis if extravasated.",
 evidence:"Hypoglycemia is found in 5–10% of children presenting to the ED with acute gastroenteritis and dehydration. Point-of-care glucose testing is a rapid, low-cost intervention that prevents a potentially catastrophic missed diagnosis. (Wathen 2004)"},
 diagnostics:{title:"Labs — When and Why",
 patho:"In most cases of acute gastroenteritis with mild-to-moderate dehydration, laboratory testing does not change management and is not indicated. The dehydration is isonatremic in >80% of cases, and electrolyte abnormalities that require specific intervention are uncommon in previously healthy children.\n\nLaboratory testing becomes important in severe dehydration (where electrolyte derangements are more common), altered mental status (hypoglycemia, hyponatremia), and prolonged symptoms (metabolic derangement, surgical etiology).",
@@ -57,7 +57,7 @@ function calcDoses(w){
   var wt=parseFloat(w)||0;if(wt<=0)return null;
   var bolus20=Math.round(wt*20);
   var bolus10=Math.round(wt*10);
-  var d10=Math.round(wt*5);var d10lo=Math.round(wt*4);
+  var d10=Math.round(wt*5);var d10lo=Math.round(wt*2);
   // ORT volumes
   var ortStart,ortAdv,ortDur,ortStartVol,ortAdvVol;
   if(wt<10){ortStart="5 mL Q5 min";ortAdv="10 mL Q5 min";ortDur="20 min";ortStartVol="5 mL";ortAdvVol="10 mL";}
@@ -111,193 +111,12 @@ function DehydrationScorer({onScore,teaching}){
 // FLOWCHART
 // ═══════════════════════════════
 function PathwayFlowchart(){
-  var rC="#b91c1c",rBg="#fef2f2",rBd="#fca5a5",aC="#d97706",aBg="#fffbeb",aBd="#fcd34d",gC="#16a34a",gBg="#f0fdf4",gBd="#86efac",blC="#1e40af",blBg="#eff6ff",blBd="#93c5fd",pC="#166534",pBg="#f0fdf4",pBd="#86efac",mC="#6b7280";
-  var Arrow=function(p){var dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return null;var ux=dx/len,uy=dy/len;var px=-uy,py=ux;return <g><line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color||"#94a3b8"} strokeWidth={1.5}/><polygon points={p.x2+","+p.y2+" "+(p.x2-ux*6+px*3.5)+","+(p.y2-uy*6+py*3.5)+" "+(p.x2-ux*6-px*3.5)+","+(p.y2-uy*6-py*3.5)} fill={p.color||"#94a3b8"}/></g>};
-  var Box=function(p){return <g><rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.radius||6} fill={p.fill} stroke={p.stroke} strokeWidth={p.sw||1}/>{p.children}</g>};
-  var T=function(p){return <text x={p.x} y={p.y} textAnchor={p.anchor||"middle"} fontSize={p.size||9} fontWeight={p.weight||600} fill={p.color||"#1a1d21"} fontFamily="'IBM Plex Sans',sans-serif">{p.children}</text>};
   return(
     <div style={{marginTop:20}}>
-      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Clinical Pathway Decision Making Process</div>
-      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Pediatric Dehydration · February 2021</div>
+      <div style={{fontSize:15,fontWeight:700,color:C.ink,marginBottom:4}}>Full Algorithm</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:6}}>Clinical Pathway Decision Making Process · February 2021</div>
       <div style={{background:C.white,border:"1.5px solid "+C.rule,borderRadius:10,padding:6,overflow:"hidden"}}>
-        <svg viewBox="0 0 520 690" style={{width:"100%",display:"block"}}>
-          <rect width={520} height={690} fill="#fafaf8" rx={6}/>
-
-          {/* ── ENTRY ── */}
-          <Box x={130} y={6} w={240} h={46} fill={blBg} stroke={blBd} sw={1.5} radius={10}>
-            <T x={250} y={20} size={9} weight={700} color={blC}>{'>'}6 months old</T>
-            <T x={250} y={32} size={8} weight={600} color={blC}>Diarrhea +/- Vomiting</T>
-            <T x={250} y={45} size={6} color={mC}>Assess for signs of dehydration &amp; calculate score</T>
-          </Box>
-
-          {/* ── EXCLUSION CRITERIA (left) ── */}
-          <Box x={4} y={6} w={118} h={84} fill={rBg} stroke={rBd} sw={1.5} radius={6}>
-            <T x={63} y={20} size={6.5} weight={700} color={rC}>Exclusion Criteria</T>
-            <T x={63} y={32} size={5.5} color={rC}>• {'<'}6 months old</T>
-            <T x={63} y={42} size={5.5} color={rC}>• Bloody diarrhea</T>
-            <T x={63} y={52} size={5.5} color={rC}>• Bilious emesis</T>
-            <T x={63} y={62} size={5.5} color={rC}>• Hypo-/hypernatremia</T>
-            <T x={63} y={72} size={5.5} color={rC}>• Co-morbid conditions</T>
-            <T x={63} y={82} size={5.5} color={rC}>• Suspected surgical process</T>
-          </Box>
-
-          {/* ── HYPOGLYCEMIA (right) ── */}
-          <Box x={378} y={6} w={138} h={76} fill={gBg} stroke={gBd} sw={1.5} radius={6}>
-            <T x={447} y={20} size={6.5} weight={700} color={gC}>Hypoglycemia</T>
-            <T x={447} y={32} size={5.5} color={mC}>Glucose {'<'}70 in kids &amp;</T>
-            <T x={447} y={41} size={5.5} color={mC}>infants {'>'}6 months</T>
-            <T x={447} y={54} size={6} weight={600} color={gC}>D10W 4–5 mL/kg</T>
-            <T x={447} y={65} size={5.5} color={mC}>Recheck glucose in 30 min</T>
-            <T x={447} y={75} size={5.5} color={mC}>Maintenance fluids if persists</T>
-          </Box>
-
-          {/* ── Arrow from entry ── */}
-          <Arrow x1={250} y1={52} x2={250} y2={66}/>
-          <g transform="translate(250,80)"><polygon points="0,-14 65,0 0,14 -65,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-2} size={7} weight={700}>Severity?</T></g>
-
-          {/* ── Split arrows ── */}
-          <Arrow x1={185} y1={80} x2={64} y2={108} color={gC}/>
-          <Arrow x1={250} y1={94} x2={250} y2={108} color={aC}/>
-          <Arrow x1={315} y1={80} x2={445} y2={108} color={rC}/>
-
-          {/* ── MINIMAL (0–1) ── */}
-          <Box x={4} y={108} w={120} h={48} fill={gBg} stroke={gBd} sw={1.5}>
-            <T x={64} y={120} size={7.5} weight={700} color={gC}>Minimal to No</T>
-            <T x={64} y={130} size={7.5} weight={700} color={gC}>Dehydration</T>
-            <T x={64} y={141} size={7} color={gC}>({'<'}5%) Score 0–1</T>
-            <T x={64} y={151} size={6} color={mC}>ESI 4</T>
-          </Box>
-          <Arrow x1={64} y1={156} x2={64} y2={170} color={gC}/>
-          <Box x={4} y={170} w={120} h={30} fill={gBg} stroke={gBd}>
-            <T x={64} y={182} size={6.5} weight={600} color={gC}>Consider Ondansetron</T>
-            <T x={64} y={193} size={6.5} weight={600} color={gC}>and PO Challenge</T>
-          </Box>
-
-          {/* ── MODERATE (2–4) ── */}
-          <Box x={134} y={108} w={232} h={48} fill={aBg} stroke={aBd} sw={1.5}>
-            <T x={250} y={122} size={8} weight={700} color={aC}>Moderate Dehydration</T>
-            <T x={250} y={134} size={7.5} color={aC}>(5–9%) Score 2–4</T>
-            <T x={250} y={148} size={6} color={mC}>ESI 3 or 4</T>
-          </Box>
-          <Arrow x1={250} y1={156} x2={250} y2={170} color={aC}/>
-          <Box x={134} y={170} w={232} h={30} fill={aBg} stroke={aBd}>
-            <T x={250} y={182} size={7} weight={600} color={aC}>Administer Ondansetron,</T>
-            <T x={250} y={193} size={7} weight={600} color={aC}>CBG, and Begin ORT</T>
-          </Box>
-
-          {/* ── SEVERE (5–8) ── */}
-          <Box x={374} y={108} w={142} h={48} fill={rBg} stroke={rBd} sw={1.5}>
-            <T x={445} y={118} size={7} weight={700} color={rC}>Severe Dehydration/</T>
-            <T x={445} y={128} size={7} weight={700} color={rC}>Shock or Toxic</T>
-            <T x={445} y={139} size={7} color={rC}>({'>'}9%) Score 5–8</T>
-            <T x={445} y={151} size={6} color={mC}>ESI 1 or 2</T>
-          </Box>
-          <Arrow x1={445} y1={156} x2={445} y2={170} color={rC}/>
-          <Box x={374} y={170} w={142} h={52} fill={rBg} stroke={rBd}>
-            <T x={445} y={181} size={7} weight={700} color={rC}>Resuscitate</T>
-            <T x={445} y={192} size={5.5}>Immediate actions: CBG, BMP,</T>
-            <T x={445} y={202} size={5.5}>monitor, room placement, IV fluids</T>
-            <T x={445} y={213} size={6} weight={600} color={rC}>20 mL/kg NS, reassess</T>
-          </Box>
-
-          {/* ── FIRST ORT DIAMOND (Moderate path) ── */}
-          <Arrow x1={250} y1={200} x2={250} y2={222}/>
-          <g transform="translate(250,240)"><polygon points="0,-18 75,0 0,18 -75,0" fill="#f8fafc" stroke={aBd} strokeWidth={1.5}/><T x={0} y={-5} size={6.5} weight={700}>Able to tolerate</T><T x={0} y={5} size={6.5} weight={700}>20–30 min ORT trial?</T></g>
-          <T x={162} y={234} size={6.5} weight={700} color={gC}>YES</T>
-          <T x={338} y={234} size={6.5} weight={700} color={rC}>NO</T>
-
-          {/* YES → Double ORT volume */}
-          <Arrow x1={175} y1={240} x2={165} y2={274} color={gC}/>
-          <Box x={90} y={274} w={150} h={28} fill={gBg} stroke={gBd}>
-            <T x={165} y={285} size={6.5} weight={600} color={gC}>Double ORT volume</T>
-            <T x={165} y={296} size={6} color={mC}>Reassess in 30–60 minutes</T>
-          </Box>
-
-          {/* NO → Retry ondansetron */}
-          <Arrow x1={325} y1={240} x2={395} y2={274} color={aC}/>
-          <Box x={310} y={274} w={170} h={32} fill={aBg} stroke={aBd}>
-            <T x={395} y={287} size={6.5} weight={600} color={aC}>Give additional dose of</T>
-            <T x={395} y={299} size={6.5} weight={600} color={aC}>Ondansetron. Retry ORT 20 min</T>
-          </Box>
-
-          {/* ── SEVERE → ADMIT ── */}
-          <Arrow x1={445} y1={222} x2={472} y2={330} color={rC}/>
-          <Box x={445} y={330} w={56} h={22} fill={rBg} stroke={rBd} sw={2} radius={10}>
-            <T x={473} y={343} size={7} weight={700} color={rC}>Admit</T>
-          </Box>
-
-          {/* ── MINIMAL → LEFT TOLERATING ORT DIAMOND ── */}
-          <Arrow x1={64} y1={200} x2={98} y2={378} color={gC}/>
-
-          {/* ── DOUBLE ORT → LEFT TOLERATING ORT DIAMOND ── */}
-          <Arrow x1={165} y1={302} x2={110} y2={378}/>
-
-          {/* ── RETRY → RIGHT TOLERATING ORT DIAMOND ── */}
-          <Arrow x1={395} y1={306} x2={395} y2={378}/>
-
-          {/* ── LEFT TOLERATING ORT? DIAMOND ── */}
-          <g transform="translate(100,396)"><polygon points="0,-18 62,0 0,18 -62,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-5} size={6} weight={700}>Tolerating</T><T x={0} y={5} size={6} weight={700}>ORT?</T></g>
-          <T x={168} y={390} size={6.5} weight={700} color={gC}>YES</T>
-
-          {/* ── RIGHT TOLERATING ORT? DIAMOND ── */}
-          <g transform="translate(395,396)"><polygon points="0,-18 62,0 0,18 -62,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-5} size={6} weight={700}>Tolerating</T><T x={0} y={5} size={6} weight={700}>ORT?</T></g>
-          <T x={326} y={390} size={6.5} weight={700} color={gC}>YES</T>
-          <T x={462} y={390} size={6.5} weight={700} color={rC}>NO</T>
-
-          {/* ── LEFT YES + RIGHT YES → FOLLOW ORT / DISCHARGE ── */}
-          <Arrow x1={162} y1={396} x2={210} y2={436} color={gC}/>
-          <Arrow x1={333} y1={396} x2={296} y2={436} color={gC}/>
-          <Box x={185} y={436} w={140} h={38} fill={gBg} stroke={gBd}>
-            <T x={255} y={449} size={7} weight={600} color={gC}>Follow ORT protocol</T>
-            <T x={255} y={460} size={7} weight={600} color={gC}>Prepare for Discharge</T>
-            <T x={255} y={470} size={5.5} color={mC}>(See Discharge Criteria)</T>
-          </Box>
-          <Arrow x1={255} y1={474} x2={255} y2={490} color={gC}/>
-          <Box x={216} y={490} w={78} h={22} fill={gBg} stroke={gBd} sw={2} radius={10}>
-            <T x={255} y={503} size={7.5} weight={700} color={gC}>DISCHARGE</T>
-          </Box>
-
-          {/* ── RIGHT NO → IV FLUIDS ── */}
-          <Arrow x1={457} y1={396} x2={460} y2={436} color={rC}/>
-          <Box x={380} y={436} w={136} h={48} fill={rBg} stroke={rBd}>
-            <T x={448} y={449} size={6.5} weight={600} color={rC}>Initiate IV Fluid bolus</T>
-            <T x={448} y={460} size={6}>20 mL/kg, repeat prn.</T>
-            <T x={448} y={470} size={6}>Get BMP. Reassess.</T>
-          </Box>
-
-          {/* ── TOLERATING PO & WELL? ── */}
-          <Arrow x1={448} y1={484} x2={448} y2={502}/>
-          <g transform="translate(448,518)"><polygon points="0,-16 55,0 0,16 -55,0" fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.2}/><T x={0} y={-4} size={6} weight={700}>Tolerating PO</T><T x={0} y={6} size={6} weight={700}>&amp; well?</T></g>
-          <T x={382} y={512} size={6.5} weight={700} color={gC}>YES</T>
-          <T x={508} y={512} size={6.5} weight={700} color={rC}>NO</T>
-
-          {/* YES → Discharge */}
-          <Arrow x1={393} y1={518} x2={335} y2={548} color={gC}/>
-          <Box x={296} y={548} w={78} h={22} fill={gBg} stroke={gBd} sw={2} radius={10}>
-            <T x={335} y={561} size={7.5} weight={700} color={gC}>DISCHARGE</T>
-          </Box>
-
-          {/* NO → Admit */}
-          <Arrow x1={503} y1={518} x2={498} y2={548} color={rC}/>
-          <Box x={472} y={548} w={44} h={22} fill={rBg} stroke={rBd} sw={2} radius={10}>
-            <T x={494} y={561} size={7} weight={700} color={rC}>ADMIT</T>
-          </Box>
-
-          {/* ── ORT PROTOCOL REFERENCE ── */}
-          <Box x={10} y={586} w={500} h={50} fill={blBg} stroke={blBd} radius={6}>
-            <T x={260} y={598} size={7} weight={700} color={blC}>Oral Rehydration Protocol</T>
-            <T x={80} y={611} size={6} weight={600} anchor="start" color={blC}>{'<'}10 kg:</T><T x={130} y={611} size={5.5} anchor="start">5 mL Q5 min × 20 min → 10 mL Q5 min (reassess 30–60 min)</T>
-            <T x={80} y={622} size={6} weight={600} anchor="start" color={blC}>≥10 kg:</T><T x={130} y={622} size={5.5} anchor="start">10 mL Q5 min × 20 min → 20 mL Q5 min (reassess 30–60 min)</T>
-            <T x={80} y={633} size={6} weight={600} anchor="start" color={blC}>≥30 kg:</T><T x={130} y={633} size={5.5} anchor="start">30 mL Q5 min × 40 min → 60 mL Q5 min (reassess 30–60 min)</T>
-          </Box>
-
-          {/* ── ORT FAILURE DEFINITION ── */}
-          <Box x={10} y={644} w={500} h={36} fill={pBg} stroke={pBd} radius={6}>
-            <T x={260} y={656} size={6.5} weight={700} color={pC}>Definition of Oral Rehydration Failure</T>
-            <T x={260} y={668} size={6} color={mC}>Emesis after second Ondansetron dose OR refusal to take from syringe/cup {'>'}30 minutes</T>
-            <T x={260} y={678} size={5.5} color={mC}>No/mild dehydration → discharge home after successful PO trial and education</T>
-          </Box>
-        </svg>
+        <img src="dehydration-flowchart-2.png" alt="Pediatric Dehydration Clinical Pathway Flowchart" style={{width:"100%",display:"block",borderRadius:6}}/>
       </div>
     </div>
   );
@@ -418,7 +237,7 @@ function Wizard({teaching,doses}){
         <strong>NS bolus {doses?doses.bolus20+" mL":"20 mL/kg"}</strong> IV — reassess between boluses, may repeat<br/>
         For neonates, cardiac, frail/malnourished: start with <strong>{doses?doses.bolus10+" mL":"10 mL/kg"}</strong> and reassess<br/>
         {doses&&<><strong>If hypoglycemic (CBG {'<'}70):</strong> D10W {doses.d10lo}–{doses.d10} mL IV bolus<br/></>}
-        {!doses&&<><strong>If hypoglycemic:</strong> D10W 4–5 mL/kg IV bolus<br/></>}
+        {!doses&&<><strong>If hypoglycemic:</strong> D10W 2–5 mL/kg IV bolus<br/></>}
         <strong style={{color:C.red}}>→ Admit</strong> (ward vs PICU as appropriate)
       </Alert>
       <TeachBox id="hypoglycemia" teaching={teaching}/>
@@ -448,8 +267,8 @@ function RefScoring({teaching}){return(<Pad>
 <TeachBox id="scoring" teaching={teaching}/>
 <Card title="Interactive Dehydration Calculator" color={C.primary}><DehydrationScorer teaching={teaching}/></Card>
 <Card title="Comprehensive Dehydration Assessment" color={C.blue} defaultOpen={false}><div style={{marginTop:8,fontSize:12,lineHeight:1.6}}>
-<div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:4,marginBottom:6}}><div style={{fontWeight:700,fontSize:10,color:C.muted}}>SIGN</div><div style={{fontWeight:700,fontSize:10,color:C.greenMid,textAlign:"center"}}>Minimal</div><div style={{fontWeight:700,fontSize:10,color:C.amberMid,textAlign:"center"}}>Moderate</div><div style={{fontWeight:700,fontSize:10,color:C.red,textAlign:"center"}}>Severe</div></div>
-{[["Weight Loss","<3–5%","5–9%",">9%"],["Mental Status","Well, alert","Fatigued, restless","Apathetic, lethargic"],["Thirst","Normal","Thirsty, eager","Drinks poorly"],["Heart Rate","Normal","Normal–increased","Increased"],["Pulses","Normal","Normal–decreased","Weak, thready"],["Breathing","Normal","Normal, fast","Deep"],["Mouth/Tongue","Moist","Dry","Parched"],["Eyes","Normal","Slightly sunken","Deeply sunken"],["Tears","Present","Decreased","Absent"],["Skin Fold","Instant recoil","Recoil <2 sec","Recoil >2 sec"],["Cap Refill","Normal","Prolonged","Prolonged, minimal"],["Extremities","Warm","Cool","Cold, mottled"],["Urine Output","Normal–decreased","Decreased","Minimal"]].map(function(r,i){return <div key={i} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:4,padding:"3px 0",borderBottom:"1px dashed "+C.rule}}><div style={{fontSize:11,fontWeight:600}}>{r[0]}</div><div style={{fontSize:10,textAlign:"center"}}>{r[1]}</div><div style={{fontSize:10,textAlign:"center"}}>{r[2]}</div><div style={{fontSize:10,textAlign:"center"}}>{r[3]}</div></div>})}
+<div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:4,marginBottom:6}}><div style={{fontWeight:700,fontSize:10,color:C.muted}}>SIGN</div><div style={{fontWeight:700,fontSize:10,color:C.greenMid,textAlign:"center"}}>Minimal</div><div style={{fontWeight:700,fontSize:10,color:C.amberMid,textAlign:"center"}}>Mild to Moderate</div><div style={{fontWeight:700,fontSize:10,color:C.red,textAlign:"center"}}>Severe</div></div>
+{[["Weight Loss","<3–5%","5–9%",">9%"],["Mental Status","Well, alert","Normal, fatigued or restless, irritable","Apathetic, lethargic, unconscious"],["Thirst","Normal, may refuse","Thirsty, eager to drink","Drinks poorly, unable to drink"],["Heart Rate","Normal","Normal to increased","Increased"],["Pulses","Normal","Normal to decreased","Weak, thready, or impalpable"],["Breathing","Normal","Normal; fast","Deep"],["Mouth/Tongue","Normal, moist","Dry","Parched"],["Eyes","Normal","Slightly sunken","Deeply sunken"],["Tears","Present","Decreased","Absent"],["Skin Fold","Instant recoil","Recoil in <2 sec","Recoil in >2 sec"],["Cap Refill","Normal","Prolonged","Prolonged; minimal"],["Extremities","Warm","Cool","Cold, mottled, cyanotic"],["Urine Output","Normal to decreased","Decreased","Minimal"]].map(function(r,i){return <div key={i} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:4,padding:"3px 0",borderBottom:"1px dashed "+C.rule}}><div style={{fontSize:11,fontWeight:600}}>{r[0]}</div><div style={{fontSize:10,textAlign:"center"}}>{r[1]}</div><div style={{fontSize:10,textAlign:"center"}}>{r[2]}</div><div style={{fontSize:10,textAlign:"center"}}>{r[3]}</div></div>})}
 </div></Card>
 </Pad>)}
 
@@ -462,8 +281,8 @@ function RefDecisions({teaching,doses}){return(<Pad>
 {doses?(<div style={{fontSize:12,lineHeight:1.6}}><strong>Start:</strong> <span style={{fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{doses.ortStartVol}</span> Q5 min × {doses.ortDur}<br/><strong>Advance:</strong> <span style={{fontFamily:"'IBM Plex Mono',monospace",fontWeight:600}}>{doses.ortAdvVol}</span> Q5 min → reassess 30–60 min</div>):(<div style={{fontSize:12,lineHeight:1.6}}>{'<'}10 kg: 5 mL Q5 min × 20 min → 10 mL Q5 min<br/>≥10 kg: 10 mL Q5 min × 20 min → 20 mL Q5 min<br/>≥30 kg: 30 mL Q5 min × 40 min → 60 mL Q5 min</div>)}
 </div>
 <div style={{marginTop:4,padding:"8px 10px",background:C.greenBg,border:"1px solid "+C.greenBorder,borderRadius:6,fontSize:12}}><strong>ORT success:</strong> double volume → reassess 30–60 min → discharge</div><div style={{marginTop:4,padding:"8px 10px",background:C.amberBg,border:"1px solid "+C.amberBorder,borderRadius:6,fontSize:12}}><strong>Emesis during ORT:</strong> hold 20 min → 2nd ondansetron → retry</div><div style={{marginTop:4,padding:"8px 10px",background:C.redBg,border:"1px solid "+C.redBorder,borderRadius:6,fontSize:12}}><strong>ORT failure:</strong> IV NS {doses?doses.bolus20+" mL":"20 mL/kg"} bolus → BMP → reassess</div></div><TeachBox id="ort" teaching={teaching}/></Card>
-<Card title="Severe (Score 5–8)" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>ESI 1–2 · {'>'}9% dehydration · Shock or toxic appearance<br/>Resuscitate: CBG · BMP · Monitor · <strong>Room placement</strong><br/>NS {doses?doses.bolus20+" mL":"20 mL/kg"} IV bolus · <strong>Reassess between boluses</strong><br/>Neonates/cardiac/frail: start {doses?doses.bolus10+" mL":"10 mL/kg"}<br/>If hypoglycemic: D10W {doses?doses.d10lo+"–"+doses.d10+" mL":"4–5 mL/kg"}<br/><strong>→ Admit</strong> (ward vs PICU as appropriate)</div><TeachBox id="ivFluids" teaching={teaching}/></Card>
-<Card title="Hypoglycemia Management" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Defined as glucose {'<'}70 mg/dL in children/infants {'>'}6 months<br/>D10W {doses?doses.d10lo+"–"+doses.d10+" mL":"4–5 mL/kg"} IV bolus → recheck in 30 min<br/>If persistent: start glucose-containing maintenance (D5 0.45–0.9% NaCl + 20 KCl)</div><TeachBox id="hypoglycemia" teaching={teaching}/></Card>
+<Card title="Severe (Score 5–8)" color={C.red}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>ESI 1–2 · {'>'}9% dehydration · Shock or toxic appearance<br/>Resuscitate: CBG · BMP · Monitor · <strong>Room placement</strong><br/>NS {doses?doses.bolus20+" mL":"20 mL/kg"} IV bolus · <strong>Reassess between boluses</strong><br/>Neonates/cardiac/frail: start {doses?doses.bolus10+" mL":"10 mL/kg"}<br/>If hypoglycemic: D10W {doses?doses.d10lo+"–"+doses.d10+" mL":"2–5 mL/kg"}<br/><strong>→ Admit</strong> (ward vs PICU as appropriate)</div><TeachBox id="ivFluids" teaching={teaching}/></Card>
+<Card title="Hypoglycemia Management" color={C.purple}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>Defined as glucose {'<'}70 mg/dL in children/infants {'>'}6 months<br/>D10W {doses?doses.d10lo+"–"+doses.d10+" mL":"2–5 mL/kg"} IV bolus → recheck in 30 min<br/>If persistent: start glucose-containing maintenance (D5 0.45–0.9% NaCl + 20 KCl)</div><TeachBox id="hypoglycemia" teaching={teaching}/></Card>
 <Card title="Diagnostics" color={C.blue} defaultOpen={false}><div style={{fontSize:13,lineHeight:1.7,marginTop:8}}>CBG: moderate-severe dehydration, AMS, or lethargy<br/>BMP: moderate-severe dehydration or if starting IV<br/>UA: if UTI considered<br/>Stool culture: if indicated (bloody diarrhea, travel, immunocompromised, prolonged course)<br/><strong>Routine labs NOT needed for mild-moderate with successful ORT</strong></div><TeachBox id="diagnostics" teaching={teaching}/></Card>
 <PathwayFlowchart/>
 </Pad>)}
@@ -473,7 +292,7 @@ function RefMeds({teaching,doses}){return(<Pad>
 {!doses&&<Alert color={C.amberMid} border={C.amberBorder} bg={C.amberBg} icon="⚖️" title="Weight Required">Enter weight in the bar above.</Alert>}
 <Card title="Ondansetron" color={C.primary}><div style={{marginTop:8}}><div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Oral (ODT)</div><DoseRow label="7–14 kg" value="1–2" unit="mg"/><DoseRow label="15–26 kg" value="2–4" unit="mg"/><DoseRow label="≥27 kg" value="8" unit="mg"/>{doses&&<DoseRow label={"Patient ("+doses.w+" kg)"} value={doses.ondPO} unit="mg"/>}<div style={{fontSize:13,fontWeight:700,marginBottom:4,marginTop:8}}>IV (6 mo – 18 yr)</div><DoseRow label="0.1–0.2 mg/kg (max 8 mg)" value={doses?doses.ondIV:"—"} unit={doses?"mg":""}/></div><TeachBox id="ondansetron" teaching={teaching}/></Card>
 <Card title="IV Fluids" color={C.primary}><div style={{marginTop:8}}><DoseRow label="NS bolus (20 mL/kg)" value={doses?doses.bolus20:"—"} unit={doses?"mL":""}/><DoseRow label="NS bolus — frail/cardiac (10 mL/kg)" value={doses?doses.bolus10:"—"} unit={doses?"mL":""}/></div><TeachBox id="ivFluids" teaching={teaching}/></Card>
-<Card title="Dextrose (Hypoglycemia)" color={C.purple}><div style={{marginTop:8}}><DoseRow label="D10W bolus (4–5 mL/kg)" value={doses?doses.d10lo+"–"+doses.d10:"—"} unit={doses?"mL":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Recheck glucose in 30 min. If persistent → D5 0.45–0.9% NaCl + 20 KCl maintenance.</div></div></Card>
+<Card title="Dextrose (Hypoglycemia)" color={C.purple}><div style={{marginTop:8}}><DoseRow label="D10W bolus (2–5 mL/kg)" value={doses?doses.d10lo+"–"+doses.d10:"—"} unit={doses?"mL":""}/><div style={{fontSize:12,color:C.muted,marginTop:6}}>Recheck glucose in 30 min. If persistent → D5 0.45–0.9NaCl + 20KCl maintenance PRN.</div></div></Card>
 <Card title="ORT Protocol" color={C.green}><div style={{marginTop:8,fontSize:13,lineHeight:1.7}}>
 {doses&&(<div style={{background:C.blueBg,border:"1.5px solid "+C.blueBorder,borderRadius:8,padding:"10px 12px",marginBottom:10}}>
 <div style={{fontSize:13,fontWeight:700,color:C.blue,marginBottom:4}}>Patient ({doses.w} kg)</div>
@@ -495,7 +314,7 @@ function RefDispo({teaching}){return(<Pad>
 <div style={{background:C.greenBg,border:"1.5px solid "+C.greenBorder,borderRadius:8,padding:"10px 12px",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:C.greenMid}}>DISCHARGE</div><div style={{fontSize:12,marginTop:2}}>Demonstrated ability to tolerate adequate PO · Parents educated on ORT · Vital signs stable · LOC at baseline · No clinical signs of shock</div></div>
 <div style={{background:C.redBg,border:"1.5px solid "+C.redBorder,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:C.red}}>ADMIT</div><div style={{fontSize:12,marginTop:2}}>ORT failure after 2 ondansetron doses · Severe dehydration · Persistent AMS · Ongoing shock despite IV bolus · Electrolyte abnormality requiring correction · Unable to maintain PO</div></div>
 </div><TeachBox id="discharge" teaching={teaching}/></Card>
-<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Bellemare S et al. Oral rehydration vs IV therapy for dehydration in children. <em>Cochrane Database Syst Rev</em> 2003. CD004390.<br/>2. Freedman SB et al. Treatment of acute gastroenteritis in children: overview of systematic reviews. <em>Evid Based Child Health</em> 2013; 8:1123-1137.<br/>3. Friedman JN et al. Development of a Clinical Dehydration Scale for children 1–36 months. <em>J Pediatr</em> 2004; 145:201-207.<br/>4. Hendrickson MA et al. Triage-based protocol for oral rehydration in a pediatric ED. <em>Pediatr Emerg Care</em> 2017.<br/>5. Steiner MJ et al. Is this child dehydrated? <em>JAMA</em> 2004; 291:2746-54.<br/>6. Patino AM et al. Facing the shortage of IV fluids — a hospital-based oral rehydration strategy. <em>NEJM</em> 2018. DOI: 10.1056/NEJMp1801772.<br/>7. CDC/MMWR. Managing acute gastroenteritis among children: oral rehydration, maintenance, and nutritional therapy.</div></Card>
+<Card title="References" color={C.muted} defaultOpen={false}><div style={{fontSize:11,lineHeight:1.7,marginTop:8,color:C.muted}}>1. Bellemare S et al. Oral rehydration vs IV therapy for dehydration in children. <em>Cochrane Database Syst Rev</em> 2003. CD004390.<br/>2. Freedman SB et al. Treatment of acute gastroenteritis in children: overview of systematic reviews. <em>Evid Based Child Health</em> 2013; 8:1123-1137.<br/>3. Friedman JN et al. Development of a Clinical Dehydration Scale for children 1–36 months. <em>J Pediatr</em> 2004; 145:201-207.<br/>4. Hendrickson MA et al. Triage-based protocol for oral rehydration in a pediatric ED. <em>Pediatr Emerg Care</em> 2018; 34(4):227-232.<br/>5. Rutman L, Klein EJ, Brown JC. Clinical pathway produces sustained improvement in acute gastroenteritis care. <em>Pediatrics</em> 2017; 140(4):e20164310.<br/>6. Steiner MJ et al. Is this child dehydrated? <em>JAMA</em> 2004; 291:2746-54.</div></Card>
 </Pad>)}
 
 
